@@ -5,6 +5,33 @@
 
 const { query, withTransaction } = require('../../config/database');
 
+function formatProduct(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    name: row.name,
+    categoryId: row.category_id,
+    category: row.category,
+    sportId: row.sport_id,
+    sport: row.sport || 'Multi-Sport',
+    sku: row.sku,
+    price: parseFloat(row.price),
+    memberPrice: parseFloat(row.member_price),
+    rating: parseFloat(row.rating || 5.0),
+    badge: row.badge,
+    description: row.description,
+    image: row.image_url,
+    imageUrl: row.image_url,
+    stock: parseInt(row.stock || 0, 10),
+    quantityReserved: parseInt(row.quantity_reserved || 0, 10),
+    reorderThreshold: parseInt(row.reorder_threshold || 5, 10),
+    reorderQuantity: parseInt(row.reorder_quantity || 20, 10),
+    inStock: Boolean(row.in_stock),
+    isLowStock: Boolean(row.is_low_stock),
+    isActive: row.is_active
+  };
+}
+
 class ProductService {
   /**
    * List products with joined category, sport, and inventory stock
@@ -39,9 +66,7 @@ class ProductService {
 
     if (search) {
       params.push(`%${search.toLowerCase().trim()}%`);
-      sql += ` AND (LOWER(p.name) LIKE $${params.length} 
-                OR LOWER(p.description) LIKE $${params.length} 
-                OR LOWER(p.sku) LIKE $${params.length})`;
+      sql += ` AND (LOWER(p.name) LIKE $${params.length} OR LOWER(p.description) LIKE $${params.length} OR LOWER(p.sku) LIKE $${params.length})`;
     }
 
     if (inStock === 'true' || inStock === true) {
@@ -58,30 +83,7 @@ class ProductService {
     params.push(Number(limit) || 50, Number(offset) || 0);
 
     const res = await query(sql, params);
-
-    // Format fields cleanly to match frontend contract while maintaining DB fidelity
-    return res.rows.map(row => ({
-      id: row.id,
-      name: row.name,
-      categoryId: row.category_id,
-      category: row.category,
-      sportId: row.sport_id,
-      sport: row.sport || 'Multi-Sport',
-      sku: row.sku,
-      price: parseFloat(row.price),
-      memberPrice: parseFloat(row.member_price),
-      rating: parseFloat(row.rating || 5.0),
-      badge: row.badge,
-      description: row.description,
-      image: row.image_url,
-      imageUrl: row.image_url,
-      stock: parseInt(row.stock, 10),
-      quantityReserved: parseInt(row.quantity_reserved, 10),
-      reorderThreshold: parseInt(row.reorder_threshold, 10),
-      inStock: row.in_stock,
-      isLowStock: row.is_low_stock,
-      isActive: row.is_active
-    }));
+    return res.rows.map(formatProduct);
   }
 
   /**
@@ -111,29 +113,7 @@ class ProductService {
       throw error;
     }
 
-    const row = res.rows[0];
-    return {
-      id: row.id,
-      name: row.name,
-      categoryId: row.category_id,
-      category: row.category,
-      sportId: row.sport_id,
-      sport: row.sport || 'Multi-Sport',
-      sku: row.sku,
-      price: parseFloat(row.price),
-      memberPrice: parseFloat(row.member_price),
-      rating: parseFloat(row.rating || 5.0),
-      badge: row.badge,
-      description: row.description,
-      image: row.image_url,
-      imageUrl: row.image_url,
-      stock: parseInt(row.stock, 10),
-      quantityReserved: parseInt(row.quantity_reserved, 10),
-      reorderThreshold: parseInt(row.reorder_threshold, 10),
-      reorderQuantity: parseInt(row.reorder_quantity, 10),
-      inStock: row.in_stock,
-      isActive: row.is_active
-    };
+    return formatProduct(res.rows[0]);
   }
 
   /**
@@ -157,7 +137,6 @@ class ProductService {
     userId = null
   }) {
     return withTransaction(async (client) => {
-      // 1. Verify category exists
       const catCheck = await client.query('SELECT id FROM product_categories WHERE id = $1', [categoryId]);
       if (catCheck.rowCount === 0) {
         const error = new Error(`Product category '${categoryId}' not found`);
@@ -165,12 +144,10 @@ class ProductService {
         throw error;
       }
 
-      // 2. Generate product ID if not provided
       const productId = id || `prod-${Date.now().toString().slice(-6)}`;
       const effectiveMemberPrice = memberPrice !== null && memberPrice !== undefined ? memberPrice : (price * 0.8);
       const generatedSku = sku || `SKU-${productId.toUpperCase()}`;
 
-      // 3. Insert product
       const productRes = await client.query(
         `INSERT INTO products (
             id, category_id, sport_id, name, sku, price, member_price,
@@ -178,22 +155,9 @@ class ProductService {
          )
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, true)
          RETURNING *`,
-        [
-          productId,
-          categoryId,
-          sportId,
-          name.trim(),
-          generatedSku,
-          price,
-          effectiveMemberPrice,
-          rating,
-          badge,
-          description,
-          imageUrl
-        ]
+        [productId, categoryId, sportId, name.trim(), generatedSku, price, effectiveMemberPrice, rating, badge, description, imageUrl]
       );
 
-      // 4. Initialize inventory
       const stockQty = Math.max(0, parseInt(initialStock || 0, 10));
       await client.query(
         `INSERT INTO inventory (product_id, quantity_on_hand, quantity_reserved, reorder_threshold, reorder_quantity)
@@ -204,7 +168,6 @@ class ProductService {
         [productId, stockQty, reorderThreshold, reorderQuantity]
       );
 
-      // 5. If initial stock > 0, log stock movement
       if (stockQty > 0) {
         await client.query(
           `INSERT INTO stock_movements (product_id, movement_type, quantity, reference_id, notes, created_by)
@@ -226,11 +189,7 @@ class ProductService {
    */
   async updateProduct(productId, updates = {}, userId = null) {
     return withTransaction(async (client) => {
-      // 1. Lock product row
-      const existingRes = await client.query(
-        'SELECT * FROM products WHERE id = $1 FOR UPDATE',
-        [productId]
-      );
+      const existingRes = await client.query('SELECT * FROM products WHERE id = $1 FOR UPDATE', [productId]);
       if (existingRes.rowCount === 0) {
         const error = new Error(`Product '${productId}' not found`);
         error.statusCode = 404;
@@ -256,13 +215,9 @@ class ProductService {
         );
       }
 
-      // 2. Handle stock adjustment if stock specified
       if (updates.stock !== undefined || updates.quantityOnHand !== undefined) {
         const targetStock = parseInt(updates.stock !== undefined ? updates.stock : updates.quantityOnHand, 10);
-        const invRes = await client.query(
-          'SELECT quantity_on_hand FROM inventory WHERE product_id = $1 FOR UPDATE',
-          [productId]
-        );
+        const invRes = await client.query('SELECT quantity_on_hand FROM inventory WHERE product_id = $1 FOR UPDATE', [productId]);
         const currentStock = invRes.rowCount > 0 ? invRes.rows[0].quantity_on_hand : 0;
         const diff = targetStock - currentStock;
 
@@ -282,7 +237,6 @@ class ProductService {
         }
       }
 
-      // Return updated product with current stock
       return this.getProductById(productId);
     });
   }

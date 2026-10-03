@@ -1,11 +1,36 @@
 /**
  * Champions Club - Inventory & Shelf Management Service
  * Role: MEMBER 4 (Backend Operations)
- * 
- * Ensures online and front desk counter purchases consume the exact same shelf stock.
  */
 
 const { query, withTransaction } = require('../../config/database');
+
+function formatInventory(row) {
+  if (!row) return null;
+  const qty = parseInt(row.quantity_on_hand || 0, 10);
+  const threshold = parseInt(row.reorder_threshold || 5, 10);
+  const reorderQty = parseInt(row.reorder_quantity || 20, 10);
+  const isLowStock = qty <= threshold;
+
+  return {
+    inventoryId: row.inventory_id,
+    productId: row.product_id,
+    productName: row.product_name,
+    sku: row.sku,
+    category: row.category_name || row.category,
+    price: parseFloat(row.price),
+    memberPrice: parseFloat(row.member_price),
+    imageUrl: row.image_url,
+    quantityOnHand: qty,
+    quantityReserved: parseInt(row.quantity_reserved || 0, 10),
+    reorderThreshold: threshold,
+    reorderQuantity: reorderQty,
+    stockStatus: row.stock_status || (qty <= 0 ? 'OUT_OF_STOCK' : isLowStock ? 'LOW_STOCK' : 'IN_STOCK'),
+    isLowStock,
+    suggestedReorderUnits: Math.max(0, reorderQty - qty),
+    updatedAt: row.updated_at
+  };
+}
 
 class InventoryService {
   /**
@@ -44,24 +69,7 @@ class InventoryService {
     params.push(Number(limit) || 100, Number(offset) || 0);
 
     const res = await query(sql, params);
-
-    return res.rows.map(row => ({
-      inventoryId: row.inventory_id,
-      productId: row.product_id,
-      productName: row.product_name,
-      sku: row.sku,
-      category: row.category_name,
-      price: parseFloat(row.price),
-      memberPrice: parseFloat(row.member_price),
-      imageUrl: row.image_url,
-      quantityOnHand: parseInt(row.quantity_on_hand, 10),
-      quantityReserved: parseInt(row.quantity_reserved, 10),
-      reorderThreshold: parseInt(row.reorder_threshold, 10),
-      reorderQuantity: parseInt(row.reorder_quantity, 10),
-      stockStatus: row.stock_status,
-      isLowStock: row.stock_status === 'LOW_STOCK' || row.stock_status === 'OUT_OF_STOCK',
-      updatedAt: row.updated_at
-    }));
+    return res.rows.map(formatInventory);
   }
 
   /**
@@ -87,24 +95,7 @@ class InventoryService {
        ORDER BY inv.quantity_on_hand ASC`
     );
 
-    return res.rows.map(row => ({
-      inventoryId: row.inventory_id,
-      productId: row.product_id,
-      productName: row.product_name,
-      sku: row.sku,
-      category: row.category,
-      price: parseFloat(row.price),
-      memberPrice: parseFloat(row.member_price),
-      imageUrl: row.image_url,
-      quantityOnHand: parseInt(row.quantity_on_hand, 10),
-      quantityReserved: parseInt(row.quantity_reserved, 10),
-      reorderThreshold: parseInt(row.reorder_threshold, 10),
-      reorderQuantity: parseInt(row.reorder_quantity, 10),
-      stockStatus: row.stock_status,
-      isLowStock: true,
-      suggestedReorderUnits: Math.max(0, parseInt(row.reorder_quantity, 10) - parseInt(row.quantity_on_hand, 10)),
-      updatedAt: row.updated_at
-    }));
+    return res.rows.map(formatInventory);
   }
 
   /**
@@ -112,12 +103,7 @@ class InventoryService {
    */
   async recordStockMovement({ productId, quantity, movementType, referenceId = null, notes = null, userId = null }, client = null) {
     const execute = async (dbClient) => {
-      // 1. Lock inventory row
-      const invRes = await dbClient.query(
-        'SELECT quantity_on_hand FROM inventory WHERE product_id = $1 FOR UPDATE',
-        [productId]
-      );
-
+      const invRes = await dbClient.query('SELECT quantity_on_hand FROM inventory WHERE product_id = $1 FOR UPDATE', [productId]);
       if (invRes.rowCount === 0) {
         const error = new Error(`Inventory record for product '${productId}' not found`);
         error.statusCode = 404;
@@ -133,13 +119,8 @@ class InventoryService {
         throw error;
       }
 
-      // 2. Update inventory
-      await dbClient.query(
-        'UPDATE inventory SET quantity_on_hand = $1, updated_at = CURRENT_TIMESTAMP WHERE product_id = $2',
-        [nextQty, productId]
-      );
+      await dbClient.query('UPDATE inventory SET quantity_on_hand = $1, updated_at = CURRENT_TIMESTAMP WHERE product_id = $2', [nextQty, productId]);
 
-      // 3. Insert stock movement record
       const movementRes = await dbClient.query(
         `INSERT INTO stock_movements (product_id, movement_type, quantity, reference_id, notes, created_by)
          VALUES ($1, $2, $3, $4, $5, $6)
@@ -155,10 +136,7 @@ class InventoryService {
       };
     };
 
-    if (client) {
-      return execute(client);
-    }
-    return withTransaction(execute);
+    return client ? execute(client) : withTransaction(execute);
   }
 
   /**
