@@ -481,4 +481,18 @@ export {
   getProductById
 } from '../features/shop/shopApi.js';
 
+// Re-export CRM & Enquiry management API methods for Member 2 features
+export {
+  getLeads,
+  getLeadById,
+  updateLead,
+  getLeadFollowups,
+  createLeadFollowup,
+  createLeadQuotation,
+  createLeadTrial,
+  LEAD_STATUSES,
+  CONTACT_METHODS,
+  resetInMemoryCrmState
+} from '../features/crm/crmApi.js';
+
 
