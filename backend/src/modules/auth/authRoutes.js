@@ -10,7 +10,9 @@ const { authenticate } = require('../../middleware/auth');
 
 router.post('/register', authController.register);
 router.post('/login', authController.login);
+router.post('/logout', authController.logout);
 router.post('/pin-login', authController.pinLogin);
 router.get('/me', authenticate, authController.me);
 
 module.exports = router;
+
