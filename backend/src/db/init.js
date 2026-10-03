@@ -11,6 +11,11 @@ const { Client, Pool } = require('pg');
 const config = require('../config/env');
 
 async function ensureDatabaseExists() {
+  if (config.db.connectionString) {
+    // Cloud managed databases (Neon, AWS RDS, Supabase) have pre-provisioned databases
+    return;
+  }
+
   const adminClient = new Client({
     host: config.db.host,
     port: config.db.port,
@@ -43,10 +48,10 @@ async function ensureDatabaseExists() {
   }
 }
 
-async function initSchema() {
+async function initSchema(existingPool = null) {
   await ensureDatabaseExists();
 
-  const targetPool = new Pool(config.db);
+  const targetPool = existingPool || require('../config/database').pool;
   const schemaPath = path.resolve(__dirname, '../../schema/schema.sql');
   const sql = fs.readFileSync(schemaPath, 'utf8');
 
@@ -61,7 +66,6 @@ async function initSchema() {
     throw err;
   } finally {
     client.release();
-    await targetPool.end();
   }
 }
 

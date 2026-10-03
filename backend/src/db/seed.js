@@ -8,8 +8,8 @@ const path = require('path');
 const { Pool } = require('pg');
 const config = require('../config/env');
 
-async function seedDatabase() {
-  const targetPool = new Pool(config.db);
+async function seedDatabase(existingPool = null) {
+  const targetPool = existingPool || require('../config/database').pool;
   const seedPath = path.resolve(__dirname, '../../schema/seed.sql');
   const sql = fs.readFileSync(seedPath, 'utf8');
 
@@ -24,7 +24,6 @@ async function seedDatabase() {
     throw err;
   } finally {
     client.release();
-    await targetPool.end();
   }
 }
 

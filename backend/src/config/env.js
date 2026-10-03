@@ -15,17 +15,26 @@ const config = {
   jwtSecret: process.env.JWT_SECRET || 'champions_club_super_secure_jwt_secret_2026',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   
-  db: {
-    host: process.env.DB_HOST || 'localhost',
-    port: parseInt(process.env.DB_PORT || '5432', 10),
-    database: process.env.DB_NAME || 'sports_club_db',
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || '1234',
-    max: parseInt(process.env.DB_POOL_MAX || '20', 10),
-    idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10),
-    connectionTimeoutMillis: parseInt(process.env.DB_CONN_TIMEOUT || '5000', 10),
-    ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
-  }
+  db: process.env.DATABASE_URL
+    ? {
+        connectionString: process.env.DATABASE_URL.replace(/&?channel_binding=[^&]+/g, ''),
+        ssl: { rejectUnauthorized: false },
+        max: parseInt(process.env.DB_POOL_MAX || '10', 10),
+        idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10),
+        connectionTimeoutMillis: parseInt(process.env.DB_CONN_TIMEOUT || '30000', 10),
+        keepAlive: true
+      }
+    : {
+        host: process.env.DB_HOST || 'localhost',
+        port: parseInt(process.env.DB_PORT || '5432', 10),
+        database: process.env.DB_NAME || 'sports_club_db',
+        user: process.env.DB_USER || 'postgres',
+        password: process.env.DB_PASSWORD || '1234',
+        max: parseInt(process.env.DB_POOL_MAX || '20', 10),
+        idleTimeoutMillis: parseInt(process.env.DB_IDLE_TIMEOUT || '30000', 10),
+        connectionTimeoutMillis: parseInt(process.env.DB_CONN_TIMEOUT || '5000', 10),
+        ssl: process.env.DB_SSL === 'true' ? { rejectUnauthorized: false } : false
+      }
 };
 
 module.exports = config;

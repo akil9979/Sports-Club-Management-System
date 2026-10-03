@@ -11,12 +11,9 @@
  * 6. Seed data correctness & consistency
  */
 
-const { Pool } = require('pg');
-const config = require('../src/config/env');
+const { pool } = require('../src/config/database');
 const { initSchema } = require('../src/db/init');
 const { seedDatabase } = require('../src/db/seed');
-
-const pool = new Pool(config.db);
 
 const REQUIRED_TABLES = [
   'users',
