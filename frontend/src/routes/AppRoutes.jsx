@@ -41,6 +41,9 @@ export default function AppRoutes() {
           <Route path="/members" element={<MemberDirectoryPage />} />
           <Route path="/members/register" element={<MemberRegistrationPage />} />
           <Route path="/members/:id" element={<MemberProfilePage />} />
+          <Route path="/member" element={<Navigate to="/members" replace />} />
+          <Route path="/member/register" element={<Navigate to="/members/register" replace />} />
+          <Route path="/member/:id" element={<MemberProfilePage />} />
           <Route path="/courts" element={<CourtsPage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/enquiry" element={<EnquiryPage />} />
