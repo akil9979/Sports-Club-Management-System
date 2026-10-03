@@ -75,18 +75,18 @@ export default function MemberProfileEditModal({ isOpen, member, onClose, onSucc
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in">
-      <div className="relative w-full max-w-lg bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/80 my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#02140e]/85 backdrop-blur-md overflow-y-auto animate-fade-in">
+      <div className="relative w-full max-w-lg bg-[#041c14] border border-emerald-900/50 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/80 my-8">
         {/* Header */}
-        <div className="flex items-center justify-between pb-5 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-5 border-b border-emerald-900/40">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30">
                 {member.memberNumber || member.id}
               </span>
-              <h3 className="text-xl font-bold text-white tracking-tight">Edit Member Profile</h3>
+              <h3 className="text-xl font-serif font-bold text-[#fcfaf5] tracking-tight">Edit Member Profile</h3>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-emerald-300/70 mt-1">
               Update contact information and personal details for {member.name}.
             </p>
           </div>
@@ -94,7 +94,7 @@ export default function MemberProfileEditModal({ isOpen, member, onClose, onSucc
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-full bg-[#07261c] hover:bg-[#0b3829] text-emerald-400 hover:text-white flex items-center justify-center transition-colors border border-emerald-800/60"
           >
             <X className="w-5 h-5 shrink-0" />
           </button>
@@ -115,7 +115,7 @@ export default function MemberProfileEditModal({ isOpen, member, onClose, onSucc
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           {/* Full Name */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
               Full Name <span className="text-rose-400">*</span>
             </label>
             <input
@@ -124,8 +124,8 @@ export default function MemberProfileEditModal({ isOpen, member, onClose, onSucc
               value={formData.name}
               onChange={handleChange}
               placeholder="e.g. Devon Conway"
-              className={`w-full px-4 py-2.5 bg-slate-950/80 border rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all ${
-                formErrors.name ? 'border-rose-500/80 focus:border-rose-500' : 'border-slate-800 focus:border-amber-500/60'
+              className={`w-full px-4 py-2.5 bg-[#02140e]/90 border rounded-xl text-sm text-white placeholder-emerald-700/60 focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 transition-all ${
+                formErrors.name ? 'border-rose-500/80 focus:border-rose-500' : 'border-emerald-900/60 focus:border-[#dfc99a]'
               }`}
             />
             {formErrors.name && (
@@ -136,7 +136,7 @@ export default function MemberProfileEditModal({ isOpen, member, onClose, onSucc
           {/* Email & Phone Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Email Address <span className="text-rose-400">*</span>
               </label>
               <input
@@ -145,8 +145,8 @@ export default function MemberProfileEditModal({ isOpen, member, onClose, onSucc
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="devon@example.com"
-                className={`w-full px-4 py-2.5 bg-slate-950/80 border rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all ${
-                  formErrors.email ? 'border-rose-500/80 focus:border-rose-500' : 'border-slate-800 focus:border-amber-500/60'
+                className={`w-full px-4 py-2.5 bg-[#02140e]/90 border rounded-xl text-sm text-white placeholder-emerald-700/60 focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 transition-all ${
+                  formErrors.email ? 'border-rose-500/80 focus:border-rose-500' : 'border-emerald-900/60 focus:border-[#dfc99a]'
                 }`}
               />
               {formErrors.email && (
@@ -155,7 +155,7 @@ export default function MemberProfileEditModal({ isOpen, member, onClose, onSucc
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Phone Number <span className="text-rose-400">*</span>
               </label>
               <input
@@ -164,8 +164,8 @@ export default function MemberProfileEditModal({ isOpen, member, onClose, onSucc
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="+919876543210"
-                className={`w-full px-4 py-2.5 bg-slate-950/80 border rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all ${
-                  formErrors.phone ? 'border-rose-500/80 focus:border-rose-500' : 'border-slate-800 focus:border-amber-500/60'
+                className={`w-full px-4 py-2.5 bg-[#02140e]/90 border rounded-xl text-sm text-white placeholder-emerald-700/60 focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 transition-all ${
+                  formErrors.phone ? 'border-rose-500/80 focus:border-rose-500' : 'border-emerald-900/60 focus:border-[#dfc99a]'
                 }`}
               />
               {formErrors.phone && (
@@ -177,14 +177,14 @@ export default function MemberProfileEditModal({ isOpen, member, onClose, onSucc
           {/* Gender & Emergency Contact */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Gender
               </label>
               <select
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/60 transition-all"
+                className="w-full px-4 py-2.5 bg-[#02140e]/90 border border-emerald-900/60 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 focus:border-[#dfc99a] transition-all"
               >
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -194,7 +194,7 @@ export default function MemberProfileEditModal({ isOpen, member, onClose, onSucc
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Emergency Contact
               </label>
               <input
@@ -203,14 +203,14 @@ export default function MemberProfileEditModal({ isOpen, member, onClose, onSucc
                 value={formData.emergencyContact}
                 onChange={handleChange}
                 placeholder="+919876500001"
-                className="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/60 transition-all"
+                className="w-full px-4 py-2.5 bg-[#02140e]/90 border border-emerald-900/60 rounded-xl text-sm text-white placeholder-emerald-700/60 focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 focus:border-[#dfc99a] transition-all"
               />
             </div>
           </div>
 
           {/* Residential Address */}
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
               Address / Residence
             </label>
             <textarea
@@ -219,39 +219,39 @@ export default function MemberProfileEditModal({ isOpen, member, onClose, onSucc
               value={formData.address}
               onChange={handleChange}
               placeholder="House/Apartment, Street, City"
-              className="w-full px-4 py-2 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/60 transition-all resize-none"
+              className="w-full px-4 py-2 bg-[#02140e]/90 border border-emerald-900/60 rounded-xl text-sm text-white placeholder-emerald-700/60 focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 focus:border-[#dfc99a] transition-all resize-none"
             />
           </div>
 
           {/* Read-only audit notice */}
-          <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 flex items-center justify-between text-xs text-slate-400">
+          <div className="p-3 bg-[#02140e]/70 rounded-xl border border-emerald-900/60 flex items-center justify-between text-xs text-emerald-300/70">
             <div>
-              <span className="font-semibold text-slate-300">Date of Birth:</span>{' '}
+              <span className="font-semibold text-emerald-200">Date of Birth:</span>{' '}
               {member.dob ? new Date(member.dob).toLocaleDateString('en-IN', { dateStyle: 'medium' }) : 'Not recorded'}
             </div>
-            <span className="text-[11px] text-slate-400 italic">
+            <span className="text-[11px] text-emerald-500/70 italic">
               DOB locked for plan qualification
             </span>
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-emerald-900/40">
             <button
               type="button"
               onClick={onClose}
               disabled={submitting}
-              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition-colors disabled:opacity-50"
+              className="px-5 py-2.5 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-emerald-200 hover:text-white text-xs font-semibold transition-colors disabled:opacity-50 border border-emerald-800/60"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={submitting}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100"
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl btn-champagne font-bold text-xs shadow-lg shadow-[#dfc99a]/15 transition-all hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100"
             >
               {submitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin text-slate-950 shrink-0" />
+                  <Loader2 className="w-4 h-4 animate-spin text-[#02140e] shrink-0" />
                   <span>Saving Changes...</span>
                 </>
               ) : (

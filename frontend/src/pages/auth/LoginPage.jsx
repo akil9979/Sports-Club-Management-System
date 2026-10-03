@@ -16,7 +16,8 @@ import {
   User,
   KeyRound,
   Sparkles,
-  CheckCircle2
+  CheckCircle2,
+  Crown
 } from 'lucide-react';
 
 const ROLE_CONFIGS = {
@@ -25,7 +26,7 @@ const ROLE_CONFIGS = {
     label: 'Member Login',
     tagline: 'Club member access & court reservations',
     icon: User,
-    badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30',
+    badgeColor: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30',
     demoEmail: 'devon.conway@example.com',
     demoPassword: 'Password@123',
     demoLabel: 'Devon Conway (Gold Member)',
@@ -36,7 +37,7 @@ const ROLE_CONFIGS = {
     label: 'Staff Portal',
     tagline: 'Bar POS, kitchen order queue & inventory',
     icon: Wine,
-    badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/30',
+    badgeColor: 'bg-[#dfc99a]/15 text-[#dfc99a] border-[#dfc99a]/30',
     demoEmail: 'priya.nair@championsclub.com',
     demoPassword: 'Password@123',
     demoPin: '1234',
@@ -46,9 +47,9 @@ const ROLE_CONFIGS = {
   admin: {
     id: 'admin',
     label: 'Admin Portal',
-    tagline: 'Club management, user roles & analytics',
+    tagline: 'Executive management, user roles & analytics',
     icon: ShieldCheck,
-    badgeColor: 'bg-purple-500/10 text-purple-400 border-purple-500/30',
+    badgeColor: 'bg-[#dfc99a]/20 text-[#dfc99a] border-[#dfc99a]/40',
     demoEmail: 'admin@championsclub.com',
     demoPassword: 'Password@123',
     demoLabel: 'Club Administrator',
@@ -142,23 +143,27 @@ export default function LoginPage() {
   const currentConfig = ROLE_CONFIGS[activeRole];
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center px-4 py-10 bg-slate-950 text-slate-100">
+    <div className="min-h-[85vh] flex items-center justify-center px-4 py-10 bg-[#02140e] text-[#f4efe4]">
       <div className="w-full max-w-lg">
         {/* Header */}
         <div className="text-center mb-6">
           <Link to="/" className="inline-flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-400 to-teal-600 flex items-center justify-center shadow-lg shadow-emerald-500/25">
-              <Trophy className="w-7 h-7 text-slate-950 stroke-[2.5]" />
+            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#f7f1e3] via-[#dfc99a] to-[#c59e4b] p-0.5 shadow-xl shadow-[#dfc99a]/10">
+              <div className="w-full h-full rounded-[10px] bg-[#02140e] flex items-center justify-center">
+                <Trophy className="w-6 h-6 text-[#dfc99a] stroke-[2.2]" />
+              </div>
             </div>
           </Link>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-            The Champions <span className="text-emerald-400">Club</span>
+            The Champions <span className="champagne-gradient-text font-black">Club</span>
           </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">Role-Based Authentication Gateway</p>
+          <p className="text-xs sm:text-sm text-[#ede0c4]/70 mt-1 font-medium">
+            Authenticated Access Gateway
+          </p>
         </div>
 
         {/* Role Selector Tabs */}
-        <div className="grid grid-cols-3 gap-1.5 p-1.5 bg-slate-900/90 rounded-2xl border border-slate-800 mb-4 shadow-xl">
+        <div className="grid grid-cols-3 gap-1.5 p-1.5 bg-[#041c14] rounded-2xl border border-[#dfc99a]/20 mb-4 shadow-xl">
           {Object.values(ROLE_CONFIGS).map((cfg) => {
             const Icon = cfg.icon;
             const isSelected = activeRole === cfg.id;
@@ -169,8 +174,8 @@ export default function LoginPage() {
                 onClick={() => handleSelectRole(cfg.id)}
                 className={`py-2.5 px-3 rounded-xl font-bold text-xs flex flex-col sm:flex-row items-center justify-center gap-1.5 transition-all duration-200 ${
                   isSelected
-                    ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 shadow-md shadow-emerald-500/25 scale-[1.02]'
-                    : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                    ? 'bg-gradient-to-r from-[#f7f1e3] to-[#dfc99a] text-[#02140e] shadow-md shadow-[#dfc99a]/20 scale-[1.02]'
+                    : 'text-[#ede0c4]/70 hover:text-white hover:bg-[#07261c]'
                 }`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
@@ -181,17 +186,17 @@ export default function LoginPage() {
         </div>
 
         {/* Form Card */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl backdrop-blur-md">
+        <div className="glass-panel rounded-3xl p-6 sm:p-8 shadow-2xl backdrop-blur-xl border border-[#dfc99a]/25">
           {/* Active Role Subheader */}
-          <div className="flex items-center justify-between pb-4 mb-5 border-b border-slate-800/80">
+          <div className="flex items-center justify-between pb-4 mb-5 border-b border-[#dfc99a]/15">
             <div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-bold text-white">{currentConfig.label}</span>
-                <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full border ${currentConfig.badgeColor}`}>
+                <span className={`text-[10px] font-black px-2.5 py-0.5 rounded-full border ${currentConfig.badgeColor}`}>
                   {activeRole.toUpperCase()}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">{currentConfig.tagline}</p>
+              <p className="text-xs text-[#ede0c4]/70 mt-0.5">{currentConfig.tagline}</p>
             </div>
 
             {/* Staff PIN Toggle */}
@@ -199,7 +204,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setAuthMode(authMode === 'password' ? 'pin' : 'password')}
-                className="text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 underline flex items-center gap-1"
+                className="text-[11px] font-bold text-[#dfc99a] hover:text-[#f7f1e3] underline flex items-center gap-1"
               >
                 <KeyRound className="w-3.5 h-3.5" />
                 <span>{authMode === 'password' ? 'Use Staff PIN' : 'Use Password'}</span>
@@ -208,7 +213,7 @@ export default function LoginPage() {
           </div>
 
           {error && (
-            <div className="mb-4 p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-center gap-2 text-xs">
+            <div className="mb-4 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 flex items-center gap-2 text-xs">
               <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
               <span>{error}</span>
             </div>
@@ -218,11 +223,11 @@ export default function LoginPage() {
             {activeRole === 'staff' && authMode === 'pin' ? (
               /* Staff PIN Input */
               <div>
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-[#ede0c4] uppercase tracking-wider mb-1.5">
                   4-Digit Terminal PIN
                 </label>
                 <div className="relative">
-                  <KeyRound className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
+                  <KeyRound className="w-4 h-4 absolute left-3.5 top-3 text-[#dfc99a]/70" />
                   <input
                     id="login-pin-input"
                     type="password"
@@ -231,20 +236,20 @@ export default function LoginPage() {
                     onChange={(e) => setPin(e.target.value)}
                     disabled={loading}
                     placeholder="e.g. 1234"
-                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950/70 border border-slate-800 text-base tracking-widest text-white focus:outline-none focus:border-emerald-500 text-center font-mono"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#02140e] border border-[#dfc99a]/25 text-base tracking-widest text-white focus:outline-none focus:border-[#dfc99a] text-center font-mono"
                   />
                 </div>
-                <p className="text-[11px] text-slate-500 mt-1">Default staff terminal demo PIN: <code className="text-emerald-400 font-mono font-bold">1234</code></p>
+                <p className="text-[11px] text-[#ede0c4]/60 mt-1">Default staff terminal demo PIN: <code className="text-[#dfc99a] font-mono font-bold">1234</code></p>
               </div>
             ) : (
               /* Email & Password Input */
               <>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-[#ede0c4] uppercase tracking-wider mb-1.5">
                     Email Address
                   </label>
                   <div className="relative">
-                    <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
+                    <Mail className="w-4 h-4 absolute left-3.5 top-3 text-[#dfc99a]/70" />
                     <input
                       id="login-email-input"
                       type="email"
@@ -252,19 +257,19 @@ export default function LoginPage() {
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={loading}
                       placeholder="name@example.com"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-950/70 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#02140e] border border-[#dfc99a]/25 text-sm text-white focus:outline-none focus:border-[#dfc99a]"
                     />
                   </div>
                 </div>
 
                 <div>
                   <div className="flex items-center justify-between mb-1.5">
-                    <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                    <label className="block text-xs font-bold text-[#ede0c4] uppercase tracking-wider">
                       Password
                     </label>
                   </div>
                   <div className="relative">
-                    <Lock className="w-4 h-4 absolute left-3.5 top-3 text-slate-500" />
+                    <Lock className="w-4 h-4 absolute left-3.5 top-3 text-[#dfc99a]/70" />
                     <input
                       id="login-password-input"
                       type={showPassword ? 'text' : 'password'}
@@ -272,12 +277,12 @@ export default function LoginPage() {
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={loading}
                       placeholder="••••••••"
-                      className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-slate-950/70 border border-slate-800 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono"
+                      className="w-full pl-10 pr-10 py-2.5 rounded-xl bg-[#02140e] border border-[#dfc99a]/25 text-sm text-white focus:outline-none focus:border-[#dfc99a] font-mono"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3.5 top-3 text-slate-500 hover:text-slate-300"
+                      className="absolute right-3.5 top-3 text-[#ede0c4]/60 hover:text-white"
                       aria-label="Toggle password visibility"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -291,22 +296,22 @@ export default function LoginPage() {
               id="login-submit-button"
               type="submit"
               disabled={loading}
-              className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all disabled:opacity-50"
+              className="btn-champagne w-full mt-3 py-3 rounded-xl text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin text-[#02140e]" />
               ) : (
                 <span>Sign In as {activeRole.toUpperCase()}</span>
               )}
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 text-[#02140e]" />
             </button>
           </form>
 
           {/* Quick Demo Credentials Bar */}
-          <div className="mt-6 pt-5 border-t border-slate-800/80">
+          <div className="mt-6 pt-5 border-t border-[#dfc99a]/15">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs text-slate-400 font-semibold flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-xs text-[#ede0c4] font-bold flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#dfc99a]" />
                 <span>Instant Demo Fill:</span>
               </span>
             </div>
@@ -316,17 +321,17 @@ export default function LoginPage() {
                   key={cfg.id}
                   type="button"
                   onClick={() => handleSelectRole(cfg.id)}
-                  className={`p-2 rounded-xl text-left border transition-all text-xs flex flex-col justify-between ${
+                  className={`p-2.5 rounded-xl text-left border transition-all text-xs flex flex-col justify-between ${
                     activeRole === cfg.id
-                      ? 'bg-slate-800 border-emerald-500/40 text-emerald-300'
-                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-slate-200 hover:border-slate-700'
+                      ? 'bg-[#06261b] border-[#dfc99a]/50 text-[#dfc99a]'
+                      : 'bg-[#02140e] border-[#dfc99a]/15 text-[#ede0c4]/70 hover:text-white hover:border-[#dfc99a]/30'
                   }`}
                 >
                   <div className="flex items-center justify-between w-full">
-                    <span className="font-bold text-white uppercase text-[10px] tracking-wider">{cfg.id}</span>
-                    {activeRole === cfg.id && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
+                    <span className="font-extrabold text-white uppercase text-[10px] tracking-wider">{cfg.id}</span>
+                    {activeRole === cfg.id && <CheckCircle2 className="w-3.5 h-3.5 text-[#dfc99a]" />}
                   </div>
-                  <span className="text-[11px] truncate text-slate-300 mt-1">{cfg.demoLabel.split(' ')[0]}</span>
+                  <span className="text-[11px] truncate text-[#ede0c4] mt-1">{cfg.demoLabel.split(' ')[0]}</span>
                 </button>
               ))}
             </div>
@@ -334,9 +339,9 @@ export default function LoginPage() {
         </div>
 
         {/* Footer Link */}
-        <p className="text-center text-xs text-slate-400 mt-6">
+        <p className="text-center text-xs text-[#ede0c4]/70 mt-6">
           New member?{' '}
-          <Link to="/signup" className="text-emerald-400 hover:text-emerald-300 font-semibold underline ml-1">
+          <Link to="/signup" className="text-[#dfc99a] hover:text-[#f7f1e3] font-bold underline ml-1">
             Register New Account
           </Link>
         </p>

@@ -21,20 +21,20 @@ export default function ActiveMembershipCard({
 }) {
   if (!membership) {
     return (
-      <div className="glass-panel p-6 rounded-3xl border border-slate-800 bg-slate-900/60 space-y-4">
-        <div className="flex items-start justify-between gap-4">
+      <div className="p-6 rounded-3xl border border-emerald-900/40 bg-[#041c14]/90 backdrop-blur-md space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#07261c] border border-emerald-800/60 text-emerald-400 flex items-center justify-center">
               <ShieldAlert className="w-6 h-6" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-white">No Active Membership</h3>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 uppercase">
+                <h3 className="text-lg font-serif font-bold text-[#fcfaf5]">No Active Membership</h3>
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#07261c] text-emerald-400 border border-emerald-800/60 uppercase">
                   Walk-In Status
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-emerald-300/70 mt-0.5">
                 Member is currently paying standard walk-in hourly court rates with zero shop or bar discounts.
               </p>
             </div>
@@ -43,9 +43,9 @@ export default function ActiveMembershipCard({
           <button
             type="button"
             onClick={onRenewOrChangePlan}
-            className="shrink-0 px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-500/20 transition"
+            className="shrink-0 px-4 py-2.5 rounded-xl btn-champagne font-bold text-xs flex items-center gap-1.5 shadow-md shadow-[#dfc99a]/15 transition"
           >
-            <Sparkles className="w-4 h-4 text-amber-950" />
+            <Sparkles className="w-4 h-4 text-[#02140e]" />
             <span>Assign Membership Plan</span>
           </button>
         </div>
@@ -83,14 +83,14 @@ export default function ActiveMembershipCard({
   const isJunior = tier?.toLowerCase() === 'junior';
 
   return (
-    <div className={`rounded-3xl p-6 sm:p-8 border relative overflow-hidden transition-all shadow-xl ${
+    <div className={`rounded-3xl p-6 sm:p-8 border relative overflow-hidden transition-all shadow-xl backdrop-blur-md ${
       isExpired
         ? 'bg-rose-950/20 border-rose-800/60 shadow-rose-950/20'
         : isGold
-        ? 'bg-gradient-to-br from-amber-950/30 via-slate-900 to-slate-950 border-amber-500/40 shadow-amber-500/5'
+        ? 'bg-gradient-to-br from-[#dfc99a]/15 via-[#041c14] to-[#02140e] border-[#dfc99a]/40 shadow-[#dfc99a]/10'
         : isSilver
-        ? 'bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 border-slate-700 shadow-slate-900/50'
-        : 'bg-gradient-to-br from-emerald-950/30 via-slate-900 to-slate-950 border-emerald-500/40 shadow-emerald-500/5'
+        ? 'bg-gradient-to-br from-slate-900/60 via-[#041c14] to-[#02140e] border-slate-700/60 shadow-slate-900/50'
+        : 'bg-gradient-to-br from-emerald-950/40 via-[#041c14] to-[#02140e] border-emerald-500/40 shadow-emerald-500/10'
     }`}>
       {/* Top Banner Alert for Expired or Expiring Soon */}
       {isExpired ? (
@@ -111,9 +111,9 @@ export default function ActiveMembershipCard({
           </button>
         </div>
       ) : isExpiringSoon ? (
-        <div className="mb-6 p-3.5 rounded-2xl bg-amber-950/80 border border-amber-500/80 text-xs text-amber-200 flex items-center justify-between gap-4 animate-pulse">
+        <div className="mb-6 p-3.5 rounded-2xl bg-[#dfc99a]/15 border border-[#dfc99a]/80 text-xs text-[#dfc99a] flex items-center justify-between gap-4 animate-pulse">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-5 h-5 text-amber-400 shrink-0" />
+            <AlertTriangle className="w-5 h-5 text-[#dfc99a] shrink-0" />
             <div>
               <strong className="font-bold">Expiring in {diffDays} {diffDays === 1 ? 'day' : 'days'}: </strong>
               <span>Renew now to maintain uninterrupted 14-day advance slot booking and lounge rates.</span>
@@ -122,7 +122,7 @@ export default function ActiveMembershipCard({
           <button
             type="button"
             onClick={onRenewOrChangePlan}
-            className="shrink-0 px-3.5 py-1.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-bold text-xs shadow-md transition"
+            className="shrink-0 px-3.5 py-1.5 rounded-xl btn-champagne font-bold text-xs shadow-md transition"
           >
             Renew Early
           </button>
@@ -130,13 +130,13 @@ export default function ActiveMembershipCard({
       ) : null}
 
       {/* Main Header Card */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-emerald-900/40">
         <div className="flex items-center gap-4">
           <div className={`w-14 h-14 rounded-2xl border flex items-center justify-center shadow-lg ${
             isExpired
               ? 'bg-rose-950/40 border-rose-800 text-rose-400'
               : isGold
-              ? 'bg-amber-500/20 border-amber-500/40 text-amber-400'
+              ? 'bg-[#dfc99a]/20 border-[#dfc99a]/40 text-[#dfc99a]'
               : isSilver
               ? 'bg-slate-800 border-slate-600 text-slate-300'
               : 'bg-emerald-500/20 border-emerald-500/40 text-emerald-400'
@@ -152,18 +152,18 @@ export default function ActiveMembershipCard({
 
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="text-2xl font-extrabold text-white tracking-tight">
+              <h2 className="text-2xl font-serif font-extrabold text-[#fcfaf5] tracking-tight">
                 {planName}
               </h2>
               <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
                 isExpired
                   ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                  : 'bg-[#dfc99a]/20 text-[#dfc99a] border border-[#dfc99a]/40'
               }`}>
                 {isExpired ? 'Expired' : 'Active Tier'}
               </span>
             </div>
-            <div className="text-xs text-slate-400 mt-0.5 flex items-center gap-3">
+            <div className="text-xs text-emerald-300/70 mt-0.5 flex items-center gap-3">
               <span>{tier} Membership</span>
               <span>•</span>
               <span className="capitalize">{billingCycle} Billing (₹{price?.toLocaleString('en-IN')})</span>
@@ -176,7 +176,7 @@ export default function ActiveMembershipCard({
           <button
             type="button"
             onClick={onRenewOrChangePlan}
-            className="px-4 py-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-semibold flex items-center gap-1.5 transition"
+            className="px-4 py-2.5 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-emerald-200 hover:text-white border border-emerald-800/60 text-xs font-semibold flex items-center gap-1.5 transition"
           >
             <span>{isExpired ? 'Reactivate Plan' : 'Change / Renew Plan'}</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -185,9 +185,9 @@ export default function ActiveMembershipCard({
       </div>
 
       {/* Expiry & Duration Strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-6 border-b border-slate-800/80">
-        <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-          <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider block">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 py-6 border-b border-emerald-900/40">
+        <div className="p-4 rounded-2xl bg-[#02140e]/80 border border-emerald-900/50">
+          <span className="text-[10px] text-emerald-400/60 uppercase font-bold tracking-wider block">
             Start Date
           </span>
           <div className="text-sm font-bold text-white mt-1 flex items-center gap-1.5">
@@ -196,27 +196,27 @@ export default function ActiveMembershipCard({
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-          <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider block">
+        <div className="p-4 rounded-2xl bg-[#02140e]/80 border border-emerald-900/50">
+          <span className="text-[10px] text-emerald-400/60 uppercase font-bold tracking-wider block">
             Expiry / Renewal Date
           </span>
           <div className={`text-sm font-bold mt-1 flex items-center gap-1.5 ${
-            isExpired ? 'text-rose-400' : 'text-white'
+            isExpired ? 'text-rose-400' : 'text-[#dfc99a]'
           }`}>
-            <Clock className="w-3.5 h-3.5 text-amber-400" />
+            <Clock className="w-3.5 h-3.5 text-[#dfc99a]" />
             <span>{endDate}</span>
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-slate-950/60 border border-slate-800/80">
-          <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider block">
+        <div className="p-4 rounded-2xl bg-[#02140e]/80 border border-emerald-900/50">
+          <span className="text-[10px] text-emerald-400/60 uppercase font-bold tracking-wider block">
             Status & Expiry Countdown
           </span>
           <div className={`text-sm font-bold mt-1 flex items-center gap-1.5 ${
             isExpired 
               ? 'text-rose-400' 
               : isExpiringSoon 
-              ? 'text-amber-400' 
+              ? 'text-[#dfc99a]' 
               : 'text-emerald-400'
           }`}>
             {isExpired ? (
@@ -235,42 +235,42 @@ export default function ActiveMembershipCard({
 
       {/* Benefit Breakdown Display */}
       <div className="pt-6 space-y-4">
-        <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+        <h4 className="text-xs font-bold text-emerald-300/80 uppercase tracking-wider">
           Active Member Entitlements & Discounts
         </h4>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <div className="p-3.5 rounded-2xl bg-emerald-950/20 border border-emerald-500/20 flex items-center gap-3">
+          <div className="p-3.5 rounded-2xl bg-[#07261c] border border-emerald-800/60 flex items-center gap-3">
             <Calendar className="w-5 h-5 text-emerald-400 shrink-0" />
             <div>
               <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">
                 Court Bookings
               </span>
-              <span className="text-xs font-semibold text-slate-200">
+              <span className="text-xs font-semibold text-emerald-100">
                 {courtPrivileges || 'Standard rates'}
               </span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-amber-950/20 border border-amber-500/20 flex items-center gap-3">
-            <ShoppingBag className="w-5 h-5 text-amber-400 shrink-0" />
+          <div className="p-3.5 rounded-2xl bg-[#07261c] border border-[#dfc99a]/30 flex items-center gap-3">
+            <ShoppingBag className="w-5 h-5 text-[#dfc99a] shrink-0" />
             <div>
-              <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">
+              <span className="text-[10px] font-bold text-[#dfc99a] uppercase tracking-wider block">
                 Pro Shop & Gear
               </span>
-              <span className="text-xs font-semibold text-slate-200">
+              <span className="text-xs font-semibold text-emerald-100">
                 {shopDiscount || 'Member discount'}
               </span>
             </div>
           </div>
 
-          <div className="p-3.5 rounded-2xl bg-teal-950/20 border border-teal-500/20 flex items-center gap-3">
+          <div className="p-3.5 rounded-2xl bg-[#07261c] border border-teal-800/60 flex items-center gap-3">
             <Coffee className="w-5 h-5 text-teal-400 shrink-0" />
             <div>
               <span className="text-[10px] font-bold text-teal-400 uppercase tracking-wider block">
                 Sports Bar & Cafe
               </span>
-              <span className="text-xs font-semibold text-slate-200">
+              <span className="text-xs font-semibold text-emerald-100">
                 {barDiscount || 'Tab discounts'}
               </span>
             </div>
@@ -278,9 +278,9 @@ export default function ActiveMembershipCard({
         </div>
 
         {benefits.length > 0 && (
-          <div className="pt-2 flex flex-wrap gap-2 text-[11px] text-slate-400">
+          <div className="pt-2 flex flex-wrap gap-2 text-[11px] text-emerald-300/70">
             {benefits.slice(0, 4).map((b, idx) => (
-              <span key={idx} className="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-800 text-slate-300">
+              <span key={idx} className="px-2.5 py-1 rounded-lg bg-[#07261c] border border-emerald-900/60 text-emerald-200">
                 ✓ {b}
               </span>
             ))}
