@@ -132,13 +132,24 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-3">
               {isAuthenticated ? (
                 <>
+                  {/* Admin Portal Shortcut for Admin */}
+                  {user?.role === 'admin' && (
+                    <Link
+                      to="/admin"
+                      className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-purple-500/20 text-purple-300 border border-purple-500/30 hover:bg-purple-500/30 transition flex items-center gap-1.5"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 text-purple-400" />
+                      <span>Admin Control</span>
+                    </Link>
+                  )}
+
                   {/* Staff Portal Shortcut for Staff/Manager/Admin */}
                   {(user?.role === 'staff' || user?.role === 'manager' || user?.role === 'admin') && (
                     <Link
                       to="/staff/bar"
                       className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 transition flex items-center gap-1.5"
                     >
-                      <Wine className="w-3.5 h-3.5" />
+                      <Wine className="w-3.5 h-3.5 text-emerald-400" />
                       <span>Staff Portal</span>
                     </Link>
                   )}
@@ -259,6 +270,17 @@ export default function Navbar() {
             })}
 
             <div className="pt-4 border-t border-slate-800 space-y-2">
+              {user?.role === 'admin' && (
+                <Link
+                  to="/admin"
+                  onClick={closeMobileMenu}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-purple-500/10 border border-purple-500/30 text-purple-300 font-semibold"
+                >
+                  <ShieldCheck className="w-4 h-4 text-purple-400" />
+                  <span>Admin Control Dashboard</span>
+                </Link>
+              )}
+
               {(user?.role === 'staff' || user?.role === 'manager' || user?.role === 'admin') && (
                 <Link
                   to="/staff/bar"

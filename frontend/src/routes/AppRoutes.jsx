@@ -15,6 +15,7 @@ import StaffOperationsPage from '../pages/staff/StaffOperationsPage.jsx';
 import MemberDirectoryPage from '../pages/member/MemberDirectoryPage.jsx';
 import MemberRegistrationPage from '../pages/member/MemberRegistrationPage.jsx';
 import MemberProfilePage from '../pages/member/MemberProfilePage.jsx';
+import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx';
 
 export default function AppRoutes() {
   return (
@@ -29,7 +30,7 @@ export default function AppRoutes() {
           <Route path="/bar" element={<Navigate to="/staff/bar" replace />} />
         </Route>
 
-        {/* Public Club & Member Experience Routes (M1) */}
+        {/* Public Club & Member Experience Routes (with Navbar & Layout) */}
         <Route element={<PublicLayout />}>
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<LoginPage />} />
@@ -43,6 +44,13 @@ export default function AppRoutes() {
           <Route path="/courts" element={<CourtsPage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/enquiry" element={<EnquiryPage />} />
+
+          {/* Protected Admin Executive Portal Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+            <Route path="/admin" element={<AdminDashboardPage />} />
+            <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+          </Route>
+
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
