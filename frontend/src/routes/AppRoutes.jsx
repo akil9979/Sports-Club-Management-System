@@ -15,6 +15,7 @@ import StaffOperationsPage from '../pages/staff/StaffOperationsPage.jsx';
 import MemberDirectoryPage from '../pages/member/MemberDirectoryPage.jsx';
 import MemberRegistrationPage from '../pages/member/MemberRegistrationPage.jsx';
 import MemberProfilePage from '../pages/member/MemberProfilePage.jsx';
+import MemberBookingsPage from '../pages/member/MemberBookingsPage.jsx';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx';
 
 export default function AppRoutes() {
@@ -42,6 +43,8 @@ export default function AppRoutes() {
           <Route path="/members/register" element={<MemberRegistrationPage />} />
           <Route path="/members/:id" element={<MemberProfilePage />} />
           <Route path="/courts" element={<CourtsPage />} />
+          <Route path="/member/bookings" element={<MemberBookingsPage />} />
+          <Route path="/bookings" element={<MemberBookingsPage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/enquiry" element={<EnquiryPage />} />
 
