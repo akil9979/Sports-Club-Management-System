@@ -53,14 +53,13 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Direct public endpoints matching frontend contract
-app.use('/api/membership-plans', membershipRoutes);
-
 app.get('/api/courts', bookingController.getCourts);
 
 // Module API Routing
 app.use('/api/auth', authRoutes);
 app.use('/api/members', memberRoutes);
 app.use('/api/memberships', membershipRoutes);
+app.use('/api/membership-plans', membershipRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api', shopRoutes);
 

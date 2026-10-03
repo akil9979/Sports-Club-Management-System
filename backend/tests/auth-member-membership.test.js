@@ -355,6 +355,40 @@ async function runAuthMemberMembershipTests() {
     assert(historyRes.body.data[0].plan_tier === 'Gold' && historyRes.body.data[0].status === 'active', 'Latest membership is active Gold');
     assert(historyRes.body.data.some(m => m.status === 'expired'), 'Previous membership transitioned to expired state');
 
+    // 4.8 Role Authorization Check: Member role accessing staff/admin member directory
+    const memberForbiddenRes = await request('/api/members', {
+      headers: { Authorization: `Bearer ${memberToken}` }
+    });
+    assert(memberForbiddenRes.status === 403, 'GET /api/members rejected regular member with HTTP 403 Forbidden');
+    assert(memberForbiddenRes.body.error === 'Forbidden', 'Error response indicates Forbidden');
+
+    // 4.9 Unauthorized Endpoint: GET /api/members without token
+    const unauthMembersListRes = await request('/api/members');
+    assert(unauthMembersListRes.status === 401, 'GET /api/members rejected missing token with HTTP 401');
+
+    // 4.10 Unauthorized Endpoint: POST /api/members/:id/memberships without token
+    const unauthCreateMshipRes = await request(`/api/members/${adultMemberId}/memberships`, {
+      method: 'POST',
+      body: { planId: 'gold' }
+    });
+    assert(unauthCreateMshipRes.status === 401, 'POST /api/members/:id/memberships rejected missing token with HTTP 401');
+
+    // 4.11 Invalid / Non-existent Plan Subscription
+    const nonExistentPlanRes = await request(`/api/members/${adultMemberId}/memberships`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: { planId: 'platinum-diamond-ultra-nonexistent' }
+    });
+    assert(nonExistentPlanRes.status === 404, 'POST /api/members/:id/memberships rejected non-existent plan with HTTP 404');
+
+    // 4.12 Member Details without Active Membership verification
+    // noDobMemberId was registered without an initial membership plan
+    const unactivatedMemberRes = await request(`/api/members/${noDobMemberId}`, {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    assert(unactivatedMemberRes.status === 200, 'GET /api/members/:id returned walk-in member');
+    assert(unactivatedMemberRes.body.data.membership === null, 'Member without active plan has null active membership');
+
     console.log('\n===============================================================');
     console.log(`SUMMARY: ${passedCount} passed, ${failedCount} failed.`);
     console.log('===============================================================\n');
