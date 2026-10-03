@@ -10,7 +10,40 @@ const { validators } = require('../../middleware/validator');
 class MemberController {
   async create(req, res, next) {
     try {
-      const { firstName, lastName, email, phone, gender, dateOfBirth, address, emergencyContactName, emergencyContactPhone, password, role, planId, billingCycle, startDate, endDate } = req.body;
+      let { 
+        firstName, 
+        lastName, 
+        name,
+        email, 
+        phone, 
+        gender, 
+        dateOfBirth, 
+        dob,
+        address, 
+        emergencyContact,
+        emergencyContactName, 
+        emergencyContactPhone, 
+        password, 
+        role, 
+        planId, 
+        billingCycle, 
+        startDate, 
+        endDate 
+      } = req.body;
+
+      if ((!firstName || !lastName) && name && typeof name === 'string') {
+        const parts = name.trim().split(/\s+/);
+        if (!firstName) firstName = parts[0] || '';
+        if (!lastName) lastName = parts.slice(1).join(' ') || parts[0] || '';
+      }
+
+      if (!dateOfBirth && dob) {
+        dateOfBirth = dob;
+      }
+
+      if (!emergencyContactPhone && emergencyContact) {
+        emergencyContactPhone = emergencyContact;
+      }
 
       if (!validators.isNonEmptyString(firstName, 1)) {
         return res.status(422).json({ success: false, error: 'Validation Error', message: 'First name is required' });
