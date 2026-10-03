@@ -214,6 +214,35 @@ async function runApiTests() {
     assert(memberDetailRes.status === 200, 'GET /api/members/:id returned member with active membership');
     assert(memberDetailRes.body.data.membership.plan_tier === 'Gold', 'Member tier verified as upgraded Gold');
 
+    // ------------------------------------------------------------------------
+    // API TEST 6: SHOP CATALOGUE, ORDERS & LOW-STOCK
+    // ------------------------------------------------------------------------
+    console.log('\n[API TEST 6] Shop Catalogue, Inventory & Order Lifecycle');
+    const prodsRes = await request('/api/products?category=Tennis');
+    assert(prodsRes.status === 200, 'GET /api/products returned HTTP 200');
+    assert(Array.isArray(prodsRes.body), 'Products returned as array');
+
+    const lowStockApiRes = await request('/api/inventory/low-stock', {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    assert(lowStockApiRes.status === 200, 'GET /api/inventory/low-stock returned HTTP 200');
+
+    const shopOrderRes = await request('/api/shop/orders', {
+      method: 'POST',
+      body: {
+        orderType: 'online_delivery',
+        fulfilmentType: 'delivery',
+        customerName: 'Online Shopper',
+        deliveryAddress: '123 Tennis Lane',
+        items: [{ productId: 'prod-1', quantity: 1 }]
+      }
+    });
+    assert(shopOrderRes.status === 201, 'POST /api/shop/orders created delivery order (HTTP 201)');
+
+    const orderDetailRes = await request(`/api/shop/orders/${shopOrderRes.body.data.id}`);
+    assert(orderDetailRes.status === 200, 'GET /api/shop/orders/:id returned order details');
+    assert(orderDetailRes.body.data.fulfilmentType === 'delivery', 'Verified delivery fulfilment');
+
     console.log('\n===============================================================');
     console.log('API INTEGRATION TESTS COMPLETE: ALL ENDPOINTS VERIFIED!');
     console.log('===============================================================\n');

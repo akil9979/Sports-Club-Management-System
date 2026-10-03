@@ -90,3 +90,81 @@
 | `total_amount` | NUMERIC(10,2) | NOT NULL, CHECK (total_amount >= 0) | Calculated total |
 | `payment_status` | VARCHAR(30) | NOT NULL, DEFAULT 'unpaid' | unpaid, partial, paid, waived |
 | *Exclusion Constraint* | GIST | `EXCLUDE USING gist (court_id WITH =, tstzrange(start_time, end_time) WITH &&) WHERE (status NOT IN ('cancelled', 'no_show'))` | PostgreSQL engine-level non-overlapping booking guarantee |
+
+---
+
+### Table: `products`
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | VARCHAR(64) | PK | Product identifier, e.g. `prod-1` |
+| `category_id` | VARCHAR(64) | FK product_categories(id) ON DELETE RESTRICT | Category taxonomy |
+| `sport_id` | VARCHAR(64) | FK sports(id) ON DELETE SET NULL | Associated sport |
+| `name` | VARCHAR(200) | NOT NULL | Product title |
+| `sku` | VARCHAR(50) | UNIQUE | Stock keeping unit |
+| `price` | NUMERIC(10,2) | NOT NULL, CHECK (price >= 0) | Retail price |
+| `member_price` | NUMERIC(10,2) | NOT NULL, CHECK (member_price >= 0) | Default member price |
+| `rating` | NUMERIC(3,2) | DEFAULT 5.0 | Product customer rating (0-5) |
+| `badge` | VARCHAR(50) | NULL | Highlight badge, e.g. "Best Seller" |
+| `description` | TEXT | NULL | Catalog description |
+| `image_url` | TEXT | NULL | Product photo URL |
+| `is_active` | BOOLEAN | NOT NULL, DEFAULT true | Active catalog item flag |
+
+---
+
+### Table: `inventory`
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | UUID | PK, DEFAULT gen_random_uuid() | Inventory record ID |
+| `product_id` | VARCHAR(64) | UNIQUE, FK products(id) ON DELETE CASCADE | Product reference |
+| `quantity_on_hand` | INTEGER | NOT NULL, DEFAULT 0, CHECK (>= 0) | Current shelf stock count |
+| `quantity_reserved`| INTEGER | NOT NULL, DEFAULT 0, CHECK (>= 0) | Allocated / pending pickup stock |
+| `reorder_threshold`| INTEGER | NOT NULL, DEFAULT 5, CHECK (>= 0) | Low-stock alert trigger level |
+| `reorder_quantity` | INTEGER | NOT NULL, DEFAULT 20, CHECK (>= 0) | Suggested restock intake quantity |
+
+---
+
+### Table: `stock_movements`
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | UUID | PK, DEFAULT gen_random_uuid() | Movement audit record ID |
+| `product_id` | VARCHAR(64) | FK products(id) ON DELETE RESTRICT | Affected product |
+| `movement_type` | VARCHAR(30) | NOT NULL, CHECK | purchase_receipt, sale, adjustment, return, damaged, transfer |
+| `quantity` | INTEGER | NOT NULL, CHECK (quantity <> 0) | Quantity delta (+/-) |
+| `reference_id` | VARCHAR(100) | NULL | Linked order / batch / adjustment ID |
+| `notes` | TEXT | NULL | Reason or context |
+| `created_by` | UUID | FK users(id) ON DELETE SET NULL | Staff member performing movement |
+
+---
+
+### Table: `shop_orders`
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | UUID | PK, DEFAULT gen_random_uuid() | Order UUID |
+| `order_number` | VARCHAR(50) | UNIQUE, NOT NULL | Human-readable ref: `SO-YYYY-XXXX` |
+| `member_id` | VARCHAR(64) | FK members(id) ON DELETE SET NULL | Linked member |
+| `customer_name` | VARCHAR(100) | NULL | Buyer name |
+| `customer_email` | VARCHAR(255) | NULL | Buyer email |
+| `customer_phone` | VARCHAR(30) | NULL | Buyer phone |
+| `order_type` | VARCHAR(30) | NOT NULL, DEFAULT 'counter' | counter, online_pickup, online_delivery |
+| `fulfilment_type` | VARCHAR(30) | NOT NULL, DEFAULT 'in_store' | in_store, pickup, delivery |
+| `delivery_address` | TEXT | NULL | Delivery street address |
+| `delivery_notes` | TEXT | NULL | Delivery instructions |
+| `pickup_time` | TIMESTAMPTZ | NULL | Scheduled pickup timestamp |
+| `status` | VARCHAR(30) | NOT NULL, DEFAULT 'pending' | pending, processing, completed, cancelled, refunded |
+| `subtotal` | NUMERIC(10,2) | NOT NULL, CHECK (>= 0) | Retail subtotal |
+| `discount_amount` | NUMERIC(10,2) | NOT NULL, DEFAULT 0.00 | Member discount savings |
+| `tax_amount` | NUMERIC(10,2) | NOT NULL, DEFAULT 0.00 | 5% GST on sports goods |
+| `total_amount` | NUMERIC(10,2) | NOT NULL, CHECK (>= 0) | Final billed amount |
+| `payment_status` | VARCHAR(30) | NOT NULL, DEFAULT 'unpaid' | unpaid, paid, refunded |
+
+---
+
+### Table: `shop_order_items`
+| Column | Type | Constraints | Description |
+|---|---|---|---|
+| `id` | UUID | PK, DEFAULT gen_random_uuid() | Line item UUID |
+| `shop_order_id` | UUID | FK shop_orders(id) ON DELETE CASCADE | Parent order |
+| `product_id` | VARCHAR(64) | FK products(id) ON DELETE RESTRICT | Product item |
+| `quantity` | INTEGER | NOT NULL, CHECK (quantity > 0) | Quantity purchased |
+| `unit_price` | NUMERIC(10,2) | NOT NULL, CHECK (unit_price >= 0) | Price per unit after discount |
+| `total_price` | NUMERIC(10,2) | NOT NULL, CHECK (total_price >= 0) | Line total amount |

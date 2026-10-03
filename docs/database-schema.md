@@ -66,7 +66,18 @@ The database layer serves as the single source of truth for the entire Champions
 
 ---
 
-## 3. Database Initialization & Testing
+## 3. Shop & Inventory Operations Architecture (MEMBER 4)
+
+### Unified Shelf & Inventory Model
+- **Single Shelf Inventory:** In-store counter purchases, online pickup orders, and home deliveries all consume from the exact same `inventory` table (`quantity_on_hand`).
+- **Concurrency & Row-Locking:** Concurrency-safe orders use `SELECT ... FOR UPDATE OF inv` within an ACID transaction to prevent overselling or race conditions.
+- **Stock Movement Audit Log:** Every intake (`purchase_receipt`), sale (`sale`), adjustment (`adjustment`), or cancellation (`return`) is recorded immutably in `stock_movements`.
+- **Low-Stock Visibility:** Filter query `GET /api/inventory/low-stock` identifies items where `quantity_on_hand <= reorder_threshold`.
+- **Dynamic Member Discounts:** Backend pricing automatically applies membership tier privileges (e.g. Gold = 20% discount, Silver = 10% discount).
+
+---
+
+## 4. Database Initialization & Testing
 
 ### Running Schema & Seed
 ```bash
@@ -76,6 +87,6 @@ npm run db:init
 # Insert canonical seed data
 npm run db:seed
 
-# Run database integrity and API tests
+# Run database integrity, API integration, and shop test suites
 npm test
 ```
