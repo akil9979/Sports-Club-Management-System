@@ -3,9 +3,12 @@ import {
   getBarTables,
   getBarMenu,
   getBarOrders,
-  saveBarOrder,
+  createBarOrder,
+  addItemsToBarOrder,
+  updateBarOrderItem,
   updateKitchenStatus,
-  settleBarOrder
+  settleBarOrder,
+  resetInMemoryBarState
 } from '../../features/bar/barApi.js';
 import TableGrid from '../../components/bar/TableGrid.jsx';
 import MenuCategoryPanel from '../../components/bar/MenuCategoryPanel.jsx';
@@ -18,7 +21,8 @@ import {
   Receipt,
   RefreshCw,
   Sliders,
-  CheckCircle2
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 
 export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
@@ -37,6 +41,11 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
   const [selectedTable, setSelectedTable] = useState(null);
   const [draftItems, setDraftItems] = useState([]);
   const [memberTier, setMemberTier] = useState('Guest');
+  const [memberName, setMemberName] = useState('Walk-in Guest');
+  const [memberId, setMemberId] = useState(null);
+
+  // Edge case alerts
+  const [tableActiveNotice, setTableActiveNotice] = useState(null);
 
   // Settlement modal state
   const [settlementModalOpen, setSettlementModalOpen] = useState(false);
@@ -51,6 +60,7 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
   const [simulateError, setSimulateError] = useState(false);
   const [simulateEmptyTables, setSimulateEmptyTables] = useState(false);
   const [simulateEmptyMenu, setSimulateEmptyMenu] = useState(false);
+  const [simulatePaymentFailure, setSimulatePaymentFailure] = useState(false);
 
   const showToast = (msg) => {
     setToastMessage(msg);
@@ -136,21 +146,35 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
       orders.find((o) => o.tableId === selectedTable.id && o.status === 'settled')
     : null;
 
-  // Handle table selection
+  // Handle table selection (with "table already in active use" handling)
   const handleSelectTable = (table) => {
     setSelectedTable(table);
     setDraftItems([]);
+    setTableActiveNotice(null);
 
-    // Check if table has a seated member with tier
-    if (table.membershipTier) {
-      setMemberTier(table.membershipTier);
-    } else {
-      const order = orders.find((o) => o.tableId === table.id && o.status === 'open');
-      if (order && order.membershipTier) {
-        setMemberTier(order.membershipTier);
-      } else {
-        setMemberTier('Guest');
+    // Check if table has an active order running
+    const existingOrder = orders.find((o) => o.tableId === table.id && o.status === 'open');
+    if (existingOrder) {
+      setTableActiveNotice(
+        `Table #${table.number} is in active use with open tab #${existingOrder.id}. Running total: ₹${existingOrder.total}.`
+      );
+      if (existingOrder.membershipTier) {
+        setMemberTier(existingOrder.membershipTier);
       }
+      if (existingOrder.memberName) {
+        setMemberName(existingOrder.memberName);
+      }
+      if (existingOrder.memberId) {
+        setMemberId(existingOrder.memberId);
+      }
+    } else if (table.membershipTier) {
+      setMemberTier(table.membershipTier);
+      setMemberName(table.memberName || `${table.membershipTier} Member`);
+      setMemberId(table.memberId || null);
+    } else {
+      setMemberTier('Guest');
+      setMemberName('Walk-in Guest');
+      setMemberId(null);
     }
   };
 
@@ -160,8 +184,16 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
       showToast('Validation Error: Please select a table first.');
       return;
     }
-    if (quantity <= 0) {
-      showToast('Validation Error: Menu quantity must be positive.');
+
+    // Validation: Positive quantity
+    if (quantity <= 0 || !Number.isInteger(quantity)) {
+      showToast('Validation Error: Menu quantity must be a positive integer.');
+      return;
+    }
+
+    // Validation: Do not add items after settlement
+    if (activeOrderForTable && activeOrderForTable.status === 'settled') {
+      showToast('Validation Error: Tab is already settled and closed. Clear table to start new tab.');
       return;
     }
 
@@ -186,7 +218,7 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
       ];
     });
 
-    showToast(`Added ${quantity}x ${item.name} to tab.`);
+    showToast(`Added ${quantity}x ${item.name} to draft.`);
   };
 
   // Update draft item quantity
@@ -204,6 +236,30 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
     });
   };
 
+  // Update existing order item quantity via PATCH /api/bar/orders/:id/items/:itemId
+  const handleUpdateExistingItemQty = async (orderId, itemId, newQty) => {
+    if (newQty <= 0) {
+      showToast('Validation Error: Item quantity must be positive.');
+      return;
+    }
+    try {
+      const res = await updateBarOrderItem(orderId, itemId, { quantity: newQty });
+      if (res && res.order) {
+        setOrders((prev) =>
+          prev.map((o) => (o.id === orderId ? res.order : o))
+        );
+        setTables((prev) =>
+          prev.map((t) =>
+            t.id === selectedTable.id ? { ...t, activeTabTotal: res.order.total } : t
+          )
+        );
+        showToast('Updated item quantity.');
+      }
+    } catch (err) {
+      showToast(`Error updating item: ${err.message}`);
+    }
+  };
+
   // Remove item from draft
   const handleRemoveDraftItem = (itemId) => {
     setDraftItems((prev) => prev.filter((it) => it.id !== itemId));
@@ -214,7 +270,7 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
     setDraftItems([]);
   };
 
-  // Send order to kitchen
+  // Send order to kitchen (creates or updates tab)
   const handleSendOrderToKitchen = async () => {
     if (!selectedTable) {
       showToast('Validation Error: Selected table is required.');
@@ -225,86 +281,80 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
       return;
     }
 
+    // Validation: Do not add items after settlement
+    if (activeOrderForTable && activeOrderForTable.status === 'settled') {
+      showToast('Validation Error: Cannot add items to an already-settled order.');
+      return;
+    }
+
     setIsSendingOrder(true);
     try {
-      const existingItems = activeOrderForTable?.items || [];
-      const formattedDrafts = draftItems.map((d) => ({
-        itemId: d.id,
-        name: d.name,
-        quantity: d.quantity,
-        unitPrice: d.price,
-        notes: d.notes || '',
-        kitchenStatus: 'PENDING'
-      }));
+      // If order already exists, call POST /api/bar/orders/:id/items
+      if (activeOrderForTable && activeOrderForTable.status === 'open') {
+        const res = await addItemsToBarOrder(activeOrderForTable.id, draftItems);
+        if (res && res.order) {
+          setOrders((prev) =>
+            prev.map((o) => (o.id === activeOrderForTable.id ? res.order : o))
+          );
+          setTables((prev) =>
+            prev.map((t) =>
+              t.id === selectedTable.id ? { ...t, activeTabTotal: res.order.total } : t
+            )
+          );
+          setDraftItems([]);
+          showToast(`Added ${draftItems.length} items to open tab #${activeOrderForTable.id}`);
+        }
+      } else {
+        // Create new tab via POST /api/bar/orders
+        const discountPercentage =
+          memberTier === 'Gold' ? 15 : memberTier === 'Silver' || memberTier === 'Junior' ? 10 : 0;
 
-      const combinedItems = [...existingItems, ...formattedDrafts];
-      const subtotal = combinedItems.reduce((acc, it) => acc + it.unitPrice * it.quantity, 0);
+        const orderPayload = {
+          tableId: selectedTable.id,
+          tableName: selectedTable.name,
+          memberId: memberId || null,
+          memberName: memberName || (memberTier !== 'Guest' ? `${memberTier} Member` : 'Walk-in Guest'),
+          membershipTier: memberTier,
+          discountPercentage,
+          items: draftItems.map((d) => ({
+            itemId: d.id,
+            name: d.name,
+            quantity: d.quantity,
+            unitPrice: d.price,
+            notes: d.notes || '',
+            kitchenStatus: 'PENDING'
+          }))
+        };
 
-      const discountPercentage =
-        memberTier === 'Gold' ? 15 : memberTier === 'Silver' || memberTier === 'Junior' ? 10 : 0;
-      const discountAmount = Math.round((subtotal * discountPercentage) / 100);
-      const tax = Math.round((subtotal - discountAmount) * 0.05);
-      const total = subtotal - discountAmount + tax;
-
-      const orderPayload = {
-        id: activeOrderForTable?.id || `ORD-${Date.now().toString().slice(-4)}`,
-        tableId: selectedTable.id,
-        tableName: selectedTable.name,
-        status: 'open',
-        kitchenStatus: 'PENDING',
-        memberId: selectedTable.memberId || null,
-        memberName: selectedTable.memberName || (memberTier !== 'Guest' ? `${memberTier} Member` : 'Walk-in Guest'),
-        membershipTier: memberTier,
-        discountPercentage,
-        discountAmount,
-        tax,
-        subtotal,
-        total,
-        items: combinedItems,
-        createdAt: activeOrderForTable?.createdAt || new Date().toISOString()
-      };
-
-      const res = await saveBarOrder(orderPayload);
-      if (res && res.order) {
-        // Update orders list
-        setOrders((prev) => {
-          const index = prev.findIndex((o) => o.id === res.order.id);
-          if (index > -1) {
-            const next = [...prev];
-            next[index] = res.order;
-            return next;
-          }
-          return [res.order, ...prev];
-        });
-
-        // Update tables list
-        setTables((prev) =>
-          prev.map((t) => {
-            if (t.id === selectedTable.id) {
-              return {
-                ...t,
-                status: 'open',
-                currentOrderId: res.order.id,
-                activeTabTotal: res.order.total,
-                membershipTier: memberTier
-              };
-            }
-            return t;
-          })
-        );
-
-        setSelectedTable((prev) => ({
-          ...prev,
-          status: 'open',
-          currentOrderId: res.order.id,
-          activeTabTotal: res.order.total
-        }));
-
-        setDraftItems([]);
-        showToast(`Order #${res.order.id} sent to kitchen/bar!`);
+        const res = await createBarOrder(orderPayload);
+        if (res && res.order) {
+          setOrders((prev) => [res.order, ...prev.filter((o) => o.id !== res.order.id)]);
+          setTables((prev) =>
+            prev.map((t) =>
+              t.id === selectedTable.id
+                ? {
+                    ...t,
+                    status: 'open',
+                    currentOrderId: res.order.id,
+                    activeTabTotal: res.order.total,
+                    membershipTier: memberTier,
+                    memberName
+                  }
+                : t
+            )
+          );
+          setSelectedTable((prev) => ({
+            ...prev,
+            status: 'open',
+            currentOrderId: res.order.id,
+            activeTabTotal: res.order.total
+          }));
+          setDraftItems([]);
+          showToast(`Opened tab #${res.order.id} for ${selectedTable.name}`);
+        }
       }
     } catch (err) {
-      showToast(`Failed to send order: ${err.message}`);
+      showToast(`Error: ${err.message}`);
     } finally {
       setIsSendingOrder(false);
     }
@@ -333,22 +383,25 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
   // Open settlement modal
   const handleOpenSettlement = (details) => {
     if (!selectedTable) {
-      showToast('Validation: Selected table required.');
+      showToast('Validation Error: Selected table required.');
       return;
     }
     if (!details || details.total <= 0) {
-      showToast('Validation: Do not settle without valid order.');
+      showToast('Validation Error: Do not settle without valid order.');
       return;
     }
     setSettlementDetails(details);
     setSettlementModalOpen(true);
   };
 
-  // Confirm settlement
+  // Confirm settlement with payment failure simulation capability
   const handleConfirmSettlement = async (payload) => {
     if (!activeOrderForTable) {
-      showToast('Validation: No active order to settle.');
-      return null;
+      throw new Error('Validation Error: No active order to settle.');
+    }
+
+    if (simulatePaymentFailure) {
+      throw new Error('Simulated Payment Gateway Error: Card / UPI transaction declined by bank.');
     }
 
     setIsSettling(true);
@@ -402,19 +455,17 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
         }));
 
         setDraftItems([]);
-        showToast(`Table #${selectedTable.number} tab settled via ${payload.paymentMethod.toUpperCase()}`);
+        setTableActiveNotice(null);
+        showToast(`Tab #${activeOrderForTable.id} settled via ${payload.paymentMethod.toUpperCase()}`);
         return res;
       }
-      return null;
-    } catch (err) {
-      showToast(`Settlement error: ${err.message}`);
       return null;
     } finally {
       setIsSettling(false);
     }
   };
 
-  // Helper to select table by ID from active orders panel
+  // Select table by ID helper
   const handleSelectTableById = (tableId) => {
     const target = tables.find((t) => t.id === tableId);
     if (target) {
@@ -432,16 +483,30 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
         </div>
       )}
 
-      {/* Simulator Toolbar for Edge Cases Testing */}
+      {/* Edge Case Simulator Toolbar */}
       <div className="bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div className="flex items-center gap-2 text-slate-400">
           <Sliders className="w-4 h-4 text-emerald-400" />
-          <span className="font-semibold text-slate-300">Edge Case Simulator:</span>
+          <span className="font-semibold text-slate-300">Operations & Edge Simulator:</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          {/* Toggle Simulated Error */}
+          {/* Test Payment Failure */}
           <button
+            type="button"
+            onClick={() => setSimulatePaymentFailure(!simulatePaymentFailure)}
+            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition ${
+              simulatePaymentFailure
+                ? 'bg-rose-500 text-white shadow'
+                : 'bg-slate-800 text-slate-300 hover:text-white'
+            }`}
+          >
+            {simulatePaymentFailure ? 'Reset Payment Failure' : 'Test Payment Failure'}
+          </button>
+
+          {/* Toggle Simulated API Error */}
+          <button
+            type="button"
             onClick={() => {
               setSimulateError(!simulateError);
               setSimulateEmptyTables(false);
@@ -453,11 +518,12 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
                 : 'bg-slate-800 text-slate-300 hover:text-white'
             }`}
           >
-            {simulateError ? 'Reset API Failure' : 'Test API Failure'}
+            {simulateError ? 'Reset Network Error' : 'Test Network Failure'}
           </button>
 
           {/* Toggle Empty Tables */}
           <button
+            type="button"
             onClick={() => {
               setSimulateEmptyTables(!simulateEmptyTables);
               setSimulateError(false);
@@ -473,6 +539,7 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
 
           {/* Toggle Empty Menu */}
           <button
+            type="button"
             onClick={() => {
               setSimulateEmptyMenu(!simulateEmptyMenu);
               setSimulateError(false);
@@ -486,16 +553,19 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
             {simulateEmptyMenu ? 'Restore Menu' : 'Test No Menu'}
           </button>
 
-          {/* Refresh all */}
+          {/* Reset Demo Data */}
           <button
+            type="button"
             onClick={() => {
+              resetInMemoryBarState();
               setSimulateError(false);
               setSimulateEmptyTables(false);
               setSimulateEmptyMenu(false);
+              setSimulatePaymentFailure(false);
               loadTables();
               loadMenu();
               loadOrders();
-              showToast('Refreshed from live bar API endpoints.');
+              showToast('Demo data and tabs reset to seed state.');
             }}
             className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-[11px] flex items-center gap-1 transition"
           >
@@ -505,10 +575,27 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
         </div>
       </div>
 
+      {/* Edge Case Alert: Table Already In Active Use */}
+      {tableActiveNotice && (
+        <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between text-xs text-amber-300">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>{tableActiveNotice}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setTableActiveNotice(null)}
+            className="text-slate-400 hover:text-white text-[11px] px-2 py-0.5 rounded bg-slate-800"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
       {/* Main Workspace Mode Tabs */}
       {activePortalTab === 'pos' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          {/* Left Column: Table Grid & Active Orders (5 cols) */}
+          {/* Left Column: Table Grid & Active Orders (4 cols) */}
           <div className="lg:col-span-4 space-y-4">
             <TableGrid
               tables={tables}
@@ -532,9 +619,12 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
                 handleOpenSettlement({
                   subtotal: order.subtotal,
                   discountAmount: order.discountAmount,
+                  discountPercentage: order.discountPercentage,
                   tax: order.tax,
                   total: order.total,
-                  memberTier: order.membershipTier || 'Guest'
+                  memberTier: order.membershipTier || 'Guest',
+                  memberName: order.memberName,
+                  memberId: order.memberId
                 });
               }}
               onRefresh={loadOrders}
@@ -560,8 +650,16 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
               activeOrder={activeOrderForTable}
               draftItems={draftItems}
               memberTier={memberTier}
+              memberName={memberName}
+              memberId={memberId}
               onUpdateMemberTier={setMemberTier}
+              onUpdateMemberInfo={({ id, name, tier }) => {
+                setMemberId(id);
+                setMemberName(name);
+                setMemberTier(tier);
+              }}
               onUpdateDraftItemQty={handleUpdateDraftItemQty}
+              onUpdateExistingItemQty={handleUpdateExistingItemQty}
               onRemoveDraftItem={handleRemoveDraftItem}
               onClearDraft={handleClearDraft}
               onSendOrderToKitchen={handleSendOrderToKitchen}
@@ -636,6 +734,7 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
                       <div className="flex gap-2">
                         {order.kitchenStatus === 'PENDING' && (
                           <button
+                            type="button"
                             onClick={() => handleUpdateKitchenStatus(order.id, 'PREPARING')}
                             className="px-3 py-1 bg-sky-600 hover:bg-sky-500 text-white rounded-lg text-xs font-bold transition"
                           >
@@ -644,6 +743,7 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
                         )}
                         {order.kitchenStatus === 'PREPARING' && (
                           <button
+                            type="button"
                             onClick={() => handleUpdateKitchenStatus(order.id, 'READY')}
                             className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition"
                           >
@@ -652,6 +752,7 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
                         )}
                         {order.kitchenStatus === 'READY' && (
                           <button
+                            type="button"
                             onClick={() => handleUpdateKitchenStatus(order.id, 'SERVED')}
                             className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition"
                           >

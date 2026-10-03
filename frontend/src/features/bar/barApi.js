@@ -1,11 +1,13 @@
 /**
  * Champions Club - Bar & Operations API Service
  * 
- * Interacts with:
+ * Implements endpoints:
  * - GET   /api/bar/tables
  * - GET   /api/bar/menu
  * - GET   /api/bar/orders
  * - POST  /api/bar/orders
+ * - POST  /api/bar/orders/:id/items
+ * - PATCH /api/bar/orders/:id/items/:itemId
  * - PATCH /api/bar/orders/:id/status
  * - POST  /api/bar/orders/:id/settle
  * 
@@ -14,6 +16,16 @@
  */
 
 const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || '';
+
+// --- SEEDED REGISTERED CLUB MEMBERS ---
+export const CLUB_MEMBERS = [
+  { id: 'MEM-8801', name: 'Devon Conway', tier: 'Gold', discountPct: 15, active: true },
+  { id: 'MEM-4920', name: 'Sarah Jenkins', tier: 'Silver', discountPct: 10, active: true },
+  { id: 'MEM-1002', name: 'Rajesh Sharma', tier: 'Gold', discountPct: 15, active: true },
+  { id: 'MEM-3120', name: 'Michael Chang', tier: 'Gold', discountPct: 15, active: true },
+  { id: 'MEM-5510', name: 'Anita Desai', tier: 'Junior', discountPct: 10, active: true },
+  { id: 'MEM-9004', name: 'Marcus Vance', tier: 'Silver', discountPct: 10, active: true }
+];
 
 // --- ISOLATED REALISTIC FALLBACK ADAPTER DATA ---
 
@@ -26,7 +38,7 @@ export const FALLBACK_TABLES = [
     capacity: 4,
     status: 'occupied',
     currentOrderId: 'ORD-201',
-    activeTabTotal: 1850,
+    activeTabTotal: 1499.4,
     memberId: 'MEM-8801',
     memberName: 'Devon Conway',
     membershipTier: 'Gold'
@@ -52,7 +64,7 @@ export const FALLBACK_TABLES = [
     capacity: 6,
     status: 'open',
     currentOrderId: 'ORD-202',
-    activeTabTotal: 3420,
+    activeTabTotal: 2740.5,
     memberId: 'MEM-4920',
     memberName: 'Sarah Jenkins',
     membershipTier: 'Silver'
@@ -78,7 +90,7 @@ export const FALLBACK_TABLES = [
     capacity: 8,
     status: 'occupied',
     currentOrderId: 'ORD-203',
-    activeTabTotal: 5800,
+    activeTabTotal: 3677.1,
     memberId: 'MEM-1002',
     memberName: 'Rajesh Sharma',
     membershipTier: 'Gold'
@@ -104,7 +116,7 @@ export const FALLBACK_TABLES = [
     capacity: 4,
     status: 'open',
     currentOrderId: 'ORD-204',
-    activeTabTotal: 1250,
+    activeTabTotal: 861.0,
     memberId: null,
     memberName: 'Walk-in Guest',
     membershipTier: 'Guest'
@@ -533,6 +545,46 @@ export const FALLBACK_ORDERS = [
   }
 ];
 
+// In-memory runtime state for active orders when backend is offline
+let inMemoryOrders = JSON.parse(JSON.stringify(FALLBACK_ORDERS));
+let inMemoryTables = JSON.parse(JSON.stringify(FALLBACK_TABLES));
+
+// Helper: Calculate totals with backend-specified discount logic
+export function calculateOrderTotals(items, membershipTier = 'Guest', customDiscountPct = null) {
+  let discountPct = 0;
+  if (customDiscountPct !== null && typeof customDiscountPct === 'number') {
+    discountPct = customDiscountPct;
+  } else {
+    switch (membershipTier) {
+      case 'Gold':
+        discountPct = 15;
+        break;
+      case 'Silver':
+        discountPct = 10;
+        break;
+      case 'Junior':
+        discountPct = 10;
+        break;
+      default:
+        discountPct = 0;
+    }
+  }
+
+  const subtotal = items.reduce((acc, it) => acc + (it.unitPrice || it.price || 0) * (it.quantity || 1), 0);
+  const discountAmount = Math.round((subtotal * discountPct) / 100);
+  const discountedSubtotal = subtotal - discountAmount;
+  const tax = Math.round(discountedSubtotal * 0.05); // 5% GST
+  const total = discountedSubtotal + tax;
+
+  return {
+    subtotal,
+    discountPercentage: discountPct,
+    discountAmount,
+    tax,
+    total
+  };
+}
+
 // --- API METHODS ---
 
 /**
@@ -547,10 +599,10 @@ export async function getBarTables() {
       throw new Error(`Failed to fetch bar tables: HTTP ${res.status}`);
     }
     const data = await res.json();
-    return Array.isArray(data) ? data : FALLBACK_TABLES;
+    return Array.isArray(data) ? data : inMemoryTables;
   } catch (err) {
     console.warn('[BarAPI:getBarTables] Using fallback tables:', err.message);
-    return FALLBACK_TABLES;
+    return inMemoryTables;
   }
 }
 
@@ -599,10 +651,10 @@ export async function getBarOrders(tableId = '', status = '') {
       throw new Error(`Failed to fetch bar orders: HTTP ${res.status}`);
     }
     const data = await res.json();
-    return Array.isArray(data) ? data : FALLBACK_ORDERS;
+    return Array.isArray(data) ? data : inMemoryOrders;
   } catch (err) {
     console.warn('[BarAPI:getBarOrders] Using fallback orders:', err.message);
-    let filtered = [...FALLBACK_ORDERS];
+    let filtered = [...inMemoryOrders];
     if (tableId) {
       filtered = filtered.filter((ord) => ord.tableId === tableId);
     }
@@ -614,10 +666,55 @@ export async function getBarOrders(tableId = '', status = '') {
 }
 
 /**
- * POST /api/bar/orders
- * Places or updates an active bar order
+ * Member Identification helper
  */
-export async function saveBarOrder(orderPayload) {
+export async function lookupMember(memberQuery) {
+  if (!memberQuery || !memberQuery.trim()) {
+    return { valid: false, error: 'Member query cannot be empty' };
+  }
+
+  const cleanQuery = memberQuery.trim().toUpperCase();
+  const found = CLUB_MEMBERS.find(
+    (m) => m.id.toUpperCase() === cleanQuery || m.name.toUpperCase().includes(cleanQuery)
+  );
+
+  if (!found) {
+    return {
+      valid: false,
+      error: `Member '${memberQuery}' not found in Champions Club registry. Standard guest pricing applied.`
+    };
+  }
+
+  return {
+    valid: true,
+    member: found
+  };
+}
+
+/**
+ * POST /api/bar/orders
+ * Creates or opens a new tab for a table
+ */
+export async function createBarOrder(orderPayload) {
+  // Validation: table required
+  if (!orderPayload.tableId) {
+    throw new Error('Validation Error: Selected table is required to open a tab.');
+  }
+
+  // Edge case check: table already in active use
+  const existingActive = inMemoryOrders.find(
+    (o) => o.tableId === orderPayload.tableId && o.status === 'open'
+  );
+  if (existingActive) {
+    // If not updating the same order ID, flag that table already in active use
+    if (orderPayload.id !== existingActive.id) {
+      const err = new Error(`Table is already in active use with open tab #${existingActive.id}.`);
+      err.code = 'TABLE_ALREADY_ACTIVE';
+      err.activeOrderId = existingActive.id;
+      throw err;
+    }
+  }
+
   try {
     const res = await fetch(`${API_BASE_URL}/api/bar/orders`, {
       method: 'POST',
@@ -628,22 +725,181 @@ export async function saveBarOrder(orderPayload) {
       body: JSON.stringify(orderPayload)
     });
     if (!res.ok) {
-      throw new Error(`Failed to save bar order: HTTP ${res.status}`);
+      throw new Error(`Failed to create bar order: HTTP ${res.status}`);
     }
     return await res.json();
   } catch (err) {
-    console.warn('[BarAPI:saveBarOrder] Fallback simulation for saveBarOrder:', err.message);
+    console.warn('[BarAPI:createBarOrder] Fallback simulation for createBarOrder:', err.message);
     const newOrderId = orderPayload.id || `ORD-${Date.now().toString().slice(-4)}`;
+    const items = orderPayload.items || [];
+    const totals = calculateOrderTotals(
+      items,
+      orderPayload.membershipTier || 'Guest',
+      orderPayload.discountPercentage
+    );
+
+    const createdOrder = {
+      ...orderPayload,
+      ...totals,
+      id: newOrderId,
+      status: 'open',
+      kitchenStatus: orderPayload.kitchenStatus || 'PENDING',
+      createdAt: orderPayload.createdAt || new Date().toISOString()
+    };
+
+    // Update in-memory state
+    const idx = inMemoryOrders.findIndex((o) => o.id === newOrderId);
+    if (idx > -1) {
+      inMemoryOrders[idx] = createdOrder;
+    } else {
+      inMemoryOrders.unshift(createdOrder);
+    }
+
+    // Update table status in-memory
+    const tbl = inMemoryTables.find((t) => t.id === orderPayload.tableId);
+    if (tbl) {
+      tbl.status = 'open';
+      tbl.currentOrderId = newOrderId;
+      tbl.activeTabTotal = createdOrder.total;
+      tbl.memberId = orderPayload.memberId || null;
+      tbl.memberName = orderPayload.memberName || null;
+      tbl.membershipTier = orderPayload.membershipTier || 'Guest';
+    }
+
     return {
       success: true,
-      order: {
-        ...orderPayload,
-        id: newOrderId,
-        status: 'open',
-        kitchenStatus: orderPayload.kitchenStatus || 'PENDING',
-        createdAt: orderPayload.createdAt || new Date().toISOString()
+      order: createdOrder,
+      message: 'Tab opened and order recorded successfully'
+    };
+  }
+}
+
+/**
+ * POST /api/bar/orders/:id/items
+ * Adds items to an existing open tab
+ */
+export async function addItemsToBarOrder(orderId, newItems) {
+  // Validation: items required with positive quantity
+  if (!Array.isArray(newItems) || newItems.length === 0) {
+    throw new Error('Validation Error: Must provide items to add.');
+  }
+
+  for (const it of newItems) {
+    if (!it.quantity || it.quantity <= 0) {
+      throw new Error('Validation Error: Quantity must be a positive integer.');
+    }
+  }
+
+  // Edge case: Do not add items after settlement
+  const order = inMemoryOrders.find((o) => o.id === orderId);
+  if (order && order.status === 'settled') {
+    throw new Error('Validation Error: Cannot add items to an already-settled order.');
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/bar/orders/${orderId}/items`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
       },
-      message: 'Order recorded successfully'
+      body: JSON.stringify({ items: newItems })
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to add items to order: HTTP ${res.status}`);
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn('[BarAPI:addItemsToBarOrder] Fallback simulation:', err.message);
+    if (!order) {
+      throw new Error(`Order #${orderId} not found.`);
+    }
+
+    // Append new items
+    const formatted = newItems.map((it) => ({
+      itemId: it.itemId || it.id,
+      name: it.name,
+      quantity: it.quantity,
+      unitPrice: it.unitPrice || it.price,
+      notes: it.notes || '',
+      kitchenStatus: 'PENDING'
+    }));
+
+    order.items = [...order.items, ...formatted];
+    const totals = calculateOrderTotals(order.items, order.membershipTier, order.discountPercentage);
+    Object.assign(order, totals);
+
+    // Update table active total
+    const tbl = inMemoryTables.find((t) => t.id === order.tableId);
+    if (tbl) {
+      tbl.activeTabTotal = order.total;
+    }
+
+    return {
+      success: true,
+      order,
+      message: `Added ${newItems.length} items to tab #${orderId}`
+    };
+  }
+}
+
+/**
+ * PATCH /api/bar/orders/:id/items/:itemId
+ * Changes quantity or notes on an order item
+ */
+export async function updateBarOrderItem(orderId, itemId, updates) {
+  // Validation: positive quantity
+  if (updates.quantity !== undefined && updates.quantity <= 0) {
+    throw new Error('Validation Error: Item quantity must be greater than zero.');
+  }
+
+  // Edge case: Do not modify after settlement
+  const order = inMemoryOrders.find((o) => o.id === orderId);
+  if (order && order.status === 'settled') {
+    throw new Error('Validation Error: Cannot update items in an already-settled order.');
+  }
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/bar/orders/${orderId}/items/${itemId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(updates)
+    });
+    if (!res.ok) {
+      throw new Error(`Failed to update item: HTTP ${res.status}`);
+    }
+    return await res.json();
+  } catch (err) {
+    console.warn('[BarAPI:updateBarOrderItem] Fallback simulation:', err.message);
+    if (!order) {
+      throw new Error(`Order #${orderId} not found.`);
+    }
+
+    const item = order.items.find((it) => it.itemId === itemId || it.id === itemId);
+    if (!item) {
+      throw new Error(`Item #${itemId} not found in order #${orderId}`);
+    }
+
+    if (updates.quantity !== undefined) item.quantity = updates.quantity;
+    if (updates.notes !== undefined) item.notes = updates.notes;
+    if (updates.kitchenStatus !== undefined) item.kitchenStatus = updates.kitchenStatus;
+
+    const totals = calculateOrderTotals(order.items, order.membershipTier, order.discountPercentage);
+    Object.assign(order, totals);
+
+    const tbl = inMemoryTables.find((t) => t.id === order.tableId);
+    if (tbl) {
+      tbl.activeTabTotal = order.total;
+    }
+
+    return {
+      success: true,
+      order,
+      item,
+      message: 'Item updated successfully'
     };
   }
 }
@@ -667,6 +923,16 @@ export async function updateKitchenStatus(orderId, nextStatus) {
     return await res.json();
   } catch (err) {
     console.warn('[BarAPI:updateKitchenStatus] Fallback simulation for status update:', err.message);
+    const order = inMemoryOrders.find((o) => o.id === orderId);
+    if (order) {
+      order.kitchenStatus = nextStatus;
+      // Also advance pending items
+      order.items = order.items.map((it) => ({
+        ...it,
+        kitchenStatus: nextStatus
+      }));
+    }
+
     return {
       success: true,
       orderId,
@@ -680,6 +946,17 @@ export async function updateKitchenStatus(orderId, nextStatus) {
  * POST /api/bar/orders/:id/settle
  */
 export async function settleBarOrder(orderId, settlementData) {
+  // Validation: Payment method required
+  if (!settlementData || !settlementData.paymentMethod) {
+    throw new Error('Validation Error: Payment method is required (cash, card, upi, or member_tab).');
+  }
+
+  // Edge case: Do not settle twice
+  const order = inMemoryOrders.find((o) => o.id === orderId);
+  if (order && order.status === 'settled') {
+    throw new Error('Validation Error: This order is already settled. Duplicate settlement is prohibited.');
+  }
+
   try {
     const res = await fetch(`${API_BASE_URL}/api/bar/orders/${orderId}/settle`, {
       method: 'POST',
@@ -695,14 +972,45 @@ export async function settleBarOrder(orderId, settlementData) {
     return await res.json();
   } catch (err) {
     console.warn('[BarAPI:settleBarOrder] Fallback simulation for settlement:', err.message);
+    const settledAt = new Date().toISOString();
+    const receiptNumber = `RCP-${Date.now().toString().slice(-6)}`;
+
+    if (order) {
+      order.status = 'settled';
+      order.kitchenStatus = 'SERVED';
+      order.settledAt = settledAt;
+      order.paymentMethod = settlementData.paymentMethod;
+    }
+
+    // Clear table status
+    if (order && order.tableId) {
+      const tbl = inMemoryTables.find((t) => t.id === order.tableId);
+      if (tbl) {
+        tbl.status = 'available';
+        tbl.currentOrderId = null;
+        tbl.activeTabTotal = 0;
+        tbl.memberId = null;
+        tbl.memberName = null;
+        tbl.membershipTier = null;
+      }
+    }
+
     return {
       success: true,
       orderId,
-      settledAt: new Date().toISOString(),
-      paymentMethod: settlementData.paymentMethod || 'card',
-      amountPaid: settlementData.amountPaid,
-      receiptNumber: `RCP-${Date.now().toString().slice(-6)}`,
-      message: 'Tab settled and closed successfully'
+      settledAt,
+      paymentMethod: settlementData.paymentMethod,
+      amountPaid: settlementData.amountPaid || (order ? order.total : 0),
+      receiptNumber,
+      message: `Tab #${orderId} settled successfully via ${settlementData.paymentMethod.toUpperCase()}`
     };
   }
+}
+
+/**
+ * Reset in-memory simulation state
+ */
+export function resetInMemoryBarState() {
+  inMemoryOrders = JSON.parse(JSON.stringify(FALLBACK_ORDERS));
+  inMemoryTables = JSON.parse(JSON.stringify(FALLBACK_TABLES));
 }

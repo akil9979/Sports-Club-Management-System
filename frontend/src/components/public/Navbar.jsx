@@ -10,7 +10,8 @@ import {
   PhoneCall, 
   ChevronRight,
   Sparkles,
-  Clock
+  Clock,
+  Users
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -31,6 +32,7 @@ export default function Navbar() {
   const navLinks = [
     { label: 'Home', path: '/' },
     { label: 'Plans & Pricing', path: '/membership', icon: ShieldCheck },
+    { label: 'Member Desk', path: '/members', icon: Users },
     { label: 'Court Availability', path: '/courts', icon: Calendar },
     { label: 'Pro Shop', path: '/shop', icon: ShoppingBag },
     { label: 'Enquiry & Trial', path: '/enquiry', icon: PhoneCall },

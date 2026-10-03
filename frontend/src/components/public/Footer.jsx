@@ -61,6 +61,16 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                <Link to="/members" className="hover:text-emerald-400 transition-colors flex items-center gap-1.5">
+                  Member Directory & Portal
+                </Link>
+              </li>
+              <li>
+                <Link to="/members/register" className="hover:text-emerald-400 transition-colors flex items-center gap-1.5">
+                  New Member Registration
+                </Link>
+              </li>
+              <li>
                 <Link to="/courts" className="hover:text-emerald-400 transition-colors flex items-center gap-1.5">
                   <Calendar className="w-3.5 h-3.5 text-emerald-400" />
                   Live Court Availability

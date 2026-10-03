@@ -462,3 +462,14 @@ export async function submitLead(leadData) {
     };
   }
 }
+
+// Re-export membership management API methods for Member 1 features
+export {
+  registerMember,
+  getMembers,
+  getMemberById,
+  updateMember,
+  assignMembership,
+  getMemberMemberships
+} from '../features/membership/membershipApi.js';
+

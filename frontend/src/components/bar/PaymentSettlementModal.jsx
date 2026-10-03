@@ -8,7 +8,8 @@ import {
   CheckCircle2,
   Printer,
   ShieldCheck,
-  AlertOctagon
+  AlertOctagon,
+  AlertCircle
 } from 'lucide-react';
 
 export default function PaymentSettlementModal({
@@ -24,6 +25,7 @@ export default function PaymentSettlementModal({
   const [tipPercentage, setTipPercentage] = useState(0);
   const [cashTendered, setCashTendered] = useState('');
   const [settledReceipt, setSettledReceipt] = useState(null);
+  const [paymentError, setPaymentError] = useState(null);
 
   if (!isOpen) return null;
 
@@ -46,22 +48,45 @@ export default function PaymentSettlementModal({
   const isCashInsufficient = paymentMethod === 'cash' && cashAmount < grandTotal && cashAmount > 0;
 
   const handleSettle = async () => {
-    if (!isValidOrder) return; // Strict validation
+    // Validation: Payment method required
+    if (!paymentMethod) {
+      setPaymentError('Payment method is required. Please select Cash, Card, UPI, or Member Tab.');
+      return;
+    }
 
-    const receipt = await onConfirmSettlement({
-      paymentMethod,
-      tipAmount,
-      grandTotal,
-      subtotal: settlementDetails.subtotal,
-      discountAmount: settlementDetails.discountAmount,
-      tax: settlementDetails.tax,
-      memberTier: settlementDetails.memberTier,
-      tableName: selectedTable.name,
-      tableNumber: selectedTable.number
-    });
+    // Validation: Do not settle twice
+    if (isAlreadySettled) {
+      setPaymentError('This tab is already settled. Duplicate settlement is prohibited.');
+      return;
+    }
 
-    if (receipt) {
-      setSettledReceipt(receipt);
+    if (!isValidOrder) {
+      setPaymentError('Cannot settle: selected table has no valid open order.');
+      return;
+    }
+
+    setPaymentError(null);
+    try {
+      const receipt = await onConfirmSettlement({
+        paymentMethod,
+        tipAmount,
+        grandTotal,
+        subtotal: settlementDetails.subtotal,
+        discountAmount: settlementDetails.discountAmount,
+        discountPercentage: settlementDetails.discountPercentage,
+        tax: settlementDetails.tax,
+        memberTier: settlementDetails.memberTier || 'Guest',
+        memberName: settlementDetails.memberName || 'Guest',
+        memberId: settlementDetails.memberId || null,
+        tableName: selectedTable.name,
+        tableNumber: selectedTable.number
+      });
+
+      if (receipt) {
+        setSettledReceipt(receipt);
+      }
+    } catch (err) {
+      setPaymentError(err.message || 'Payment processing failed. Please try again or choose another method.');
     }
   };
 
@@ -69,6 +94,7 @@ export default function PaymentSettlementModal({
     setSettledReceipt(null);
     setTipPercentage(0);
     setCashTendered('');
+    setPaymentError(null);
     onClose();
   };
 
@@ -103,7 +129,7 @@ export default function PaymentSettlementModal({
         <div className="p-5 overflow-y-auto space-y-4 flex-1 text-xs">
           {/* Post-settlement receipt view */}
           {settledReceipt ? (
-            <div className="text-center py-4 space-y-4">
+            <div className="text-center py-2 space-y-4">
               <div className="w-16 h-16 bg-emerald-500/20 text-emerald-400 rounded-full flex items-center justify-center mx-auto border border-emerald-500/40">
                 <CheckCircle2 className="w-9 h-9" />
               </div>
@@ -122,10 +148,14 @@ export default function PaymentSettlementModal({
                   <span className="font-bold text-white">{selectedTable?.name}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-slate-400">Method:</span>
+                  <span className="text-slate-400">Payment Channel:</span>
                   <span className="uppercase font-semibold text-emerald-400">
                     {settledReceipt.paymentMethod || paymentMethod}
                   </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-400">Guest / Member:</span>
+                  <span>{settlementDetails?.memberName || 'Guest'} ({settlementDetails?.memberTier || 'Guest'})</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Subtotal:</span>
@@ -133,7 +163,7 @@ export default function PaymentSettlementModal({
                 </div>
                 {settlementDetails?.discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-400">
-                    <span>Discount ({settlementDetails?.memberTier}):</span>
+                    <span>Member Discount ({settlementDetails?.discountPercentage || 0}%):</span>
                     <span>-₹{settlementDetails?.discountAmount}</span>
                   </div>
                 )}
@@ -142,13 +172,13 @@ export default function PaymentSettlementModal({
                   <span>₹{settlementDetails?.tax}</span>
                 </div>
                 {tipAmount > 0 && (
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Gratuity:</span>
-                    <span>₹{tipAmount}</span>
+                  <div className="flex justify-between text-sky-400">
+                    <span>Staff Gratuity:</span>
+                    <span>+₹{tipAmount}</span>
                   </div>
                 )}
                 <div className="flex justify-between border-t border-slate-800/80 pt-2 text-white font-bold text-sm">
-                  <span>Amount Settled:</span>
+                  <span>Total Amount Paid:</span>
                   <span className="text-emerald-400">₹{grandTotal}</span>
                 </div>
               </div>
@@ -179,10 +209,11 @@ export default function PaymentSettlementModal({
                 Order Already Settled
               </h4>
               <p className="text-xs text-amber-300/80 max-w-sm mx-auto">
-                This table tab was already closed and marked as paid. Re-settlement is prohibited to prevent double-charging.
+                This table tab was already closed and marked as paid via {activeOrder.paymentMethod || 'card'}. Duplicate settlement is prohibited.
               </p>
               <div className="pt-2">
                 <button
+                  type="button"
                   onClick={handleClose}
                   className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-semibold"
                 >
@@ -204,66 +235,67 @@ export default function PaymentSettlementModal({
           ) : (
             /* Normal Settlement Flow */
             <>
+              {/* Payment Error Banner if any */}
+              {paymentError && (
+                <div className="p-3 bg-rose-500/15 border border-rose-500/30 rounded-xl flex items-center gap-2 text-rose-300">
+                  <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                  <span>{paymentError}</span>
+                </div>
+              )}
+
               {/* Payment Methods */}
               <div>
                 <label className="block text-slate-400 font-semibold mb-2">
-                  Select Payment Method
+                  Select Payment Method <span className="text-rose-400">*</span>
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod('card')}
+                    onClick={() => {
+                      setPaymentMethod('card');
+                      setPaymentError(null);
+                    }}
                     className={`p-3 rounded-xl border flex items-center gap-2.5 transition text-left ${
                       paymentMethod === 'card'
-                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 ring-1 ring-emerald-500/50'
                         : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white'
                     }`}
                   >
                     <CreditCard className="w-4 h-4 shrink-0" />
                     <div>
                       <div className="font-semibold text-white">Credit / Debit Card</div>
-                      <div className="text-[10px] text-slate-400">POS Card Machine</div>
+                      <div className="text-[10px] text-slate-400">POS Card Terminal</div>
                     </div>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod('cash')}
+                    onClick={() => {
+                      setPaymentMethod('cash');
+                      setPaymentError(null);
+                    }}
                     className={`p-3 rounded-xl border flex items-center gap-2.5 transition text-left ${
                       paymentMethod === 'cash'
-                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 ring-1 ring-emerald-500/50'
                         : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white'
                     }`}
                   >
                     <Banknote className="w-4 h-4 shrink-0" />
                     <div>
                       <div className="font-semibold text-white">Cash Payment</div>
-                      <div className="text-[10px] text-slate-400">Cash Drawer</div>
+                      <div className="text-[10px] text-slate-400">Cash Register</div>
                     </div>
                   </button>
 
                   <button
                     type="button"
-                    onClick={() => setPaymentMethod('member_account')}
-                    className={`p-3 rounded-xl border flex items-center gap-2.5 transition text-left ${
-                      paymentMethod === 'member_account'
-                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
-                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    <UserCheck className="w-4 h-4 shrink-0" />
-                    <div>
-                      <div className="font-semibold text-white">Member Club Account</div>
-                      <div className="text-[10px] text-slate-400">Monthly Bill Charge</div>
-                    </div>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setPaymentMethod('upi')}
+                    onClick={() => {
+                      setPaymentMethod('upi');
+                      setPaymentError(null);
+                    }}
                     className={`p-3 rounded-xl border flex items-center gap-2.5 transition text-left ${
                       paymentMethod === 'upi'
-                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300'
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 ring-1 ring-emerald-500/50'
                         : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white'
                     }`}
                   >
@@ -271,6 +303,25 @@ export default function PaymentSettlementModal({
                     <div>
                       <div className="font-semibold text-white">UPI / Instant QR</div>
                       <div className="text-[10px] text-slate-400">Scan at Table</div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPaymentMethod('member_tab');
+                      setPaymentError(null);
+                    }}
+                    className={`p-3 rounded-xl border flex items-center gap-2.5 transition text-left ${
+                      paymentMethod === 'member_tab'
+                        ? 'bg-emerald-500/20 border-emerald-500 text-emerald-300 ring-1 ring-emerald-500/50'
+                        : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <UserCheck className="w-4 h-4 shrink-0" />
+                    <div>
+                      <div className="font-semibold text-white">Member Club Tab</div>
+                      <div className="text-[10px] text-slate-400">Monthly Bill Ledger</div>
                     </div>
                   </button>
                 </div>
@@ -332,7 +383,7 @@ export default function PaymentSettlementModal({
                 </div>
               )}
 
-              {/* Final Summary Card */}
+              {/* Final Summary Card with Member Discount Details */}
               <div className="p-3.5 bg-slate-950/80 border border-slate-800 rounded-xl space-y-1.5 font-mono">
                 <div className="flex justify-between text-slate-400">
                   <span>Tab Subtotal:</span>
@@ -340,12 +391,14 @@ export default function PaymentSettlementModal({
                 </div>
                 {settlementDetails.discountAmount > 0 && (
                   <div className="flex justify-between text-emerald-400">
-                    <span>Member Discount ({settlementDetails.memberTier}):</span>
+                    <span>
+                      Member Discount ({settlementDetails.memberTier} - {settlementDetails.discountPercentage}%):
+                    </span>
                     <span>-₹{settlementDetails.discountAmount}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-slate-400">
-                  <span>GST & Tax (5%):</span>
+                  <span>GST & Club Tax (5%):</span>
                   <span>₹{settlementDetails.tax}</span>
                 </div>
                 {tipAmount > 0 && (
@@ -355,7 +408,7 @@ export default function PaymentSettlementModal({
                   </div>
                 )}
                 <div className="flex justify-between text-white font-bold text-sm pt-2 border-t border-slate-800">
-                  <span>Final Amount:</span>
+                  <span>Total Due:</span>
                   <span className="text-emerald-400 text-base">₹{grandTotal}</span>
                 </div>
               </div>
@@ -364,11 +417,15 @@ export default function PaymentSettlementModal({
               <button
                 type="button"
                 onClick={handleSettle}
-                disabled={isSettling || isCashInsufficient}
+                disabled={isSettling || isCashInsufficient || !paymentMethod}
                 className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition active:scale-98 disabled:opacity-50"
               >
                 <ShieldCheck className="w-4 h-4" />
-                <span>{isSettling ? 'Processing Settlement...' : `Confirm & Settle ₹${grandTotal}`}</span>
+                <span>
+                  {isSettling
+                    ? 'Processing Settlement...'
+                    : `Confirm & Settle ₹${grandTotal} (${paymentMethod.toUpperCase()})`}
+                </span>
               </button>
             </>
           )}
