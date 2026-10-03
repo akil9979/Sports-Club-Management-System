@@ -16,7 +16,8 @@ import {
   LogIn,
   LogOut,
   Wine,
-  Crown
+  Crown,
+  Building2
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -143,6 +144,17 @@ export default function Navbar() {
                     >
                       <ShieldCheck className="w-3.5 h-3.5 text-[#dfc99a]" />
                       <span>Admin Suite</span>
+                    </Link>
+                  )}
+
+                  {/* Management Dashboard Shortcut for Staff/Manager/Admin */}
+                  {(user?.role === 'staff' || user?.role === 'manager' || user?.role === 'admin') && (
+                    <Link
+                      to="/management"
+                      className="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30 hover:bg-[#dfc99a]/25 transition flex items-center gap-1.5"
+                    >
+                      <Building2 className="w-3.5 h-3.5 text-[#dfc99a]" />
+                      <span>Management</span>
                     </Link>
                   )}
 
@@ -291,14 +303,25 @@ export default function Navbar() {
               )}
 
               {(user?.role === 'staff' || user?.role === 'manager' || user?.role === 'admin') && (
-                <Link
-                  to="/staff/bar"
-                  onClick={closeMobileMenu}
-                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-bold text-xs"
-                >
-                  <Wine className="w-4 h-4" />
-                  <span>Open Staff POS Portal</span>
-                </Link>
+                <>
+                  <Link
+                    to="/management"
+                    onClick={closeMobileMenu}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#dfc99a]/15 border border-[#dfc99a]/35 text-[#dfc99a] font-bold text-xs"
+                  >
+                    <Building2 className="w-4 h-4 text-[#dfc99a]" />
+                    <span>Management Dashboard</span>
+                  </Link>
+
+                  <Link
+                    to="/staff/bar"
+                    onClick={closeMobileMenu}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-bold text-xs"
+                  >
+                    <Wine className="w-4 h-4" />
+                    <span>Open Staff POS Portal</span>
+                  </Link>
+                </>
               )}
 
               {isAuthenticated && (

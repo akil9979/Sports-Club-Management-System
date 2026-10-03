@@ -18,6 +18,7 @@ import MemberProfilePage from '../pages/member/MemberProfilePage.jsx';
 import MemberBookingsPage from '../pages/member/MemberBookingsPage.jsx';
 import MemberShopPage from '../pages/member/MemberShopPage.jsx';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx';
+import ManagementDashboardPage from '../pages/management/ManagementDashboardPage.jsx';
 
 export default function AppRoutes() {
   return (
@@ -49,6 +50,13 @@ export default function AppRoutes() {
           <Route path="/bookings" element={<MemberBookingsPage />} />
           <Route path="/shop" element={<ShopPage />} />
           <Route path="/enquiry" element={<EnquiryPage />} />
+
+          {/* Protected Management Operations & Dashboard Routes */}
+          <Route element={<ProtectedRoute allowedRoles={['staff', 'manager', 'admin']} />}>
+            <Route path="/management" element={<ManagementDashboardPage />} />
+            <Route path="/management/dashboard" element={<ManagementDashboardPage />} />
+            <Route path="/staff/management" element={<ManagementDashboardPage />} />
+          </Route>
 
           {/* Protected Admin Executive Portal Routes */}
           <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
