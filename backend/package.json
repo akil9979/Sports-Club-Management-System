@@ -10,7 +10,8 @@
     "db:seed": "node src/db/seed.js",
     "db:test": "node tests/db-integrity.test.js",
     "test:api": "node tests/api-integration.test.js",
-    "test": "node tests/db-integrity.test.js && node tests/api-integration.test.js"
+    "test:shop": "node tests/shop-inventory.test.js",
+    "test": "node tests/db-integrity.test.js && node tests/api-integration.test.js && node tests/shop-inventory.test.js"
   },
   "keywords": [
     "champions-club",

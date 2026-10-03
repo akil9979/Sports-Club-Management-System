@@ -314,6 +314,11 @@ CREATE TABLE shop_orders (
     customer_name VARCHAR(100),
     customer_email VARCHAR(255),
     customer_phone VARCHAR(30),
+    order_type VARCHAR(30) NOT NULL DEFAULT 'counter' CHECK (order_type IN ('counter', 'online_pickup', 'online_delivery')),
+    fulfilment_type VARCHAR(30) NOT NULL DEFAULT 'in_store' CHECK (fulfilment_type IN ('in_store', 'pickup', 'delivery')),
+    delivery_address TEXT,
+    delivery_notes TEXT,
+    pickup_time TIMESTAMPTZ,
     status VARCHAR(30) NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'processing', 'completed', 'cancelled', 'refunded')),
     subtotal NUMERIC(10, 2) NOT NULL CHECK (subtotal >= 0),
     discount_amount NUMERIC(10, 2) NOT NULL DEFAULT 0.00 CHECK (discount_amount >= 0),
@@ -326,6 +331,7 @@ CREATE TABLE shop_orders (
 
 CREATE INDEX idx_shop_orders_member_id ON shop_orders(member_id);
 CREATE INDEX idx_shop_orders_status ON shop_orders(status);
+CREATE INDEX idx_shop_orders_order_type ON shop_orders(order_type);
 
 -- ----------------------------------------------------------------------------
 -- 15. SHOP ORDER ITEMS
