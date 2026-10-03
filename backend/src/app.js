@@ -16,6 +16,8 @@ const membershipRoutes = require('./modules/memberships/membershipRoutes');
 const bookingRoutes = require('./modules/bookings/bookingRoutes');
 const bookingController = require('./modules/bookings/bookingController');
 const shopRoutes = require('./modules/shop/shopRoutes');
+const crmRoutes = require('./modules/crm/crmRoutes');
+const staffRoutes = require('./modules/staff/staffRoutes');
 
 const app = express();
 
@@ -62,6 +64,8 @@ app.use('/api/members', memberRoutes);
 app.use('/api/memberships', membershipRoutes);
 app.use('/api/membership-plans', membershipRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/leads', crmRoutes);
+app.use('/api', staffRoutes);
 app.use('/api', shopRoutes);
 
 // Catch-all 404 for unhandled API routes
