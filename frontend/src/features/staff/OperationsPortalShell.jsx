@@ -9,7 +9,8 @@ import {
   Lock,
   ChevronDown,
   ArrowLeft,
-  LogOut
+  LogOut,
+  Building2
 } from 'lucide-react';
 import { useStaffAuth } from './StaffAuthContext.jsx';
 import { useAuth } from '../auth/AuthContext.jsx';
@@ -248,6 +249,16 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
                 </div>
               )}
             </div>
+
+            {/* Management Dashboard Button */}
+            <Link
+              to="/management"
+              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#07261c] hover:bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/25 text-xs font-semibold transition"
+              title="Open Management & Executive Dashboard"
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Management</span>
+            </Link>
 
             {/* Lock Terminal Button */}
             <button
