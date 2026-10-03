@@ -5,26 +5,15 @@
 
 const fs = require('fs');
 const path = require('path');
-const { Pool } = require('pg');
-const config = require('../config/env');
+const { pool } = require('../config/database');
 
-async function seedDatabase(existingPool = null) {
-  const targetPool = existingPool || require('../config/database').pool;
+async function seedDatabase(existingPool = pool) {
   const seedPath = path.resolve(__dirname, '../../schema/seed.sql');
   const sql = fs.readFileSync(seedPath, 'utf8');
 
-  console.log(`[DB Seed] Seeding canonical database from ${seedPath}...`);
-
-  const client = await targetPool.connect();
-  try {
-    await client.query(sql);
-    console.log('[DB Seed] Canonical seed data inserted successfully!');
-  } catch (err) {
-    console.error('[DB Seed] Failed to seed database:', err.message);
-    throw err;
-  } finally {
-    client.release();
-  }
+  console.log(`[DB Seed] Seeding database from ${seedPath}...`);
+  await existingPool.query(sql);
+  console.log('[DB Seed] Seed data inserted successfully.');
 }
 
 if (require.main === module) {
@@ -34,7 +23,7 @@ if (require.main === module) {
       process.exit(0);
     })
     .catch((err) => {
-      console.error('[DB Seed] Fatal error during seeding:', err);
+      console.error('[DB Seed] Failed:', err.message);
       process.exit(1);
     });
 }

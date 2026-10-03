@@ -1,12 +1,34 @@
 /**
  * Champions Club - Shop Orders Service
  * Role: MEMBER 4 (Backend Operations)
- * 
- * Manages counter purchases, online pickup, and home deliveries with
- * atomic inventory deduction, row-level concurrency locks, and member discount calculation.
  */
 
 const { query, withTransaction } = require('../../config/database');
+
+function formatOrderSummary(row) {
+  return {
+    id: row.id,
+    orderNumber: row.order_number,
+    memberId: row.member_id,
+    customerName: row.customer_name,
+    customerEmail: row.customer_email,
+    customerPhone: row.customer_phone,
+    orderType: row.order_type,
+    fulfilmentType: row.fulfilment_type,
+    deliveryAddress: row.delivery_address,
+    pickupTime: row.pickup_time,
+    status: row.status,
+    subtotal: parseFloat(row.subtotal),
+    discountAmount: parseFloat(row.discount_amount),
+    taxAmount: parseFloat(row.tax_amount),
+    totalAmount: parseFloat(row.total_amount),
+    paymentStatus: row.payment_status,
+    totalItems: parseInt(row.total_items || 0, 10),
+    totalQuantity: parseInt(row.total_quantity || 0, 10),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  };
+}
 
 class OrderService {
   /**
@@ -17,12 +39,12 @@ class OrderService {
     customerName = null,
     customerEmail = null,
     customerPhone = null,
-    orderType = 'counter', // 'counter', 'online_pickup', 'online_delivery'
-    fulfilmentType = null, // 'in_store', 'pickup', 'delivery'
+    orderType = 'counter',
+    fulfilmentType = null,
     deliveryAddress = null,
     deliveryNotes = null,
     pickupTime = null,
-    items = [], // Array of { productId, quantity, unitPrice (optional override) }
+    items = [],
     paymentStatus = 'unpaid',
     userId = null
   }) {
@@ -32,13 +54,7 @@ class OrderService {
       throw error;
     }
 
-    // Standardize fulfilment type
-    let effectiveFulfilment = fulfilmentType;
-    if (!effectiveFulfilment) {
-      if (orderType === 'online_delivery') effectiveFulfilment = 'delivery';
-      else if (orderType === 'online_pickup') effectiveFulfilment = 'pickup';
-      else effectiveFulfilment = 'in_store';
-    }
+    const effectiveFulfilment = fulfilmentType || (orderType === 'online_delivery' ? 'delivery' : orderType === 'online_pickup' ? 'pickup' : 'in_store');
 
     return withTransaction(async (client) => {
       // 1. Resolve Member & Pricing Tier
@@ -63,26 +79,22 @@ class OrderService {
         }
 
         memberInfo = memberRes.rows[0];
-        if (memberInfo.membership_status === 'active' && memberInfo.shop_discount_pct) {
-          discountPct = parseFloat(memberInfo.shop_discount_pct);
-        } else if (memberInfo.membership_status === 'active' && memberInfo.tier === 'Gold') {
-          discountPct = 20.0;
-        } else if (memberInfo.membership_status === 'active' && memberInfo.tier === 'Silver') {
-          discountPct = 10.0;
+        if (memberInfo.membership_status === 'active') {
+          if (memberInfo.shop_discount_pct) discountPct = parseFloat(memberInfo.shop_discount_pct);
+          else if (memberInfo.tier === 'Gold') discountPct = 20.0;
+          else if (memberInfo.tier === 'Silver') discountPct = 10.0;
         }
       }
 
-      // Auto-fill customer details from member if not explicitly provided
       const resolvedName = customerName || (memberInfo ? `${memberInfo.first_name} ${memberInfo.last_name}` : 'Walk-in Customer');
       const resolvedEmail = customerEmail || memberInfo?.email || null;
       const resolvedPhone = customerPhone || memberInfo?.phone || null;
 
-      // 2. Fetch and Lock Products & Inventory in a deterministic order to prevent deadlocks
+      // 2. Fetch and Lock Products & Inventory (sorted deterministically to prevent deadlocks)
       const productIds = Array.from(new Set(items.map(i => i.productId))).sort();
-
       const productsRes = await client.query(
         `SELECT p.id, p.name, p.price, p.member_price, p.is_active,
-                inv.quantity_on_hand, inv.reorder_threshold
+                inv.quantity_on_hand
          FROM products p
          JOIN inventory inv ON inv.product_id = p.id
          WHERE p.id = ANY($1)
@@ -90,8 +102,7 @@ class OrderService {
         [productIds]
       );
 
-      const productMap = new Map();
-      productsRes.rows.forEach(p => productMap.set(p.id, p));
+      const productMap = new Map(productsRes.rows.map(p => [p.id, p]));
 
       // 3. Validate Stock & Calculate Line Items
       let calculatedSubtotal = 0;
@@ -105,7 +116,6 @@ class OrderService {
           error.statusCode = 404;
           throw error;
         }
-
         if (!product.is_active) {
           const error = new Error(`Product '${product.name}' is currently inactive`);
           error.statusCode = 400;
@@ -125,7 +135,6 @@ class OrderService {
           throw error;
         }
 
-        // Pricing calculation:
         const retailPrice = parseFloat(product.price);
         let effectiveUnitPrice = retailPrice;
 
@@ -139,10 +148,8 @@ class OrderService {
 
         const lineSubtotal = retailPrice * requestedQty;
         const lineTotal = effectiveUnitPrice * requestedQty;
-        const lineDiscount = lineSubtotal - lineTotal;
-
         calculatedSubtotal += lineSubtotal;
-        calculatedDiscount += lineDiscount;
+        calculatedDiscount += (lineSubtotal - lineTotal);
 
         processedItems.push({
           productId: product.id,
@@ -153,18 +160,14 @@ class OrderService {
           totalPrice: lineTotal
         });
 
-        // Decrement local map for checking multiple lines of the same item
         product.quantity_on_hand -= requestedQty;
       }
 
-      const calculatedTax = Math.round((calculatedSubtotal - calculatedDiscount) * 0.05 * 100) / 100; // 5% GST on sports goods
+      const calculatedTax = Math.round((calculatedSubtotal - calculatedDiscount) * 0.05 * 100) / 100;
       const calculatedTotal = (calculatedSubtotal - calculatedDiscount) + calculatedTax;
+      const orderNumber = `SO-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-      // 4. Generate Order Number
-      const randSuffix = Math.floor(1000 + Math.random() * 9000);
-      const orderNumber = `SO-${new Date().getFullYear()}-${randSuffix}`;
-
-      // 5. Insert Shop Order
+      // 4. Insert Shop Order
       const orderInsert = await client.query(
         `INSERT INTO shop_orders (
             order_number, member_id, customer_name, customer_email, customer_phone,
@@ -194,16 +197,14 @@ class OrderService {
 
       const createdOrder = orderInsert.rows[0];
 
-      // 6. Insert Order Items & Deduct Inventory & Record Stock Movements
+      // 5. Insert Items, Deduct Inventory & Record Stock Movements
       for (const item of processedItems) {
-        // Insert line item
         await client.query(
           `INSERT INTO shop_order_items (shop_order_id, product_id, quantity, unit_price, total_price)
            VALUES ($1, $2, $3, $4, $5)`,
           [createdOrder.id, item.productId, item.quantity, item.unitPrice, item.totalPrice]
         );
 
-        // Deduct inventory
         await client.query(
           `UPDATE inventory 
            SET quantity_on_hand = quantity_on_hand - $1, updated_at = CURRENT_TIMESTAMP 
@@ -211,17 +212,10 @@ class OrderService {
           [item.quantity, item.productId]
         );
 
-        // Record stock movement
         await client.query(
           `INSERT INTO stock_movements (product_id, movement_type, quantity, reference_id, notes, created_by)
            VALUES ($1, 'sale', $2, $3, $4, $5)`,
-          [
-            item.productId,
-            -item.quantity,
-            createdOrder.order_number,
-            `${orderType.toUpperCase()} order sale to ${resolvedName}`,
-            userId
-          ]
+          [item.productId, -item.quantity, createdOrder.order_number, `${orderType.toUpperCase()} order sale to ${resolvedName}`, userId]
         );
       }
 
@@ -254,12 +248,7 @@ class OrderService {
    */
   async getOrders({ memberId = null, status = null, orderType = null, limit = 50, offset = 0 } = {}) {
     let sql = `
-      SELECT so.id, so.order_number, so.member_id, so.customer_name, so.customer_email, so.customer_phone,
-             so.order_type, so.fulfilment_type, so.delivery_address, so.pickup_time,
-             so.status, so.subtotal, so.discount_amount, so.tax_amount, so.total_amount,
-             so.payment_status, so.created_at, so.updated_at,
-             COUNT(soi.id) AS total_items,
-             COALESCE(SUM(soi.quantity), 0) AS total_quantity
+      SELECT so.*, COUNT(soi.id) AS total_items, COALESCE(SUM(soi.quantity), 0) AS total_quantity
       FROM shop_orders so
       LEFT JOIN shop_order_items soi ON soi.shop_order_id = so.id
       WHERE 1=1
@@ -270,12 +259,10 @@ class OrderService {
       params.push(memberId);
       sql += ` AND so.member_id = $${params.length}`;
     }
-
     if (status) {
       params.push(status);
       sql += ` AND so.status = $${params.length}`;
     }
-
     if (orderType) {
       params.push(orderType);
       sql += ` AND so.order_type = $${params.length}`;
@@ -285,42 +272,16 @@ class OrderService {
     params.push(Number(limit) || 50, Number(offset) || 0);
 
     const res = await query(sql, params);
-
-    return res.rows.map(row => ({
-      id: row.id,
-      orderNumber: row.order_number,
-      memberId: row.member_id,
-      customerName: row.customer_name,
-      customerEmail: row.customer_email,
-      customerPhone: row.customer_phone,
-      orderType: row.order_type,
-      fulfilmentType: row.fulfilment_type,
-      deliveryAddress: row.delivery_address,
-      pickupTime: row.pickup_time,
-      status: row.status,
-      subtotal: parseFloat(row.subtotal),
-      discountAmount: parseFloat(row.discount_amount),
-      taxAmount: parseFloat(row.tax_amount),
-      totalAmount: parseFloat(row.total_amount),
-      paymentStatus: row.payment_status,
-      totalItems: parseInt(row.total_items, 10),
-      totalQuantity: parseInt(row.total_quantity, 10),
-      createdAt: row.created_at,
-      updatedAt: row.updated_at
-    }));
+    return res.rows.map(formatOrderSummary);
   }
 
   /**
    * Get complete order details by ID or order_number
    */
   async getOrderById(orderId, client = null) {
-    const dbRunner = client || { query };
-    const orderRes = await dbRunner.query(
-      `SELECT so.id, so.order_number, so.member_id, so.customer_name, so.customer_email, so.customer_phone,
-              so.order_type, so.fulfilment_type, so.delivery_address, so.delivery_notes, so.pickup_time,
-              so.status, so.subtotal, so.discount_amount, so.tax_amount, so.total_amount,
-              so.payment_status, so.created_at, so.updated_at,
-              m.member_number, mp.tier AS member_tier
+    const db = client || { query };
+    const orderRes = await db.query(
+      `SELECT so.*, m.member_number, mp.tier AS member_tier
        FROM shop_orders so
        LEFT JOIN members m ON m.id = so.member_id
        LEFT JOIN memberships ms ON ms.member_id = m.id AND ms.status = 'active'
@@ -336,9 +297,7 @@ class OrderService {
     }
 
     const order = orderRes.rows[0];
-
-    // Fetch line items with product details
-    const itemsRes = await dbRunner.query(
+    const itemsRes = await db.query(
       `SELECT soi.id, soi.product_id, soi.quantity, soi.unit_price, soi.total_price,
               p.name AS product_name, p.sku, p.image_url, pc.name AS category
        FROM shop_order_items soi
@@ -389,7 +348,6 @@ class OrderService {
    */
   async updateOrderStatus(orderId, nextStatus, notes = null, userId = null) {
     return withTransaction(async (client) => {
-      // 1. Lock order row
       const orderRes = await client.query(
         'SELECT * FROM shop_orders WHERE id::text = $1 OR order_number = $1 FOR UPDATE',
         [orderId]
@@ -408,14 +366,13 @@ class OrderService {
         return this.getOrderById(order.id);
       }
 
-      // If already cancelled or refunded, do not allow re-cancelling
       if (previousStatus === 'cancelled' && nextStatus === 'cancelled') {
         const error = new Error('Order is already cancelled');
         error.statusCode = 400;
         throw error;
       }
 
-      // 2. If cancelling, restore inventory and log return stock movements
+      // If cancelling, restore inventory and log return movement
       if (nextStatus === 'cancelled' && previousStatus !== 'cancelled') {
         const itemsRes = await client.query(
           'SELECT product_id, quantity FROM shop_order_items WHERE shop_order_id = $1',
@@ -423,7 +380,6 @@ class OrderService {
         );
 
         for (const item of itemsRes.rows) {
-          // Add back stock
           await client.query(
             `UPDATE inventory 
              SET quantity_on_hand = quantity_on_hand + $1, updated_at = CURRENT_TIMESTAMP 
@@ -431,22 +387,14 @@ class OrderService {
             [item.quantity, item.product_id]
           );
 
-          // Log return stock movement
           await client.query(
             `INSERT INTO stock_movements (product_id, movement_type, quantity, reference_id, notes, created_by)
              VALUES ($1, 'return', $2, $3, $4, $5)`,
-            [
-              item.product_id,
-              item.quantity,
-              order.order_number,
-              `Restock from cancelled order ${order.order_number}${notes ? ': ' + notes : ''}`,
-              userId
-            ]
+            [item.product_id, item.quantity, order.order_number, `Restock from cancelled order ${order.order_number}${notes ? ': ' + notes : ''}`, userId]
           );
         }
       }
 
-      // 3. Update order status
       await client.query(
         'UPDATE shop_orders SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
         [nextStatus, order.id]
