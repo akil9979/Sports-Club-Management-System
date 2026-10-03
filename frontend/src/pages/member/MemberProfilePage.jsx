@@ -370,12 +370,14 @@ export default function MemberProfilePage() {
         />
 
         {/* Digital Membership Pass & QR Modal */}
-        <DigitalMembershipPassModal
-          isOpen={isPassModalOpen}
-          member={member}
-          membership={member.activeMembership}
-          onClose={() => setIsPassModalOpen(false)}
-        />
+        {member && (
+          <DigitalMembershipPassModal
+            isOpen={isPassModalOpen}
+            member={member}
+            membership={member?.activeMembership}
+            onClose={() => setIsPassModalOpen(false)}
+          />
+        )}
       </div>
     </div>
   );

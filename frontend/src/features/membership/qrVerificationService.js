@@ -70,7 +70,7 @@ export const TIER_CONFIG = {
  */
 export function generateMemberQrPayload(member, membership = null) {
   if (!member) return null;
-  const ms = membership || member.activeMembership || member.membership;
+  const ms = membership || member?.activeMembership || member?.membership;
 
   // Age calculation
   let age = null;
