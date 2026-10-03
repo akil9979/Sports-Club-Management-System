@@ -104,5 +104,9 @@ function authorize(...roles) {
 module.exports = {
   authenticate,
   optionalAuth,
-  authorize
+  authorize,
+  requireRole: authorize,
+  requireAdmin: authorize('admin'),
+  requireStaff: authorize('staff', 'manager', 'admin'),
+  requireMember: authorize('member', 'staff', 'manager', 'admin')
 };

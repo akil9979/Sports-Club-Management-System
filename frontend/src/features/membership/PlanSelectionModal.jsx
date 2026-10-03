@@ -91,21 +91,21 @@ export default function PlanSelectionModal({ isOpen, member, onClose, onSuccess 
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-fade-in">
-      <div className="relative w-full max-w-4xl bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/80 my-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#02140e]/85 backdrop-blur-md overflow-y-auto animate-fade-in">
+      <div className="relative w-full max-w-4xl bg-[#041c14] border border-emerald-900/50 rounded-3xl p-6 sm:p-8 shadow-2xl shadow-black/80 my-8">
         {/* Header */}
-        <div className="flex items-center justify-between pb-5 border-b border-slate-800">
+        <div className="flex items-center justify-between pb-5 border-b border-emerald-900/40">
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-amber-500/10 text-amber-400 border border-amber-500/30">
+              <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30">
                 {member.memberNumber || member.id}
               </span>
-              <h3 className="text-xl font-bold text-white tracking-tight">
+              <h3 className="text-xl font-serif font-bold text-[#fcfaf5] tracking-tight">
                 {member.activeMembership ? 'Renew or Upgrade Membership' : 'Activate New Membership Plan'}
               </h3>
             </div>
-            <p className="text-xs text-slate-400 mt-1">
-              Select tier, billing schedule, and payment details for <strong className="text-slate-200">{member.name}</strong>
+            <p className="text-xs text-emerald-300/70 mt-1">
+              Select tier, billing schedule, and payment details for <strong className="text-emerald-100">{member.name}</strong>
               {memberAge !== null && ` (Age: ${memberAge} yrs)`}.
             </p>
           </div>
@@ -113,7 +113,7 @@ export default function PlanSelectionModal({ isOpen, member, onClose, onSuccess 
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white flex items-center justify-center transition-colors"
+            className="w-8 h-8 rounded-full bg-[#07261c] hover:bg-[#0b3829] text-emerald-400 hover:text-white flex items-center justify-center transition-colors border border-emerald-800/60"
           >
             <X className="w-5 h-5 shrink-0" />
           </button>
@@ -146,47 +146,47 @@ export default function PlanSelectionModal({ isOpen, member, onClose, onSuccess 
           />
 
           {/* Configuration Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-5 rounded-2xl bg-slate-950/70 border border-slate-800">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-5 rounded-2xl bg-[#02140e]/70 border border-emerald-900/60">
             {/* Start Date */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Effective Start Date
               </label>
               <input
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/60"
+                className="w-full px-3.5 py-2.5 bg-[#07261c] border border-emerald-800/60 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 focus:border-[#dfc99a]"
                 required
               />
-              <span className="text-[10px] text-slate-500 mt-1 block">
+              <span className="text-[10px] text-emerald-500/70 mt-1 block">
                 Expiry calculated automatically by backend.
               </span>
             </div>
 
             {/* Payment Method */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Payment Channel
               </label>
               <select
                 value={paymentMethod}
                 onChange={(e) => setPaymentMethod(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/60"
+                className="w-full px-3.5 py-2.5 bg-[#07261c] border border-emerald-800/60 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 focus:border-[#dfc99a]"
               >
                 <option value="upi">UPI (GPay / PhonePe / QR)</option>
                 <option value="card">Credit / Debit Card POS</option>
                 <option value="cash">Front Desk Cash</option>
                 <option value="cheque">Bank Transfer / Cheque</option>
               </select>
-              <span className="text-[10px] text-slate-500 mt-1 block">
+              <span className="text-[10px] text-emerald-500/70 mt-1 block">
                 Recorded for member billing ledger.
               </span>
             </div>
 
             {/* Reference Number */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Payment Ref / Notes
               </label>
               <input
@@ -194,17 +194,17 @@ export default function PlanSelectionModal({ isOpen, member, onClose, onSuccess 
                 placeholder="e.g. TXN-192837 or Receipt #54"
                 value={referenceNumber}
                 onChange={(e) => setReferenceNumber(e.target.value)}
-                className="w-full px-3.5 py-2.5 bg-slate-900 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/60"
+                className="w-full px-3.5 py-2.5 bg-[#07261c] border border-emerald-800/60 rounded-xl text-xs text-white placeholder-emerald-700/60 focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 focus:border-[#dfc99a]"
               />
-              <span className="text-[10px] text-slate-500 mt-1 block">
+              <span className="text-[10px] text-emerald-500/70 mt-1 block">
                 Optional transaction or receipt reference.
               </span>
             </div>
           </div>
 
           {/* Action Bar */}
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800">
-            <div className="text-xs text-slate-400">
+          <div className="flex items-center justify-between pt-4 border-t border-emerald-900/40">
+            <div className="text-xs text-emerald-400/70">
               Prices & discounts are managed strictly by backend policy.
             </div>
 
@@ -213,18 +213,18 @@ export default function PlanSelectionModal({ isOpen, member, onClose, onSuccess 
                 type="button"
                 onClick={onClose}
                 disabled={submitting}
-                className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition-colors disabled:opacity-50"
+                className="px-5 py-2.5 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-emerald-200 hover:text-white text-xs font-semibold transition-colors disabled:opacity-50 border border-emerald-800/60"
               >
                 Cancel
               </button>
               <button
                 type="submit"
                 disabled={submitting || loadingPlans || juniorIneligible}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl btn-champagne font-bold text-xs shadow-lg shadow-[#dfc99a]/15 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
               >
                 {submitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 animate-spin text-slate-950 shrink-0" />
+                    <Loader2 className="w-4 h-4 animate-spin text-[#02140e] shrink-0" />
                     <span>Confirming Subscription...</span>
                   </>
                 ) : (

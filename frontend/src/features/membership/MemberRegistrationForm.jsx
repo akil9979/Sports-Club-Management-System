@@ -225,15 +225,15 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
   return (
     <div className={`space-y-8 ${className}`}>
       {/* Quick Demo Preset Bar for rapid testing */}
-      <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 backdrop-blur-md">
+      <div className="bg-[#041c14]/80 border border-emerald-900/50 rounded-2xl p-4 sm:p-5 backdrop-blur-md">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-amber-400"></span>
-            <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+            <span className="w-2 h-2 rounded-full bg-[#dfc99a] animate-pulse"></span>
+            <span className="text-xs font-bold text-emerald-200 uppercase tracking-wider">
               Quick Test Scenarios & Edge Cases
             </span>
           </div>
-          <span className="text-[11px] text-slate-400">
+          <span className="text-[11px] text-emerald-400/60">
             One-click test dataset auto-population
           </span>
         </div>
@@ -242,7 +242,7 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
           <button
             type="button"
             onClick={() => applyPreset('gold_adult')}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 transition-colors"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-[#dfc99a]/15 hover:bg-[#dfc99a]/25 text-[#dfc99a] border border-[#dfc99a]/30 transition-colors"
           >
             Adult Gold (Monthly)
           </button>
@@ -256,7 +256,7 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
           <button
             type="button"
             onClick={() => applyPreset('junior_valid')}
-            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 transition-colors"
+            className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 transition-colors"
           >
             Junior Valid (Age 14)
           </button>
@@ -286,23 +286,23 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
             <CheckCircle2 className="w-6 h-6 shrink-0" />
           </div>
           <div>
-            <h4 className="text-base font-bold text-white mb-1">
+            <h4 className="text-base font-serif font-bold text-white mb-1">
               Member Registered Successfully!
             </h4>
-            <p className="text-xs text-slate-300">
+            <p className="text-xs text-emerald-200">
               Welcome, <strong className="text-white">{successMember.name}</strong>! Member ID{' '}
-              <span className="font-mono font-bold text-amber-400">{successMember.memberNumber || successMember.id}</span> has been created with an active{' '}
+              <span className="font-mono font-bold text-[#dfc99a]">{successMember.memberNumber || successMember.id}</span> has been created with an active{' '}
               <strong className="text-white">{successMember.activeMembership?.tier || 'Membership'}</strong> plan.
             </p>
             <div className="mt-3 flex items-center gap-3">
               <button
                 type="button"
                 onClick={() => navigate(`/members/${successMember.id}`)}
-                className="px-4 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors"
+                className="px-4 py-1.5 rounded-lg btn-champagne font-bold text-xs transition-colors"
               >
                 Go to Member Profile &rarr;
               </button>
-              <span className="text-[11px] text-slate-400">
+              <span className="text-[11px] text-emerald-400/60">
                 Redirecting automatically in a moment...
               </span>
             </div>
@@ -323,15 +323,15 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* SECTION 1: Personal Identification */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-md">
-          <div className="pb-4 mb-6 border-b border-slate-800/80">
-            <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-              <span className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-mono">
+        <div className="bg-[#041c14]/90 border border-emerald-900/40 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-md">
+          <div className="pb-4 mb-6 border-b border-emerald-900/40">
+            <h3 className="text-lg font-serif font-bold text-[#fcfaf5] tracking-tight flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30 flex items-center justify-center text-xs font-mono">
                 01
               </span>
               Member Personal & Contact Information
             </h3>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-emerald-300/70 mt-1">
               Required for club identity records, access verification, and security compliance.
             </p>
           </div>
@@ -339,7 +339,7 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {/* Full Name */}
             <div className="sm:col-span-2 lg:col-span-1">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Full Name <span className="text-rose-400">*</span>
               </label>
               <input
@@ -348,8 +348,8 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="e.g. Devon Conway"
-                className={`w-full px-4 py-2.5 bg-slate-950/80 border rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all ${
-                  formErrors.name ? 'border-rose-500' : 'border-slate-800 focus:border-amber-500/60'
+                className={`w-full px-4 py-2.5 bg-[#02140e]/90 border rounded-xl text-sm text-white placeholder-emerald-700/60 focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 transition-all ${
+                  formErrors.name ? 'border-rose-500' : 'border-emerald-900/60 focus:border-[#dfc99a]'
                 }`}
               />
               {formErrors.name && (
@@ -359,7 +359,7 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
 
             {/* Email Address */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Email Address <span className="text-rose-400">*</span>
               </label>
               <input
@@ -368,8 +368,8 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="member@example.com"
-                className={`w-full px-4 py-2.5 bg-slate-950/80 border rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all ${
-                  formErrors.email ? 'border-rose-500' : 'border-slate-800 focus:border-amber-500/60'
+                className={`w-full px-4 py-2.5 bg-[#02140e]/90 border rounded-xl text-sm text-white placeholder-emerald-700/60 focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 transition-all ${
+                  formErrors.email ? 'border-rose-500' : 'border-emerald-900/60 focus:border-[#dfc99a]'
                 }`}
               />
               {formErrors.email && (
@@ -379,7 +379,7 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
 
             {/* Phone Number */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Phone Number <span className="text-rose-400">*</span>
               </label>
               <input
@@ -388,8 +388,8 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="+919876543210"
-                className={`w-full px-4 py-2.5 bg-slate-950/80 border rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all ${
-                  formErrors.phone ? 'border-rose-500' : 'border-slate-800 focus:border-amber-500/60'
+                className={`w-full px-4 py-2.5 bg-[#02140e]/90 border rounded-xl text-sm text-white placeholder-emerald-700/60 focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 transition-all ${
+                  formErrors.phone ? 'border-rose-500' : 'border-emerald-900/60 focus:border-[#dfc99a]'
                 }`}
               />
               {formErrors.phone && (
@@ -400,11 +400,11 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
             {/* Date of Birth */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">
+                <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider">
                   Date of Birth <span className="text-rose-400">*</span>
                 </label>
                 {calculatedAge !== null && (
-                  <span className="text-[11px] font-semibold text-amber-400">
+                  <span className="text-[11px] font-semibold text-[#dfc99a]">
                     Age: {calculatedAge} years
                   </span>
                 )}
@@ -415,14 +415,14 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
                 value={formData.dob}
                 onChange={handleChange}
                 max={TODAY_DATE}
-                className={`w-full px-4 py-2.5 bg-slate-950/80 border rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all ${
-                  formErrors.dob ? 'border-rose-500' : 'border-slate-800 focus:border-amber-500/60'
+                className={`w-full px-4 py-2.5 bg-[#02140e]/90 border rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 transition-all ${
+                  formErrors.dob ? 'border-rose-500' : 'border-emerald-900/60 focus:border-[#dfc99a]'
                 }`}
               />
               {formErrors.dob ? (
                 <p className="mt-1 text-xs text-rose-400">{formErrors.dob}</p>
               ) : (
-                <p className="mt-1 text-[11px] text-slate-500">
+                <p className="mt-1 text-[11px] text-emerald-500/70">
                   Required to determine Junior tier eligibility (&lt;18 yrs).
                 </p>
               )}
@@ -430,14 +430,14 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
 
             {/* Gender */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Gender Identity
               </label>
               <select
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/60 transition-all"
+                className="w-full px-4 py-2.5 bg-[#02140e]/90 border border-emerald-900/60 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 focus:border-[#dfc99a] transition-all"
               >
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
@@ -448,7 +448,7 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
 
             {/* Emergency Contact */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Emergency Contact Phone
               </label>
               <input
@@ -457,16 +457,16 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
                 value={formData.emergencyContact}
                 onChange={handleChange}
                 placeholder="+919876500000"
-                className="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/60 transition-all"
+                className="w-full px-4 py-2.5 bg-[#02140e]/90 border border-emerald-900/60 rounded-xl text-sm text-white placeholder-emerald-700/60 focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 focus:border-[#dfc99a] transition-all"
               />
-              <p className="mt-1 text-[11px] text-slate-500">
+              <p className="mt-1 text-[11px] text-emerald-500/70">
                 Recommended for injury or court emergency.
               </p>
             </div>
 
             {/* Residential Address */}
             <div className="sm:col-span-2 lg:col-span-3">
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Residential Address / Locality
               </label>
               <input
@@ -475,22 +475,22 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
                 value={formData.address}
                 onChange={handleChange}
                 placeholder="e.g. 42 Riverside Boulevard, Bodakdev, Ahmedabad"
-                className="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/60 transition-all"
+                className="w-full px-4 py-2.5 bg-[#02140e]/90 border border-emerald-900/60 rounded-xl text-sm text-white placeholder-emerald-700/60 focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 focus:border-[#dfc99a] transition-all"
               />
             </div>
           </div>
         </div>
 
         {/* SECTION 2: Membership Tier Selection */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-md">
-          <div className="pb-4 mb-6 border-b border-slate-800/80">
-            <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-              <span className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-mono">
+        <div className="bg-[#041c14]/90 border border-emerald-900/40 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-md">
+          <div className="pb-4 mb-6 border-b border-emerald-900/40">
+            <h3 className="text-lg font-serif font-bold text-[#fcfaf5] tracking-tight flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30 flex items-center justify-center text-xs font-mono">
                 02
               </span>
               Membership Plan & Benefits Selection
             </h3>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-emerald-300/70 mt-1">
               Select tier entitlement. Pricing and benefits are supplied directly from backend policy.
             </p>
           </div>
@@ -518,15 +518,15 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
         </div>
 
         {/* SECTION 3: Payment & Activation Schedule */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-md">
-          <div className="pb-4 mb-6 border-b border-slate-800/80">
-            <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
-              <span className="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center text-xs font-mono">
+        <div className="bg-[#041c14]/90 border border-emerald-900/40 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-md">
+          <div className="pb-4 mb-6 border-b border-emerald-900/40">
+            <h3 className="text-lg font-serif font-bold text-[#fcfaf5] tracking-tight flex items-center gap-2">
+              <span className="w-6 h-6 rounded-lg bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30 flex items-center justify-center text-xs font-mono">
                 03
               </span>
               Activation & Payment Settlement
             </h3>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-emerald-300/70 mt-1">
               Specify effective start date and front desk settlement mode.
             </p>
           </div>
@@ -534,7 +534,7 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* Start Date */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Effective Start Date <span className="text-rose-400">*</span>
               </label>
               <input
@@ -542,35 +542,35 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
                 name="startDate"
                 value={formData.startDate}
                 onChange={handleChange}
-                className={`w-full px-4 py-2.5 bg-slate-950/80 border rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 transition-all ${
-                  formErrors.startDate ? 'border-rose-500' : 'border-slate-800 focus:border-amber-500/60'
+                className={`w-full px-4 py-2.5 bg-[#02140e]/90 border rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 transition-all ${
+                  formErrors.startDate ? 'border-rose-500' : 'border-emerald-900/60 focus:border-[#dfc99a]'
                 }`}
               />
               {formErrors.startDate && (
                 <p className="mt-1 text-xs text-rose-400">{formErrors.startDate}</p>
               )}
-              <p className="mt-1 text-[11px] text-slate-500">
+              <p className="mt-1 text-[11px] text-emerald-500/70">
                 End date is computed strictly by backend based on billing cycle.
               </p>
             </div>
 
             {/* Payment Method */}
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-semibold text-emerald-300/80 uppercase tracking-wider mb-1.5">
                 Settlement Channel
               </label>
               <select
                 name="paymentMethod"
                 value={formData.paymentMethod}
                 onChange={handleChange}
-                className="w-full px-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/60 transition-all"
+                className="w-full px-4 py-2.5 bg-[#02140e]/90 border border-emerald-900/60 rounded-xl text-sm text-white focus:outline-none focus:ring-2 focus:ring-[#dfc99a]/40 focus:border-[#dfc99a] transition-all"
               >
                 <option value="upi">UPI (Google Pay, PhonePe, Paytm QR)</option>
                 <option value="card">Credit / Debit Card (Front Desk Terminal)</option>
                 <option value="cash">Cash Settlement (Club Counter)</option>
                 <option value="cheque">Cheque / Direct Bank Transfer</option>
               </select>
-              <p className="mt-1 text-[11px] text-slate-500">
+              <p className="mt-1 text-[11px] text-emerald-500/70">
                 Receipt reference will be generated upon confirmation.
               </p>
             </div>
@@ -578,8 +578,8 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
         </div>
 
         {/* Submit Bar */}
-        <div className="p-6 rounded-3xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
-          <div className="text-xs text-slate-400">
+        <div className="p-6 rounded-3xl bg-[#041c14] border border-emerald-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl">
+          <div className="text-xs text-emerald-400/70">
             By registering, the member agrees to The Champions Club bylaws and facility code of conduct.
           </div>
 
@@ -587,7 +587,7 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
             <button
               type="button"
               onClick={() => navigate('/members')}
-              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-semibold transition-colors"
+              className="px-5 py-2.5 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-emerald-200 hover:text-white text-xs font-semibold transition-colors border border-emerald-800/60"
             >
               Cancel
             </button>
@@ -595,11 +595,11 @@ export default function MemberRegistrationForm({ onSuccess, className = '' }) {
             <button
               type="submit"
               disabled={submitting || loadingPlans}
-              className="inline-flex items-center gap-2 px-8 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-sm shadow-xl shadow-amber-500/25 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
+              className="inline-flex items-center gap-2 px-8 py-3 rounded-xl btn-champagne font-bold text-sm shadow-xl shadow-[#dfc99a]/15 transition-all hover:scale-[1.02] disabled:opacity-50 disabled:hover:scale-100"
             >
               {submitting ? (
                 <>
-                  <Loader2 className="w-5 h-5 animate-spin text-slate-950 shrink-0" />
+                  <Loader2 className="w-5 h-5 animate-spin text-[#02140e] shrink-0" />
                   <span>Processing Registration...</span>
                 </>
               ) : (

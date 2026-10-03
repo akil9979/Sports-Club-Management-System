@@ -77,20 +77,20 @@ export default function TableGrid({
   }
 
   return (
-    <div className="bg-slate-900/70 backdrop-blur-md rounded-2xl border border-slate-800/90 p-5 shadow-xl">
+    <div className="bg-[#041c14]/90 backdrop-blur-md rounded-3xl border border-emerald-900/40 p-5 shadow-xl">
       {/* Header & Status Metrics */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4 pb-4 border-b border-slate-800">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-4 pb-4 border-b border-emerald-900/40">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-lg font-bold text-white tracking-wide flex items-center gap-2">
-              <Wine className="w-5 h-5 text-emerald-400" />
+            <h3 className="text-lg font-serif font-bold text-[#fcfaf5] tracking-wide flex items-center gap-2">
+              <Wine className="w-5 h-5 text-[#dfc99a]" />
               Bar & Lounge Tables
             </h3>
-            <span className="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-mono">
+            <span className="text-xs bg-[#07261c] text-emerald-300 border border-emerald-800/60 px-2 py-0.5 rounded-full font-mono">
               {tables.length} Total
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-emerald-300/70 mt-0.5">
             Select a table to open a new tab or manage running orders
           </p>
         </div>
@@ -101,8 +101,8 @@ export default function TableGrid({
             onClick={() => setStatusFilter('All')}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition ${
               statusFilter === 'All'
-                ? 'bg-slate-800 text-white border border-slate-700 shadow-sm'
-                : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                ? 'bg-[#07261c] text-emerald-100 border border-emerald-800/60 shadow-sm'
+                : 'text-emerald-400/70 hover:bg-[#07261c]/50 hover:text-white'
             }`}
           >
             All ({counts.total})
@@ -133,11 +133,11 @@ export default function TableGrid({
             onClick={() => setStatusFilter('open')}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition flex items-center gap-1.5 ${
               statusFilter === 'open'
-                ? 'bg-sky-500/20 text-sky-300 border border-sky-500/40 shadow-sm'
-                : 'text-sky-400/80 hover:bg-sky-500/10'
+                ? 'bg-[#dfc99a]/20 text-[#dfc99a] border border-[#dfc99a]/40 shadow-sm'
+                : 'text-[#dfc99a]/80 hover:bg-[#dfc99a]/10'
             }`}
           >
-            <span className="w-2 h-2 rounded-full bg-sky-400 inline-block" />
+            <span className="w-2 h-2 rounded-full bg-[#dfc99a] inline-block" />
             Active Tab ({counts.open})
           </button>
         </div>
@@ -146,15 +146,15 @@ export default function TableGrid({
       {/* Section Sub-Filter */}
       {sections.length > 2 && (
         <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 text-xs">
-          <span className="text-slate-500 uppercase tracking-wider text-[10px] font-semibold">Zone:</span>
+          <span className="text-emerald-500/70 uppercase tracking-wider text-[10px] font-semibold">Zone:</span>
           {sections.map((sec) => (
             <button
               key={sec}
               onClick={() => setSectionFilter(sec)}
               className={`px-2.5 py-1 rounded-md transition whitespace-nowrap ${
                 sectionFilter === sec
-                  ? 'bg-emerald-500 text-slate-950 font-bold'
-                  : 'bg-slate-800/60 text-slate-400 hover:text-white'
+                  ? 'btn-champagne font-bold'
+                  : 'bg-[#07261c] text-emerald-300/80 hover:text-white border border-emerald-900/60'
               }`}
             >
               {sec}
@@ -165,10 +165,10 @@ export default function TableGrid({
 
       {/* Grid of Tables */}
       {filteredTables.length === 0 ? (
-        <div className="text-center py-12 px-4 border border-dashed border-slate-800 rounded-xl bg-slate-950/40">
-          <Wine className="w-8 h-8 text-slate-600 mx-auto mb-2" />
-          <p className="text-sm font-medium text-slate-300">No Tables Found</p>
-          <p className="text-xs text-slate-500 mt-1 max-w-xs mx-auto">
+        <div className="text-center py-12 px-4 border border-dashed border-emerald-900/60 rounded-2xl bg-[#02140e]/60">
+          <Wine className="w-8 h-8 text-emerald-600 mx-auto mb-2" />
+          <p className="text-sm font-medium text-emerald-200">No Tables Found</p>
+          <p className="text-xs text-emerald-400/70 mt-1 max-w-xs mx-auto">
             No tables match the selected zone "{sectionFilter}" and status "{statusFilter}".
           </p>
           <button
@@ -176,7 +176,7 @@ export default function TableGrid({
               setSectionFilter('All');
               setStatusFilter('All');
             }}
-            className="mt-3 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs text-slate-300 rounded-lg transition"
+            className="mt-3 px-3 py-1.5 bg-[#07261c] hover:bg-[#0b3829] text-xs text-emerald-200 rounded-lg transition border border-emerald-800/60"
           >
             Reset Filters
           </button>
@@ -190,19 +190,19 @@ export default function TableGrid({
             const isAvailable = table.status === 'available';
 
             // Styling based on status
-            let borderStyle = 'border-slate-800 hover:border-slate-700 bg-slate-900/60';
+            let borderStyle = 'border-emerald-900/50 hover:border-emerald-700/60 bg-[#02140e]/80';
             let badgeBg = 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
             let statusText = 'Available';
 
             if (isSelected) {
-              borderStyle = 'border-emerald-500 ring-2 ring-emerald-500/30 bg-emerald-950/20';
+              borderStyle = 'border-[#dfc99a] ring-2 ring-[#dfc99a]/30 bg-gradient-to-br from-[#dfc99a]/15 via-[#041c14] to-[#02140e]';
             } else if (isOccupied) {
               borderStyle = 'border-amber-500/30 hover:border-amber-500/60 bg-amber-950/10';
               badgeBg = 'bg-amber-500/15 text-amber-400 border-amber-500/30';
               statusText = 'Occupied';
             } else if (isOpenTab) {
-              borderStyle = 'border-sky-500/30 hover:border-sky-500/60 bg-sky-950/10';
-              badgeBg = 'bg-sky-500/15 text-sky-400 border-sky-500/30';
+              borderStyle = 'border-[#dfc99a]/30 hover:border-[#dfc99a]/60 bg-[#dfc99a]/5';
+              badgeBg = 'bg-[#dfc99a]/15 text-[#dfc99a] border-[#dfc99a]/30';
               statusText = 'Active Tab';
             }
 
@@ -210,7 +210,7 @@ export default function TableGrid({
               <button
                 key={table.id}
                 onClick={() => onSelectTable(table)}
-                className={`text-left p-3.5 rounded-xl border transition-all duration-200 relative group flex flex-col justify-between ${borderStyle}`}
+                className={`text-left p-3.5 rounded-2xl border transition-all duration-200 relative group flex flex-col justify-between ${borderStyle}`}
               >
                 <div>
                   {/* Top line: Table Number & Status Pill */}
@@ -226,21 +226,21 @@ export default function TableGrid({
                   </div>
 
                   {/* Table Name & Section */}
-                  <h4 className="text-xs font-semibold text-slate-200 line-clamp-1 group-hover:text-emerald-300 transition-colors">
+                  <h4 className="text-xs font-semibold text-emerald-100 line-clamp-1 group-hover:text-[#dfc99a] transition-colors">
                     {table.name}
                   </h4>
-                  <div className="flex items-center gap-1 text-[11px] text-slate-400 mt-0.5">
+                  <div className="flex items-center gap-1 text-[11px] text-emerald-400/70 mt-0.5">
                     <span>{table.section}</span>
                     <span>•</span>
                     <span className="flex items-center gap-0.5">
-                      <Users className="w-3 h-3 text-slate-500" />
+                      <Users className="w-3 h-3 text-emerald-500/70" />
                       {table.capacity}p
                     </span>
                   </div>
                 </div>
 
                 {/* Bottom line: Occupied info or Available prompt */}
-                <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                <div className="mt-3 pt-2.5 border-t border-emerald-900/40 flex items-center justify-between text-xs">
                   {isAvailable ? (
                     <span className="text-[11px] text-emerald-400 flex items-center gap-1 font-medium">
                       <CheckCircle2 className="w-3 h-3" />
@@ -249,17 +249,17 @@ export default function TableGrid({
                   ) : (
                     <>
                       <div className="flex flex-col min-w-0">
-                        <span className="text-[10px] text-slate-400 truncate">
+                        <span className="text-[10px] text-emerald-300/80 truncate">
                           {table.memberName || 'Table Tab'}
                         </span>
                         {table.membershipTier && (
-                          <span className="text-[9px] font-semibold text-emerald-400">
+                          <span className="text-[9px] font-semibold text-[#dfc99a]">
                             {table.membershipTier} Tier
                           </span>
                         )}
                       </div>
                       <div className="text-right">
-                        <span className="font-mono font-bold text-white text-xs">
+                        <span className="font-mono font-bold text-[#dfc99a] text-xs">
                           ₹{table.activeTabTotal || 0}
                         </span>
                       </div>
@@ -269,7 +269,7 @@ export default function TableGrid({
 
                 {/* Selected Indicator Checkmark */}
                 {isSelected && (
-                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-emerald-500 text-slate-950 rounded-full flex items-center justify-center shadow-lg font-bold text-xs">
+                  <span className="absolute -top-1.5 -right-1.5 w-5 h-5 btn-champagne rounded-full flex items-center justify-center shadow-lg font-bold text-xs">
                     ✓
                   </span>
                 )}

@@ -63,19 +63,19 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen bg-[#02140e] text-slate-100 flex flex-col font-sans selection:bg-[#dfc99a] selection:text-[#02140e]">
       {/* Locked Terminal Screen Overlay */}
       {isLocked && (
-        <div className="fixed inset-0 z-50 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl space-y-5">
-            <div className="w-16 h-16 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+        <div className="fixed inset-0 z-50 bg-[#02140e]/95 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-[#041c14] border border-emerald-900/50 rounded-3xl p-8 max-w-sm w-full text-center shadow-2xl space-y-5">
+            <div className="w-16 h-16 bg-[#07261c] border border-[#dfc99a]/30 text-[#dfc99a] rounded-2xl flex items-center justify-center mx-auto shadow-inner">
               <Lock className="w-8 h-8" />
             </div>
 
             <div>
-              <h3 className="text-xl font-bold text-white">Terminal Locked</h3>
-              <p className="text-xs text-slate-400 mt-1">
-                Enter staff PIN for <span className="text-emerald-400 font-semibold">{currentStaff.name}</span>
+              <h3 className="text-xl font-serif font-bold text-[#fcfaf5]">Terminal Locked</h3>
+              <p className="text-xs text-emerald-300/70 mt-1">
+                Enter staff PIN for <span className="text-[#dfc99a] font-semibold">{currentStaff.name}</span>
               </p>
             </div>
 
@@ -86,8 +86,8 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
                   key={idx}
                   className={`w-3.5 h-3.5 rounded-full transition-all ${
                     pinInput.length > idx
-                      ? 'bg-emerald-400 scale-110 shadow-sm shadow-emerald-400/50'
-                      : 'bg-slate-800 border border-slate-700'
+                      ? 'bg-[#dfc99a] scale-110 shadow-sm shadow-[#dfc99a]/50'
+                      : 'bg-[#02140e] border border-emerald-900/60'
                   }`}
                 />
               ))}
@@ -106,7 +106,7 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
                   key={num}
                   type="button"
                   onClick={() => handleKeypadPress(num.toString())}
-                  className="py-3.5 bg-slate-800/80 hover:bg-slate-700 text-white rounded-xl text-lg font-bold font-mono transition active:scale-95 border border-slate-700/50"
+                  className="py-3.5 bg-[#07261c] hover:bg-[#0b3829] text-white rounded-xl text-lg font-bold font-mono transition active:scale-95 border border-emerald-800/60"
                 >
                   {num}
                 </button>
@@ -114,21 +114,21 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
               <button
                 type="button"
                 onClick={() => setPinInput('')}
-                className="py-3.5 bg-slate-800/40 hover:bg-slate-800 text-slate-400 rounded-xl text-xs font-semibold uppercase transition active:scale-95"
+                className="py-3.5 bg-[#07261c]/40 hover:bg-[#07261c] text-emerald-400/70 rounded-xl text-xs font-semibold uppercase transition active:scale-95 border border-emerald-900/50"
               >
                 Clear
               </button>
               <button
                 type="button"
                 onClick={() => handleKeypadPress('0')}
-                className="py-3.5 bg-slate-800/80 hover:bg-slate-700 text-white rounded-xl text-lg font-bold font-mono transition active:scale-95 border border-slate-700/50"
+                className="py-3.5 bg-[#07261c] hover:bg-[#0b3829] text-white rounded-xl text-lg font-bold font-mono transition active:scale-95 border border-emerald-800/60"
               >
                 0
               </button>
               <button
                 type="button"
                 onClick={handlePinSubmit}
-                className="py-3.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 rounded-xl text-xs font-bold uppercase transition active:scale-95 shadow-md shadow-emerald-500/20"
+                className="py-3.5 btn-champagne rounded-xl text-xs font-bold uppercase transition active:scale-95 shadow-md shadow-[#dfc99a]/15"
               >
                 Enter
               </button>
@@ -138,32 +138,32 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
       )}
 
       {/* Top Operations Header */}
-      <header className="bg-slate-900/90 border-b border-slate-800/90 sticky top-0 z-40 backdrop-blur-md px-4 lg:px-6 py-2.5">
+      <header className="bg-[#041c14]/90 border-b border-emerald-900/40 sticky top-0 z-40 backdrop-blur-md px-4 lg:px-6 py-2.5">
         <div className="flex items-center justify-between gap-4">
           {/* Logo & Portal Identification */}
           <div className="flex items-center gap-3">
             <Link
               to="/"
-              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition"
+              className="p-1.5 rounded-lg bg-[#07261c] hover:bg-[#0b3829] text-emerald-300 hover:text-white transition border border-emerald-800/60"
               title="Return to Public Club Site"
             >
               <ArrowLeft className="w-4 h-4" />
             </Link>
 
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm shadow-sm">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#dfc99a] via-[#c59e4b] to-[#8c6b24] text-[#02140e] flex items-center justify-center font-bold text-sm shadow-sm">
                 CC
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-sm font-bold text-white tracking-wide">
+                  <h1 className="text-sm font-serif font-bold text-[#fcfaf5] tracking-wide">
                     CHAMPIONS CLUB
                   </h1>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 uppercase tracking-wider">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30 uppercase tracking-wider">
                     Staff Portal
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400">
+                <p className="text-[11px] text-emerald-400/70">
                   Operations & Bar POS Terminal
                 </p>
               </div>
@@ -171,16 +171,16 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
           </div>
 
           {/* Middle: Live Clock & Shift Duration */}
-          <div className="hidden md:flex items-center gap-4 bg-slate-950/60 border border-slate-800/80 px-4 py-1.5 rounded-xl text-xs">
-            <div className="flex items-center gap-1.5 text-slate-300">
-              <Clock className="w-3.5 h-3.5 text-emerald-400" />
+          <div className="hidden md:flex items-center gap-4 bg-[#02140e]/80 border border-emerald-900/50 px-4 py-1.5 rounded-xl text-xs">
+            <div className="flex items-center gap-1.5 text-emerald-100">
+              <Clock className="w-3.5 h-3.5 text-[#dfc99a]" />
               <span className="font-mono font-semibold">
                 {currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
               </span>
             </div>
-            <span className="text-slate-600">|</span>
-            <div className="text-slate-400">
-              Shift: <span className="text-slate-200 font-mono font-medium">{shiftStart} - Ongoing</span>
+            <span className="text-emerald-800">|</span>
+            <div className="text-emerald-300/70">
+              Shift: <span className="text-emerald-100 font-mono font-medium">{shiftStart} - Ongoing</span>
             </div>
           </div>
 
@@ -190,26 +190,26 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
               <button
                 type="button"
                 onClick={() => setStaffDropdownOpen(!staffDropdownOpen)}
-                className="flex items-center gap-2.5 p-1.5 pr-2.5 bg-slate-800/70 hover:bg-slate-800 border border-slate-700/60 rounded-xl transition"
+                className="flex items-center gap-2.5 p-1.5 pr-2.5 bg-[#07261c] hover:bg-[#0b3829] border border-emerald-800/60 rounded-xl transition"
               >
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-300 font-bold text-xs flex items-center justify-center">
+                <div className="w-7 h-7 rounded-lg bg-[#dfc99a]/20 text-[#dfc99a] font-bold text-xs flex items-center justify-center border border-[#dfc99a]/30">
                   {currentStaff.avatar}
                 </div>
                 <div className="text-left hidden sm:block">
-                  <div className="text-xs font-bold text-white leading-tight">
+                  <div className="text-xs font-bold text-[#fcfaf5] leading-tight">
                     {currentStaff.name}
                   </div>
-                  <div className="text-[10px] text-slate-400 leading-tight">
+                  <div className="text-[10px] text-emerald-400/70 leading-tight">
                     {currentStaff.role}
                   </div>
                 </div>
-                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                <ChevronDown className="w-3.5 h-3.5 text-emerald-400/70" />
               </button>
 
               {/* Staff Switcher Dropdown */}
               {staffDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl py-2 z-50 text-xs">
-                  <div className="px-3 py-1.5 border-b border-slate-800 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">
+                <div className="absolute right-0 mt-2 w-56 bg-[#041c14] border border-emerald-900/50 rounded-2xl shadow-2xl py-2 z-50 text-xs">
+                  <div className="px-3 py-1.5 border-b border-emerald-900/40 text-[10px] font-semibold text-emerald-400/70 uppercase tracking-wider">
                     Switch Active Staff Shift
                   </div>
                   {staffList.map((member) => (
@@ -221,20 +221,20 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
                       }}
                       className={`w-full px-3 py-2 text-left flex items-center justify-between transition ${
                         currentStaff.id === member.id
-                          ? 'bg-emerald-500/10 text-emerald-300'
-                          : 'text-slate-300 hover:bg-slate-800'
+                          ? 'bg-[#dfc99a]/15 text-[#dfc99a]'
+                          : 'text-emerald-200 hover:bg-[#07261c]'
                       }`}
                     >
                       <div>
                         <div className="font-semibold text-white">{member.name}</div>
-                        <div className="text-[10px] text-slate-400">{member.role}</div>
+                        <div className="text-[10px] text-emerald-400/70">{member.role}</div>
                       </div>
-                      <span className="text-[9px] font-mono bg-slate-800 px-1.5 py-0.5 rounded text-slate-400">
+                      <span className="text-[9px] font-mono bg-[#02140e] px-1.5 py-0.5 rounded text-emerald-300/80 border border-emerald-900/50">
                         PIN: {member.pin}
                       </span>
                     </button>
                   ))}
-                  <div className="pt-1 mt-1 border-t border-slate-800">
+                  <div className="pt-1 mt-1 border-t border-emerald-900/40">
                     <button
                       type="button"
                       onClick={handlePortalLogout}
@@ -252,7 +252,7 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
             <button
               type="button"
               onClick={lockTerminal}
-              className="p-2 rounded-xl bg-slate-800/80 hover:bg-amber-500/20 hover:text-amber-300 text-slate-400 border border-slate-700/60 transition"
+              className="p-2 rounded-xl bg-[#07261c] hover:bg-[#dfc99a]/20 hover:text-[#dfc99a] text-emerald-300 border border-emerald-800/60 transition"
               title="Lock Terminal Screen"
             >
               <Lock className="w-4 h-4" />
@@ -262,7 +262,7 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
             <button
               type="button"
               onClick={handlePortalLogout}
-              className="p-2 rounded-xl bg-slate-800/80 hover:bg-rose-500/20 hover:text-rose-300 text-slate-400 border border-slate-700/60 transition"
+              className="p-2 rounded-xl bg-[#07261c] hover:bg-rose-500/20 hover:text-rose-300 text-emerald-300 border border-emerald-800/60 transition"
               title="Sign Out of Operations Portal"
             >
               <LogOut className="w-4 h-4" />
@@ -271,13 +271,13 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
         </div>
 
         {/* Sub-Navigation for Operations Workspaces */}
-        <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-slate-800/60 overflow-x-auto text-xs scrollbar-none">
+        <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-emerald-900/40 overflow-x-auto text-xs scrollbar-none">
           <button
             onClick={() => onTabChange && onTabChange('pos')}
             className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
               activeTab === 'pos'
-                ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/10'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                ? 'btn-champagne font-bold shadow-md shadow-[#dfc99a]/10'
+                : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
             }`}
           >
             <Wine className="w-3.5 h-3.5" />
@@ -288,8 +288,8 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
             onClick={() => onTabChange && onTabChange('kds')}
             className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
               activeTab === 'kds'
-                ? 'bg-sky-500 text-slate-950 shadow-md shadow-sky-500/10'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                ? 'bg-sky-500 text-slate-950 font-bold shadow-md shadow-sky-500/10'
+                : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
             }`}
           >
             <Flame className="w-3.5 h-3.5" />
@@ -300,8 +300,8 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
             onClick={() => onTabChange && onTabChange('audit')}
             className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
               activeTab === 'audit'
-                ? 'bg-purple-500 text-slate-950 shadow-md shadow-purple-500/10'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+                ? 'bg-[#dfc99a] text-[#02140e] font-bold shadow-md shadow-[#dfc99a]/10'
+                : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
             }`}
           >
             <Receipt className="w-3.5 h-3.5" />

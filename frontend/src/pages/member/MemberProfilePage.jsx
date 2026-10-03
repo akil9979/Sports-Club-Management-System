@@ -94,24 +94,24 @@ export default function MemberProfilePage() {
   const memberAge = member?.dob ? calculateAge(member.dob) : null;
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-10 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#02140e] text-slate-100 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Navigation Breadcrumb / Top Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs text-slate-400 mb-2">
-              <Link to="/" className="hover:text-amber-400 transition-colors">Home</Link>
+            <div className="flex items-center gap-2 text-xs text-emerald-400/60 mb-2">
+              <Link to="/" className="hover:text-[#dfc99a] transition-colors">Home</Link>
               <span>/</span>
-              <Link to="/members" className="hover:text-amber-400 transition-colors">Member Directory</Link>
+              <Link to="/members" className="hover:text-[#dfc99a] transition-colors">Member Directory</Link>
               <span>/</span>
-              <span className="text-amber-400 font-medium">Member Profile</span>
+              <span className="text-[#dfc99a] font-medium">Member Profile</span>
             </div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-black text-white tracking-tight">
+              <h1 className="text-3xl font-serif font-black text-[#fcfaf5] tracking-tight">
                 {loading ? 'Loading Member...' : member ? member.name : 'Member Profile'}
               </h1>
               {member && (
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/30">
+                <span className="px-2.5 py-0.5 rounded-full text-xs font-mono font-bold bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30">
                   {member.memberNumber || member.id}
                 </span>
               )}
@@ -121,7 +121,7 @@ export default function MemberProfilePage() {
           <div className="flex items-center gap-3">
             <Link
               to="/members"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 text-xs font-semibold transition-colors"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-emerald-200 hover:text-white border border-emerald-800/60 text-xs font-semibold transition-colors"
             >
               <ArrowLeft className="w-4 h-4 shrink-0" />
               All Members
@@ -129,7 +129,7 @@ export default function MemberProfilePage() {
 
             <Link
               to="/members/register"
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold transition-all shadow-lg shadow-amber-500/20"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl btn-champagne text-xs font-bold transition-all shadow-lg shadow-[#dfc99a]/15"
             >
               <Plus className="w-4 h-4 shrink-0" />
               Register New
@@ -138,13 +138,13 @@ export default function MemberProfilePage() {
         </div>
 
         {/* Quick Demo Switcher Bar */}
-        <div className="bg-slate-900/60 border border-slate-800/80 rounded-2xl p-3.5 backdrop-blur-md">
+        <div className="bg-[#041c14]/90 border border-emerald-900/40 rounded-2xl p-3.5 backdrop-blur-md">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-300/80 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               Switch Test Member Profile (Click to inspect live state)
             </span>
-            <span className="text-[11px] text-slate-500">
+            <span className="text-[11px] text-emerald-500/70">
               Covers active, expired, junior, and walk-in states
             </span>
           </div>
@@ -155,10 +155,10 @@ export default function MemberProfilePage() {
               const tier = m.activeMembership?.tier || 'No Plan';
               const isExpired = m.activeMembership?.status === 'expired';
 
-              let badgeColor = 'bg-slate-800 text-slate-400';
-              if (tier === 'Gold') badgeColor = isExpired ? 'bg-rose-500/20 text-rose-300' : 'bg-amber-500/20 text-amber-300';
-              if (tier === 'Silver') badgeColor = 'bg-slate-700 text-slate-200';
-              if (tier === 'Junior') badgeColor = 'bg-cyan-500/20 text-cyan-300';
+              let badgeColor = 'bg-[#07261c] text-emerald-400 border-emerald-800/60';
+              if (tier === 'Gold') badgeColor = isExpired ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' : 'bg-[#dfc99a]/20 text-[#dfc99a] border-[#dfc99a]/40';
+              if (tier === 'Silver') badgeColor = 'bg-slate-700/40 text-slate-200 border-slate-600/40';
+              if (tier === 'Junior') badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
 
               return (
                 <button
@@ -167,12 +167,12 @@ export default function MemberProfilePage() {
                   onClick={() => navigate(`/members/${m.id}`)}
                   className={`px-3 py-1.5 rounded-xl text-xs font-medium border transition-all flex items-center gap-2 ${
                     isActive
-                      ? 'bg-amber-500/20 border-amber-500/60 text-white shadow-md'
-                      : 'bg-slate-900/80 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                      ? 'bg-[#dfc99a]/20 border-[#dfc99a]/60 text-white shadow-md'
+                      : 'bg-[#07261c]/80 border-emerald-900/60 text-emerald-200/80 hover:text-white hover:border-emerald-700/60'
                   }`}
                 >
                   <span className="font-semibold">{m.name}</span>
-                  <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold uppercase ${badgeColor}`}>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded font-bold uppercase border ${badgeColor}`}>
                     {isExpired ? 'Expired' : tier}
                   </span>
                 </button>
@@ -192,27 +192,27 @@ export default function MemberProfilePage() {
         {/* Loading State */}
         {loading ? (
           <div className="py-20 text-center space-y-4">
-            <div className="w-12 h-12 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin mx-auto"></div>
-            <p className="text-sm text-slate-400">Loading member profile and contract entitlements...</p>
+            <div className="w-12 h-12 border-4 border-[#dfc99a]/20 border-t-[#dfc99a] rounded-full animate-spin mx-auto"></div>
+            <p className="text-sm text-emerald-300/70">Loading member profile and contract entitlements...</p>
           </div>
         ) : error ? (
-          <div className="bg-slate-900 border border-rose-500/30 rounded-3xl p-8 text-center max-w-lg mx-auto">
+          <div className="bg-[#041c14] border border-rose-500/30 rounded-3xl p-8 text-center max-w-lg mx-auto">
             <div className="w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
               <AlertCircle className="w-7 h-7" />
             </div>
             <h3 className="text-lg font-bold text-white mb-2">Member Profile Error</h3>
-            <p className="text-xs text-slate-400 mb-6">{error}</p>
+            <p className="text-xs text-emerald-400/70 mb-6">{error}</p>
             <div className="flex justify-center gap-3">
               <button
                 type="button"
                 onClick={fetchMemberData}
-                className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold"
+                className="px-4 py-2 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-white text-xs font-semibold border border-emerald-800/60"
               >
                 Retry
               </button>
               <Link
                 to="/members"
-                className="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 text-xs font-bold"
+                className="px-4 py-2 rounded-xl btn-champagne text-xs font-bold"
               >
                 Return to Directory
               </Link>
@@ -221,39 +221,39 @@ export default function MemberProfilePage() {
         ) : member ? (
           <>
             {/* Member Details Card */}
-            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-md">
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-slate-800">
+            <div className="bg-[#041c14]/90 border border-emerald-900/40 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-md">
+              <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-emerald-900/40">
                 <div className="flex items-start gap-4">
                   {/* Avatar */}
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-amber-500 to-amber-700 text-slate-950 font-black text-2xl sm:text-3xl flex items-center justify-center shadow-lg shadow-amber-500/20 shrink-0">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-[#dfc99a] via-[#c59e4b] to-[#8c6b24] text-[#02140e] font-serif font-black text-2xl sm:text-3xl flex items-center justify-center shadow-lg shadow-[#dfc99a]/15 shrink-0">
                     {member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                   </div>
 
                   <div>
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-2xl font-black text-white">{member.name}</h2>
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-slate-800 text-slate-300 border border-slate-700">
+                      <h2 className="text-2xl font-serif font-black text-[#fcfaf5]">{member.name}</h2>
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-[#07261c] text-emerald-300 border border-emerald-800/60">
                         {member.memberNumber || member.id}
                       </span>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-400 mt-2">
+                    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-emerald-300/70 mt-2">
                       <div className="flex items-center gap-1.5">
-                        <Mail className="w-4 h-4 text-slate-500 shrink-0" />
-                        <span className="text-slate-200">{member.email}</span>
+                        <Mail className="w-4 h-4 text-emerald-500/70 shrink-0" />
+                        <span className="text-emerald-100">{member.email}</span>
                       </div>
 
                       <div className="flex items-center gap-1.5">
-                        <Phone className="w-4 h-4 text-slate-500 shrink-0" />
-                        <span className="text-slate-200">{member.phone}</span>
+                        <Phone className="w-4 h-4 text-emerald-500/70 shrink-0" />
+                        <span className="text-emerald-100">{member.phone}</span>
                       </div>
 
                       {memberAge !== null && (
                         <div className="flex items-center gap-1.5">
-                          <span className="text-slate-500">•</span>
-                          <span className="text-slate-300 font-medium">Age: {memberAge} yrs</span>
+                          <span className="text-emerald-600">•</span>
+                          <span className="text-emerald-200 font-medium">Age: {memberAge} yrs</span>
                           {memberAge < 18 && (
-                            <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-cyan-500/20 text-cyan-300">
+                            <span className="px-1.5 py-0.2 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
                               Junior Eligible
                             </span>
                           )}
@@ -268,7 +268,7 @@ export default function MemberProfilePage() {
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 text-xs font-semibold transition-colors"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-emerald-200 hover:text-white border border-emerald-800/60 text-xs font-semibold transition-colors"
                   >
                     <Edit3 className="w-4 h-4 shrink-0" />
                     Edit Profile
@@ -277,7 +277,7 @@ export default function MemberProfilePage() {
                   <button
                     type="button"
                     onClick={() => setIsPlanModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02]"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl btn-champagne font-bold text-xs shadow-lg shadow-[#dfc99a]/15 transition-all hover:scale-[1.02]"
                   >
                     <Sparkles className="w-4 h-4 shrink-0" />
                     {member.activeMembership ? 'Renew / Upgrade Plan' : 'Activate Membership'}
@@ -288,37 +288,37 @@ export default function MemberProfilePage() {
               {/* Extra Demographic Info Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 text-xs">
                 <div>
-                  <span className="text-slate-400 block uppercase tracking-wider text-[10px]">Date of Birth</span>
-                  <span className="text-slate-200 font-semibold mt-0.5 block">
+                  <span className="text-emerald-400/60 block uppercase tracking-wider text-[10px] font-medium">Date of Birth</span>
+                  <span className="text-emerald-100 font-semibold mt-0.5 block">
                     {formatDate(member.dob)}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block uppercase tracking-wider text-[10px]">Gender</span>
-                  <span className="text-slate-200 font-semibold mt-0.5 block">
+                  <span className="text-emerald-400/60 block uppercase tracking-wider text-[10px] font-medium">Gender</span>
+                  <span className="text-emerald-100 font-semibold mt-0.5 block">
                     {member.gender || 'Not specified'}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block uppercase tracking-wider text-[10px]">Emergency Contact</span>
-                  <span className="text-slate-200 font-semibold mt-0.5 block">
+                  <span className="text-emerald-400/60 block uppercase tracking-wider text-[10px] font-medium">Emergency Contact</span>
+                  <span className="text-emerald-100 font-semibold mt-0.5 block">
                     {member.emergencyContact || 'None recorded'}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block uppercase tracking-wider text-[10px]">Member Since</span>
-                  <span className="text-slate-200 font-semibold mt-0.5 block">
+                  <span className="text-emerald-400/60 block uppercase tracking-wider text-[10px] font-medium">Member Since</span>
+                  <span className="text-emerald-100 font-semibold mt-0.5 block">
                     {formatDate(member.createdAt)}
                   </span>
                 </div>
 
                 {member.address && (
-                  <div className="col-span-2 sm:col-span-4 pt-2 border-t border-slate-800/60">
-                    <span className="text-slate-400 uppercase tracking-wider text-[10px]">Address</span>
-                    <span className="text-slate-300 block mt-0.5">{member.address}</span>
+                  <div className="col-span-2 sm:col-span-4 pt-2 border-t border-emerald-900/40">
+                    <span className="text-emerald-400/60 uppercase tracking-wider text-[10px] font-medium">Address</span>
+                    <span className="text-emerald-200 block mt-0.5">{member.address}</span>
                   </div>
                 )}
               </div>
