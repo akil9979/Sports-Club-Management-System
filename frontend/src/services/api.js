@@ -473,3 +473,12 @@ export {
   getMemberMemberships
 } from '../features/membership/membershipApi.js';
 
+// Re-export shop API methods for Member 1 features
+export {
+  createShopOrder,
+  getShopOrders,
+  getShopOrderById,
+  getProductById
+} from '../features/shop/shopApi.js';
+
+
