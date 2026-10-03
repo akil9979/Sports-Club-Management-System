@@ -1,5 +1,6 @@
 /**
  * Champions Club - Bar & Operations API Service
+ * Role: MEMBER 2 (Bar & Cafeteria POS, Tab Management, Kitchen Progression & Settlement)
  * 
  * Clean, robust implementation for table orders, menu, tabs, kitchen status, and settlement.
  */
