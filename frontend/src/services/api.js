@@ -473,6 +473,15 @@ export {
   getMemberMemberships
 } from '../features/membership/membershipApi.js';
 
+// Re-export court booking API methods for Member 1 features
+export {
+  getSports,
+  getBookings,
+  createBooking,
+  cancelBooking,
+  getMemberBookingUsage
+} from '../features/bookings/bookingApi.js';
+
 // Re-export shop API methods for Member 1 features
 export {
   createShopOrder,
