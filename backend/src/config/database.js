@@ -8,33 +8,10 @@ const config = require('./env');
 
 const pool = new Pool(config.db);
 
-pool.on('error', (err) => {
-  console.error('[Database Pool] Unexpected error on idle PostgreSQL client:', err);
-});
+pool.on('error', (err) => console.error('[DB Error]', err.message));
 
-/**
- * Execute parameterized query
- * @param {string} text - Parameterized SQL query
- * @param {Array} params - Query arguments
- * @returns {Promise<import('pg').QueryResult>}
- */
-async function query(text, params = []) {
-  const start = Date.now();
-  const res = await pool.query(text, params);
-  const duration = Date.now() - start;
-  if (process.env.DEBUG_SQL === 'true') {
-    console.log('[SQL]', { text, params, duration, rows: res.rowCount });
-  }
-  return res;
-}
+const query = (text, params) => pool.query(text, params);
 
-/**
- * Execute callback within a database transaction
- * Automatically performs BEGIN, COMMIT, or ROLLBACK
- * @template T
- * @param {(client: import('pg').PoolClient) => Promise<T>} callback
- * @returns {Promise<T>}
- */
 async function withTransaction(callback) {
   const client = await pool.connect();
   try {
@@ -50,11 +27,8 @@ async function withTransaction(callback) {
   }
 }
 
-/**
- * Check connection status
- */
 async function testConnection() {
-  const res = await query('SELECT NOW() AS current_time, current_database() AS db_name');
+  const res = await pool.query('SELECT NOW() AS current_time, current_database() AS db_name');
   return res.rows[0];
 }
 
