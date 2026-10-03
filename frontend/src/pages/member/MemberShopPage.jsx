@@ -1,5 +1,4 @@
 import React from 'react';
-import { ShopCartProvider } from '../../features/shop/ShopCartContext.jsx';
 import ShopCatalogueSection from '../../components/public/ShopCatalogueSection.jsx';
 import { useAuth } from '../../features/auth/AuthContext.jsx';
 import { 
@@ -18,8 +17,7 @@ export default function MemberShopPage() {
   const isGold = user?.role === 'member' || user?.tier === 'Gold';
 
   return (
-    <ShopCartProvider>
-      <div className="py-10 space-y-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="py-10 space-y-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Member Header Card */}
         <div className="glass-panel p-6 sm:p-8 rounded-3xl border border-[#dfc99a]/30 bg-gradient-to-r from-[#06261b] via-[#041c14] to-[#02140e] shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="space-y-2 text-center md:text-left">
@@ -52,6 +50,5 @@ export default function MemberShopPage() {
         {/* Embedded Shop Catalogue */}
         <ShopCatalogueSection embedded={true} />
       </div>
-    </ShopCartProvider>
   );
 }
