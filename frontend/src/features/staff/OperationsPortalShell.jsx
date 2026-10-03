@@ -5,6 +5,7 @@ import {
   Wine,
   Flame,
   Receipt,
+  Users,
   Lock,
   ChevronDown,
   ArrowLeft,
@@ -317,6 +318,18 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
           >
             <Receipt className="w-3.5 h-3.5" />
             Settled Tabs Audit
+          </button>
+
+          <button
+            onClick={() => onTabChange && onTabChange('crm')}
+            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+              activeTab === 'crm'
+                ? 'btn-champagne font-bold shadow-md shadow-[#dfc99a]/10'
+                : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
+            }`}
+          >
+            <Users className="w-3.5 h-3.5" />
+            Enquiries & CRM Leads
           </button>
         </div>
       </header>
