@@ -215,4 +215,73 @@ describe('Membership System Tests (Member 1)', () => {
       }
     );
   });
+
+  // Test 11: Expired membership state inspection
+  test('member with expired membership is accurately flagged with expired status', async () => {
+    const member = await getMemberById('MEM-1092');
+    assert.ok(member);
+    // Before or after renewal, history maintains expired records
+    const history = await getMemberMemberships('MEM-1092');
+    const expiredRecord = history.find(h => h.status === 'expired');
+    assert.ok(expiredRecord, 'Should find an expired subscription in history');
+    assert.ok(new Date(expiredRecord.endDate) < new Date(), 'Expired endDate must be in the past');
+  });
+
+  // Test 12: No active membership (Walk-in rate) handling
+  test('member without active plan has null activeMembership', async () => {
+    const member = await getMemberById('MEM-9055');
+    assert.ok(member);
+    assert.equal(member.name, 'Pooja Reddy');
+    assert.equal(member.activeMembership, null, 'Walk-in member should have null active membership');
+  });
+
+  // Test 13: API error state for non-existent member
+  test('getMemberById rejects with not found error for non-existent member ID', async () => {
+    await assert.rejects(
+      async () => {
+        await getMemberById('MEM-DOES-NOT-EXIST-9999');
+      },
+      (err) => {
+        return err.message.includes('Member not found');
+      }
+    );
+  });
+
+  // Test 14: API error state for invalid plan ID assignment
+  test('assignMembership rejects when assigned an invalid or unknown plan', async () => {
+    await assert.rejects(
+      async () => {
+        await assignMembership('MEM-8801', {
+          planId: 'platinum-diamond-ultra-unknown',
+          billingCycle: 'monthly'
+        });
+      },
+      (err) => {
+        return err.message.includes('Invalid plan specified');
+      }
+    );
+  });
+
+  // Test 15: Member profile update validation checks
+  test('validateMemberProfile rejects empty names and invalid emails', () => {
+    const invalidProfile = {
+      name: ' ',
+      email: 'notanemail',
+      phone: '123'
+    };
+    const res = validateMemberProfile(invalidProfile);
+    assert.equal(res.isValid, false);
+    assert.ok(res.errors.name);
+    assert.ok(res.errors.email);
+    assert.ok(res.errors.phone);
+
+    const validProfile = {
+      name: 'Rohan Mehra',
+      email: 'rohan.mehra@example.com',
+      phone: '+919876543210'
+    };
+    const validRes = validateMemberProfile(validProfile);
+    assert.equal(validRes.isValid, true);
+    assert.equal(Object.keys(validRes.errors).length, 0);
+  });
 });
