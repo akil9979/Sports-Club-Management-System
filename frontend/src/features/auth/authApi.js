@@ -1,14 +1,12 @@
 /**
  * Champions Club - Authentication API Service
  * 
- * Strictly uses existing backend authentication endpoints:
- * - POST /api/auth/register (or /api/auth/signup)
+ * Simple, clear, and direct authentication client.
+ * Endpoints:
  * - POST /api/auth/login
+ * - POST /api/auth/register
  * - POST /api/auth/logout
  * - GET  /api/auth/me
- * 
- * Implements token storage, session hydration, and isolated fallback adapter
- * when the backend server is offline or in isolated test mode.
  */
 
 const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && import.meta.env.VITE_API_URL) || '';
@@ -16,19 +14,17 @@ const API_BASE_URL = (typeof import.meta !== 'undefined' && import.meta.env && i
 const TOKEN_KEY = 'champions_club_auth_token';
 const USER_KEY = 'champions_club_auth_user';
 
-// Safe localStorage accessor for Node test runners & browser environments
+// Safe storage accessor for both browser and Node test runner
 function getStorage() {
   if (typeof window !== 'undefined' && window.localStorage) {
     return window.localStorage;
   }
-  // In-memory fallback for headless/Node environments
   if (!globalThis.__mockLocalStorage) {
     globalThis.__mockLocalStorage = {
       _data: {},
-      getItem(key) { return this._data[key] || null; },
-      setItem(key, value) { this._data[key] = String(value); },
-      removeItem(key) { delete this._data[key]; },
-      clear() { this._data = {}; }
+      getItem(k) { return this._data[k] || null; },
+      setItem(k, v) { this._data[k] = String(v); },
+      removeItem(k) { delete this._data[k]; }
     };
   }
   return globalThis.__mockLocalStorage;
@@ -39,11 +35,8 @@ export function getToken() {
 }
 
 export function setToken(token) {
-  if (token) {
-    getStorage().setItem(TOKEN_KEY, token);
-  } else {
-    removeToken();
-  }
+  if (token) getStorage().setItem(TOKEN_KEY, token);
+  else removeToken();
 }
 
 export function removeToken() {
@@ -60,122 +53,37 @@ export function getStoredUser() {
 }
 
 export function setStoredUser(user) {
-  if (user) {
-    getStorage().setItem(USER_KEY, JSON.stringify(user));
-  } else {
-    removeStoredUser();
-  }
+  if (user) getStorage().setItem(USER_KEY, JSON.stringify(user));
+  else removeStoredUser();
 }
 
 export function removeStoredUser() {
   getStorage().removeItem(USER_KEY);
 }
 
-// Fallback seed accounts matching backend/schema/seed.sql
-const FALLBACK_USERS = [
-  {
-    id: '11111111-1111-1111-1111-111111111111',
-    email: 'admin@championsclub.com',
-    password: 'Password@123',
-    role: 'admin',
-    firstName: 'Club',
-    lastName: 'Administrator',
-    phone: '+919876543200',
-    memberId: null,
-    memberNumber: null,
-    membership: null
-  },
-  {
-    id: '22222222-2222-2222-2222-222222222221',
-    email: 'kenil.patel@championsclub.com',
-    password: 'Password@123',
-    role: 'manager',
-    firstName: 'Kenil',
-    lastName: 'Patel',
-    phone: '+919876543201',
-    memberId: null,
-    memberNumber: null,
-    membership: null
-  },
-  {
-    id: '22222222-2222-2222-2222-222222222222',
-    email: 'priya.nair@championsclub.com',
-    password: 'Password@123',
-    role: 'staff',
-    firstName: 'Priya',
-    lastName: 'Nair',
-    phone: '+919876543202',
-    memberId: null,
-    memberNumber: null,
-    membership: null
-  },
-  {
-    id: '33333333-3333-3333-3333-333333333331',
-    email: 'devon.conway@example.com',
-    password: 'Password@123',
-    role: 'member',
-    firstName: 'Devon',
-    lastName: 'Conway',
-    phone: '+919876543211',
-    memberId: 'MEM-8801',
-    memberNumber: 'CC-2026-8801',
-    membership: {
-      planId: 'gold',
-      planName: 'Gold Championship',
-      tier: 'Gold',
-      status: 'active',
-      shopDiscountPct: 20,
-      barDiscountPct: 15,
-      courtDiscountPct: 100
-    }
-  },
-  {
-    id: '33333333-3333-3333-3333-333333333332',
-    email: 'sarah.jenkins@example.com',
-    password: 'Password@123',
-    role: 'member',
-    firstName: 'Sarah',
-    lastName: 'Jenkins',
-    phone: '+919876543212',
-    memberId: 'MEM-4920',
-    memberNumber: 'CC-2026-4920',
-    membership: {
-      planId: 'silver',
-      planName: 'Silver Standard',
-      tier: 'Silver',
-      status: 'active',
-      shopDiscountPct: 10,
-      barDiscountPct: 10,
-      courtDiscountPct: 50
-    }
-  }
+// Seed demo users matching backend database
+const SEED_USERS = [
+  { id: '1', email: 'admin@championsclub.com', password: 'Password@123', role: 'admin', firstName: 'Club', lastName: 'Administrator' },
+  { id: '2', email: 'kenil.patel@championsclub.com', password: 'Password@123', role: 'manager', firstName: 'Kenil', lastName: 'Patel' },
+  { id: '3', email: 'priya.nair@championsclub.com', password: 'Password@123', role: 'staff', firstName: 'Priya', lastName: 'Nair' },
+  { id: '4', email: 'devon.conway@example.com', password: 'Password@123', role: 'member', firstName: 'Devon', lastName: 'Conway', memberId: 'MEM-8801', memberNumber: 'CC-2026-8801' },
+  { id: '5', email: 'sarah.jenkins@example.com', password: 'Password@123', role: 'member', firstName: 'Sarah', lastName: 'Jenkins', memberId: 'MEM-4920', memberNumber: 'CC-2026-4920' }
 ];
 
-let dynamicRegisteredUsers = [];
+let dynamicUsers = [];
 
-// Helper to generate a client-side mock JWT
-function generateMockToken(user) {
-  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
-  const payload = btoa(JSON.stringify({
-    userId: user.id,
-    email: user.email,
-    role: user.role,
-    exp: Math.floor(Date.now() / 1000) + (24 * 60 * 60)
-  }));
-  return `${header}.${payload}.mockSignatureChampionsClub`;
-}
-
-/**
- * Validate email address syntax
- */
 export function isValidEmail(email) {
-  if (typeof email !== 'string') return false;
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+  return typeof email === 'string' && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+}
+
+function createError(message, status) {
+  const err = new Error(message);
+  err.status = status;
+  return err;
 }
 
 /**
- * Login user with email and password
- * Calls POST /api/auth/login
+ * Login user
  */
 export async function login({ email, password }) {
   if (!email || !password) {
@@ -187,102 +95,46 @@ export async function login({ email, password }) {
   try {
     const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email: cleanEmail, password })
     });
 
     const body = await res.json().catch(() => ({}));
-
     if (!res.ok) {
-      const errMsg = body.message || (res.status === 401 ? 'Invalid email or password' : 'Login failed');
-      const err = new Error(errMsg);
-      err.status = res.status;
-      err.response = body;
-      throw err;
+      throw createError(body.message || 'Invalid email or password', res.status);
     }
 
     const { user, token } = body.data || {};
-    if (token) {
-      setToken(token);
-    }
-    if (user) {
-      setStoredUser(user);
-    }
+    if (token) setToken(token);
+    if (user) setStoredUser(user);
 
-    return {
-      success: true,
-      data: { user, token },
-      message: body.message || 'Login successful'
-    };
+    return { success: true, data: { user, token }, message: body.message || 'Login successful' };
   } catch (err) {
-    // If it's an HTTP error from backend (like 401, 400, 403), rethrow it directly
-    if (err.status) {
-      throw err;
+    if (err.status) throw err;
+
+    // Offline mode simulation
+    const user = [...SEED_USERS, ...dynamicUsers].find((u) => u.email.toLowerCase() === cleanEmail);
+    if (!user || user.password !== password) {
+      throw createError('Invalid email or password', 401);
     }
 
-    // Backend network error or offline fallback simulation
-    const candidate = [...FALLBACK_USERS, ...dynamicRegisteredUsers].find(
-      (u) => u.email.toLowerCase() === cleanEmail
-    );
-
-    if (!candidate || candidate.password !== password) {
-      const authErr = new Error('Invalid email or password');
-      authErr.status = 401;
-      throw authErr;
-    }
-
-    const token = generateMockToken(candidate);
-    const safeUser = {
-      id: candidate.id,
-      email: candidate.email,
-      role: candidate.role,
-      firstName: candidate.firstName,
-      lastName: candidate.lastName,
-      phone: candidate.phone,
-      memberId: candidate.memberId,
-      memberNumber: candidate.memberNumber,
-      membership: candidate.membership
-    };
+    const token = `token-${user.id}-${Date.now()}`;
+    const safeUser = { id: user.id, email: user.email, role: user.role, firstName: user.firstName, lastName: user.lastName, memberId: user.memberId, memberNumber: user.memberNumber };
 
     setToken(token);
     setStoredUser(safeUser);
-
-    return {
-      success: true,
-      data: { user: safeUser, token },
-      message: 'Login successful'
-    };
+    return { success: true, data: { user: safeUser, token }, message: 'Login successful' };
   }
 }
 
 /**
- * Register a new user
- * Calls POST /api/auth/register (or /api/auth/signup)
+ * Register user
  */
 export async function register({ email, password, firstName, lastName, phone = '', role = 'member' }) {
-  if (!email || !isValidEmail(email)) {
-    const err = new Error('Valid email is required');
-    err.status = 422;
-    throw err;
-  }
-  if (!password || password.length < 6) {
-    const err = new Error('Password must be at least 6 characters');
-    err.status = 422;
-    throw err;
-  }
-  if (!firstName || !firstName.trim()) {
-    const err = new Error('First name is required');
-    err.status = 422;
-    throw err;
-  }
-  if (!lastName || !lastName.trim()) {
-    const err = new Error('Last name is required');
-    err.status = 422;
-    throw err;
-  }
+  if (!email || !isValidEmail(email)) throw createError('Valid email is required', 422);
+  if (!password || password.length < 6) throw createError('Password must be at least 6 characters', 422);
+  if (!firstName || !firstName.trim()) throw createError('First name is required', 422);
+  if (!lastName || !lastName.trim()) throw createError('Last name is required', 422);
 
   const payload = {
     email: email.toLowerCase().trim(),
@@ -294,103 +146,46 @@ export async function register({ email, password, firstName, lastName, phone = '
   };
 
   try {
-    // Attempt standard route /api/auth/register first
     let res = await fetch(`${API_BASE_URL}/api/auth/register`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
 
-    // If 404, fallback to /api/auth/signup in case of alternative backend route
     if (res.status === 404) {
       res = await fetch(`${API_BASE_URL}/api/auth/signup`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
     }
 
     const body = await res.json().catch(() => ({}));
-
     if (!res.ok) {
-      const errMsg = body.message || (res.status === 409 ? 'Email address is already registered' : 'Registration failed');
-      const err = new Error(errMsg);
-      err.status = res.status;
-      err.response = body;
-      throw err;
+      throw createError(body.message || (res.status === 409 ? 'Email address is already registered' : 'Registration failed'), res.status);
     }
 
     const { user, member, token } = body.data || {};
-    if (token) {
-      setToken(token);
-    }
-    if (user) {
-      const stored = {
-        ...user,
-        memberId: member?.id || user.memberId,
-        memberNumber: member?.member_number || user.memberNumber
-      };
-      setStoredUser(stored);
-    }
+    if (token) setToken(token);
+    if (user) setStoredUser(user);
 
-    return {
-      success: true,
-      data: body.data,
-      message: body.message || 'Account registered successfully'
-    };
+    return { success: true, data: body.data, message: body.message || 'Account registered successfully' };
   } catch (err) {
-    if (err.status) {
-      throw err;
-    }
+    if (err.status) throw err;
 
-    // Backend offline / isolated mock fallback
-    const alreadyExists = [...FALLBACK_USERS, ...dynamicRegisteredUsers].some(
-      (u) => u.email.toLowerCase() === payload.email
-    );
-    if (alreadyExists) {
-      const conflictErr = new Error('Email address is already registered');
-      conflictErr.status = 409;
-      throw conflictErr;
-    }
+    // Offline duplicate check
+    const exists = [...SEED_USERS, ...dynamicUsers].some((u) => u.email.toLowerCase() === payload.email);
+    if (exists) throw createError('Email address is already registered', 409);
 
-    const randomSuffix = Math.floor(1000 + Math.random() * 9000);
-    const newId = `usr-${Date.now()}-${randomSuffix}`;
-    const memberId = payload.role === 'member' ? `MEM-${randomSuffix}` : null;
-    const memberNumber = payload.role === 'member' ? `CC-${new Date().getFullYear()}-${randomSuffix}` : null;
+    const id = `usr-${Date.now()}`;
+    const memberId = payload.role === 'member' ? `MEM-${Date.now().toString().slice(-4)}` : null;
+    const memberNumber = memberId ? `CC-2026-${memberId.replace('MEM-', '')}` : null;
 
-    const newUser = {
-      id: newId,
-      email: payload.email,
-      password: payload.password,
-      role: payload.role,
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      phone: payload.phone,
-      memberId,
-      memberNumber,
-      membership: null
-    };
+    const newUser = { ...payload, id, memberId, memberNumber };
+    dynamicUsers.push(newUser);
 
-    dynamicRegisteredUsers.push(newUser);
-
-    const token = generateMockToken(newUser);
-    const safeUser = {
-      id: newUser.id,
-      email: newUser.email,
-      role: newUser.role,
-      firstName: newUser.firstName,
-      lastName: newUser.lastName,
-      phone: newUser.phone,
-      memberId,
-      memberNumber,
-      membership: null
-    };
+    const token = `token-${id}`;
+    const safeUser = { id, email: payload.email, role: payload.role, firstName: payload.firstName, lastName: payload.lastName, memberId, memberNumber };
 
     setToken(token);
     setStoredUser(safeUser);
@@ -408,8 +203,7 @@ export async function register({ email, password, firstName, lastName, phone = '
 }
 
 /**
- * Get current authenticated user profile
- * Calls GET /api/auth/me
+ * Get current session profile
  */
 export async function getCurrentUser() {
   const token = getToken();
@@ -420,11 +214,7 @@ export async function getCurrentUser() {
 
   try {
     const res = await fetch(`${API_BASE_URL}/api/auth/me`, {
-      method: 'GET',
-      headers: {
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
+      headers: { Authorization: `Bearer ${token}` }
     });
 
     if (res.status === 401) {
@@ -433,47 +223,33 @@ export async function getCurrentUser() {
       return null;
     }
 
-    if (!res.ok) {
-      throw new Error(`Failed to fetch current user profile: HTTP ${res.status}`);
-    }
-
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const body = await res.json();
-    const userProfile = body.data || body;
-    setStoredUser(userProfile);
-    return userProfile;
-  } catch (err) {
-    // Offline / fallback session recovery
-    const cached = getStoredUser();
-    if (cached) {
-      return cached;
-    }
-    return null;
+    const user = body.data || body;
+    setStoredUser(user);
+    return user;
+  } catch {
+    return getStoredUser();
   }
 }
 
 /**
- * Logout current user
- * Calls POST /api/auth/logout
+ * Logout
  */
 export async function logout() {
   const token = getToken();
-
   try {
     if (token) {
       await fetch(`${API_BASE_URL}/api/auth/logout`, {
         method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { Authorization: `Bearer ${token}` }
       });
     }
-  } catch (err) {
-    // Ignore network error on logout, local cleanup takes precedence
+  } catch {
+    // Local cleanup takes precedence
   } finally {
     removeToken();
     removeStoredUser();
   }
-
   return { success: true, message: 'Logged out successfully' };
 }

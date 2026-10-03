@@ -15,7 +15,6 @@ import {
   Users,
   LogIn,
   LogOut,
-  User,
   Wine
 } from 'lucide-react';
 

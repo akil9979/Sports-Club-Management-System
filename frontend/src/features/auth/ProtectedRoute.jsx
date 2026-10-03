@@ -1,28 +1,18 @@
 import React from 'react';
-import { Navigate, useLocation, Outlet } from 'react-router-dom';
+import { Navigate, useLocation, Outlet, Link } from 'react-router-dom';
 import { useAuth } from './AuthContext.jsx';
 import { ShieldAlert, Loader2 } from 'lucide-react';
 
-/**
- * ProtectedRoute component
- * 
- * Guards routes requiring authentication.
- * Optional allowedRoles: Array or comma-delimited roles permitted.
- * Redirects unauthenticated users to /login preserving target location.
- */
 export default function ProtectedRoute({ allowedRoles = null, children = null }) {
   const { isAuthenticated, isLoading, user } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-100 p-4">
-        <div className="flex flex-col items-center gap-4 bg-slate-900/80 p-8 rounded-2xl border border-slate-800 shadow-2xl backdrop-blur-md">
-          <Loader2 className="w-10 h-10 text-emerald-400 animate-spin" />
-          <div className="text-center">
-            <h3 className="font-semibold text-white tracking-wide">Verifying Club Session</h3>
-            <p className="text-xs text-slate-400 mt-1">Checking secure credentials...</p>
-          </div>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-100">
+        <div className="flex flex-col items-center gap-3 bg-slate-900/80 p-6 rounded-2xl border border-slate-800">
+          <Loader2 className="w-8 h-8 text-emerald-400 animate-spin" />
+          <span className="text-sm font-medium">Verifying Session...</span>
         </div>
       </div>
     );
@@ -33,37 +23,18 @@ export default function ProtectedRoute({ allowedRoles = null, children = null })
   }
 
   if (allowedRoles) {
-    const rolesArray = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
-    const userRole = user?.role;
-    const hasPermission = userRole === 'admin' || rolesArray.includes(userRole);
-
-    if (!hasPermission) {
+    const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
+    const allowed = user?.role === 'admin' || roles.includes(user?.role);
+    if (!allowed) {
       return (
-        <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center text-slate-100 p-4">
-          <div className="max-w-md w-full bg-slate-900/90 border border-rose-500/30 rounded-2xl p-6 text-center shadow-2xl space-y-4">
-            <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
-              <ShieldAlert className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white">Access Restricted</h2>
-              <p className="text-sm text-slate-400 mt-1.5">
-                Your role (<span className="text-rose-400 font-semibold uppercase text-xs">{userRole || 'Unknown'}</span>)
-                does not have permission to view this staff or administrative area.
-              </p>
-            </div>
-            <div className="pt-2 flex items-center justify-center gap-3">
-              <a
-                href="/"
-                className="px-4 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg transition-colors"
-              >
-                Return to Home
-              </a>
-              <a
-                href="/membership"
-                className="px-4 py-2 text-xs font-semibold text-slate-950 bg-emerald-400 hover:bg-emerald-300 rounded-lg transition-colors"
-              >
-                View Member Desk
-              </a>
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-slate-900 border border-rose-500/30 rounded-2xl p-6 text-center space-y-4">
+            <ShieldAlert className="w-10 h-10 text-rose-400 mx-auto" />
+            <h2 className="text-lg font-bold text-white">Access Restricted</h2>
+            <p className="text-xs text-slate-400">Your role ({user?.role}) does not have permission to access this area.</p>
+            <div className="flex justify-center gap-2">
+              <Link to="/" className="px-3 py-1.5 text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-white rounded-lg">Home</Link>
+              <Link to="/members" className="px-3 py-1.5 text-xs font-semibold bg-emerald-500 text-slate-950 rounded-lg">Members</Link>
             </div>
           </div>
         </div>
@@ -71,5 +42,5 @@ export default function ProtectedRoute({ allowedRoles = null, children = null })
     }
   }
 
-  return children ? children : <Outlet />;
+  return children || <Outlet />;
 }
