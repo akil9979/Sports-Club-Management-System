@@ -28,10 +28,13 @@ export default function AppRoutes() {
         <Routes>
           {/* Protected Staff & Operations Portal Routes */}
           <Route element={<ProtectedRoute allowedRoles={['staff', 'manager', 'admin']} />}>
-            <Route path="/staff" element={<Navigate to="/staff/bar" replace />} />
+            <Route path="/staff" element={<Navigate to="/staff/verification" replace />} />
+            <Route path="/staff/verification" element={<StaffOperationsPage />} />
+            <Route path="/staff/frontdesk" element={<StaffOperationsPage />} />
             <Route path="/staff/bar" element={<StaffOperationsPage />} />
             <Route path="/staff/operations" element={<StaffOperationsPage />} />
-            <Route path="/operations" element={<Navigate to="/staff/bar" replace />} />
+            <Route path="/operations" element={<Navigate to="/staff/verification" replace />} />
+            <Route path="/operations/verification" element={<StaffOperationsPage />} />
             <Route path="/bar" element={<Navigate to="/staff/bar" replace />} />
           </Route>
 

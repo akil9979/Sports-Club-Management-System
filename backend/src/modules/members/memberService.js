@@ -1,11 +1,15 @@
-/**
- * Champions Club - Members Service
- * Role: MEMBER 3 (Canonical Database Owner)
- */
-
+const crypto = require('crypto');
 const bcrypt = require('bcryptjs');
+let QRCode;
+try {
+  QRCode = require('qrcode');
+} catch (e) {
+  QRCode = null;
+}
 const { query, withTransaction } = require('../../config/database');
 const { validators } = require('../../middleware/validator');
+
+const frontdeskCheckInLogs = [];
 
 class MemberService {
   /**
@@ -385,6 +389,354 @@ class MemberService {
     }
 
     return res.rows[0];
+  }
+
+  /**
+   * Generate canonical QR verification payload and QR Data URL for a member
+   */
+  async getMemberQrPass(memberId) {
+    const memberDetails = await this.getMemberById(memberId);
+    const ms = memberDetails.membership || memberDetails.activeMembership;
+
+    const tier = ms?.plan_tier || ms?.planTier || ms?.tier || 'Walk-In';
+    const planName = ms?.plan_name || ms?.planName || 'Standard Walk-In';
+    const startDate = ms?.start_date || ms?.startDate || null;
+    const endDate = ms?.end_date || ms?.endDate || null;
+    const courtPrivileges = ms?.court_privileges || ms?.courtPrivileges || 'Standard walk-in hourly rates';
+    const shopDiscountPct = parseFloat(ms?.shop_discount_pct ?? ms?.shopDiscountPct ?? 0);
+    const barDiscountPct = parseFloat(ms?.bar_discount_pct ?? ms?.barDiscountPct ?? 0);
+    const advanceBookingDays = ms?.advance_booking_days ?? ms?.advanceBookingDays ?? 7;
+    const guestPassesPerMonth = ms?.guest_passes_per_month ?? ms?.guestPassesPerMonth ?? 0;
+
+    // Calculate age if DOB is present
+    let age = null;
+    let isJuniorEligible = false;
+    const dobRaw = memberDetails.dateOfBirth || memberDetails.date_of_birth;
+    if (dobRaw) {
+      const dob = new Date(dobRaw);
+      if (!isNaN(dob.getTime())) {
+        const today = new Date();
+        age = today.getFullYear() - dob.getFullYear();
+        const m = today.getMonth() - dob.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+          age--;
+        }
+        isJuniorEligible = age < 18;
+      }
+    }
+
+    // Determine status & days remaining
+    let status = 'none';
+    let daysRemaining = 0;
+    if (ms && endDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(0, 0, 0, 0);
+      const diffTime = end.getTime() - today.getTime();
+      daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (daysRemaining < 0 || ms.status === 'expired') {
+        status = 'expired';
+      } else if (daysRemaining <= 7) {
+        status = 'expiring_soon';
+      } else {
+        status = 'active';
+      }
+    }
+
+    // Cryptographic signature to prevent tampering
+    const secret = process.env.JWT_SECRET || 'champions_club_super_secure_jwt_secret_2026';
+    const signData = `${memberDetails.id}:${memberDetails.memberNumber || memberDetails.member_number}:${tier}:${endDate || ''}`;
+    const signature = crypto.createHmac('sha256', secret).update(signData).digest('hex').slice(0, 16);
+
+    const payload = {
+      type: 'CHAMPIONS_CLUB_MEMBERSHIP_PASS',
+      version: '1.0',
+      club: 'Champions Club',
+      member: {
+        id: memberDetails.id,
+        memberNumber: memberDetails.memberNumber || memberDetails.member_number,
+        name: memberDetails.name || `${memberDetails.first_name} ${memberDetails.last_name}`,
+        firstName: memberDetails.firstName || memberDetails.first_name,
+        lastName: memberDetails.lastName || memberDetails.last_name,
+        email: memberDetails.email,
+        phone: memberDetails.phone,
+        dob: dobRaw,
+        age,
+        isJuniorEligible,
+        gender: memberDetails.gender,
+        emergencyContact: memberDetails.emergencyContact || memberDetails.emergency_contact_phone || memberDetails.emergency_contact_name,
+        memberSince: memberDetails.createdAt || memberDetails.created_at
+      },
+      membership: {
+        id: ms?.id || null,
+        planId: ms?.plan_id || ms?.planId || null,
+        planName,
+        tier,
+        status,
+        startDate,
+        endDate,
+        daysRemaining,
+        courtPrivileges,
+        shopDiscount: `${shopDiscountPct}% Pro Shop discount`,
+        barDiscount: `${barDiscountPct}% Lounge & Bar discount`,
+        shopDiscountPct,
+        barDiscountPct,
+        advanceBookingDays,
+        guestPassesPerMonth,
+        benefits: ms?.benefits || []
+      },
+      security: {
+        signature,
+        issuedAt: new Date().toISOString()
+      }
+    };
+
+    let qrDataUrl = null;
+    if (QRCode) {
+      try {
+        qrDataUrl = await QRCode.toDataURL(JSON.stringify(payload), {
+          errorCorrectionLevel: 'M',
+          margin: 2,
+          width: 380,
+          color: {
+            dark: tier.toLowerCase() === 'gold' ? '#8c6b24' : tier.toLowerCase() === 'silver' ? '#1e293b' : '#047857',
+            light: '#ffffff'
+          }
+        });
+      } catch (e) {
+        console.warn('QR DataURL generation error:', e);
+      }
+    }
+
+    return {
+      pass: payload,
+      qrRaw: JSON.stringify(payload),
+      qrDataUrl
+    };
+  }
+
+  /**
+   * Verify member QR code at Frontdesk
+   */
+  async verifyMemberQr({ qrPayload, memberId, memberNumber }) {
+    let targetMemberId = memberId || memberNumber;
+    let decodedPass = null;
+
+    if (qrPayload) {
+      if (typeof qrPayload === 'string') {
+        try {
+          decodedPass = JSON.parse(qrPayload);
+          targetMemberId = decodedPass?.member?.id || decodedPass?.member?.memberNumber || decodedPass?.memberId || targetMemberId;
+        } catch (e) {
+          // May be direct member ID string like "MEM-8801" or "CC-2026-8801"
+          targetMemberId = qrPayload.trim();
+        }
+      } else if (typeof qrPayload === 'object') {
+        decodedPass = qrPayload;
+        targetMemberId = decodedPass?.member?.id || decodedPass?.member?.memberNumber || targetMemberId;
+      }
+    }
+
+    if (!targetMemberId) {
+      const err = new Error('No valid member identifier or QR payload provided');
+      err.statusCode = 422;
+      throw err;
+    }
+
+    // Lookup fresh member from canonical DB
+    const memberDetails = await this.getMemberById(targetMemberId);
+    const ms = memberDetails.membership || memberDetails.activeMembership;
+
+    const tier = ms?.plan_tier || ms?.planTier || ms?.tier || 'Walk-In';
+    const planName = ms?.plan_name || ms?.planName || 'Standard Walk-In';
+    const startDate = ms?.start_date || ms?.startDate || null;
+    const endDate = ms?.end_date || ms?.endDate || null;
+    const courtPrivileges = ms?.court_privileges || ms?.courtPrivileges || 'Walk-in standard hourly court fee';
+    const shopDiscountPct = parseFloat(ms?.shop_discount_pct ?? ms?.shopDiscountPct ?? 0);
+    const barDiscountPct = parseFloat(ms?.bar_discount_pct ?? ms?.barDiscountPct ?? 0);
+    const advanceBookingDays = ms?.advance_booking_days ?? ms?.advanceBookingDays ?? 7;
+    const guestPassesPerMonth = ms?.guest_passes_per_month ?? ms?.guestPassesPerMonth ?? 0;
+    const billingCycle = ms?.payment_frequency || ms?.billingCycle || 'monthly';
+
+    // Calculate age
+    let age = null;
+    const dobRaw = memberDetails.dateOfBirth || memberDetails.date_of_birth;
+    if (dobRaw) {
+      const dob = new Date(dobRaw);
+      if (!isNaN(dob.getTime())) {
+        const today = new Date();
+        age = today.getFullYear() - dob.getFullYear();
+        const m = today.getMonth() - dob.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+          age--;
+        }
+      }
+    }
+
+    // Determine status & days remaining
+    let status = 'no_membership';
+    let daysRemaining = 0;
+    const alerts = [];
+
+    if (ms && endDate) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const end = new Date(endDate);
+      end.setHours(0, 0, 0, 0);
+      const diffTime = end.getTime() - today.getTime();
+      daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (daysRemaining < 0 || ms.status === 'expired') {
+        status = 'expired';
+        alerts.push({
+          type: 'danger',
+          code: 'MEMBERSHIP_EXPIRED',
+          message: `Membership expired ${Math.abs(daysRemaining)} days ago on ${endDate}. Access restricted; prompt for plan renewal.`
+        });
+      } else if (daysRemaining <= 7) {
+        status = 'expiring_soon';
+        alerts.push({
+          type: 'warning',
+          code: 'EXPIRING_SOON',
+          message: `Membership expiring in ${daysRemaining} ${daysRemaining === 1 ? 'day' : 'days'} (${endDate}). Encourage early renewal.`
+        });
+      } else {
+        status = 'active';
+        alerts.push({
+          type: 'success',
+          code: 'ACTIVE_VALID',
+          message: `Active ${tier} member in good standing with ${daysRemaining} days remaining.`
+        });
+      }
+
+      // Check junior age verification
+      if (tier.toLowerCase() === 'junior') {
+        if (age !== null && age >= 18) {
+          alerts.push({
+            type: 'warning',
+            code: 'JUNIOR_OVERAGE',
+            message: `Member is ${age} years old and has graduated past Junior eligibility (< 18). Please upgrade to Silver or Gold tier.`
+          });
+        } else if (age !== null) {
+          alerts.push({
+            type: 'info',
+            code: 'JUNIOR_VERIFIED',
+            message: `Junior player verified: age ${age}. Parent/Guardian contact: ${memberDetails.emergencyContact || memberDetails.emergency_contact_phone || 'None'}`
+          });
+        }
+      }
+    } else {
+      status = 'no_membership';
+      alerts.push({
+        type: 'warning',
+        code: 'NO_ACTIVE_MEMBERSHIP',
+        message: 'Member currently has no active membership plan. Standard walk-in court & bar rates apply.'
+      });
+    }
+
+    const accessGranted = status === 'active' || status === 'expiring_soon';
+
+    return {
+      valid: true,
+      accessGranted,
+      status,
+      message: accessGranted
+        ? `Verification Approved: ${memberDetails.name || `${memberDetails.first_name} ${memberDetails.last_name}`} (${tier} Member)`
+        : `Verification Flagged: ${status === 'expired' ? 'Membership Expired' : 'No Active Membership'}`,
+      member: {
+        id: memberDetails.id,
+        memberNumber: memberDetails.memberNumber || memberDetails.member_number,
+        name: memberDetails.name || `${memberDetails.first_name} ${memberDetails.last_name}`,
+        email: memberDetails.email,
+        phone: memberDetails.phone,
+        dob: dobRaw,
+        age,
+        gender: memberDetails.gender,
+        emergencyContact: memberDetails.emergencyContact || memberDetails.emergency_contact_phone || memberDetails.emergency_contact_name,
+        status: memberDetails.status
+      },
+      membership: ms ? {
+        id: ms.id,
+        planId: ms.plan_id || ms.planId,
+        planName,
+        tier,
+        status,
+        startDate,
+        endDate,
+        daysRemaining,
+        billingCycle
+      } : null,
+      entitlements: {
+        tier,
+        courtPrivileges,
+        shopDiscount: `${shopDiscountPct}% Pro Shop discount`,
+        barDiscount: `${barDiscountPct}% Lounge & Bar discount`,
+        shopDiscountPct,
+        barDiscountPct,
+        advanceBookingDays,
+        guestPassesPerMonth
+      },
+      alerts,
+      verifiedAt: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Log frontdesk check-in
+   */
+  async logFrontdeskCheckIn({ memberId, facility = 'General Clubhouse', staffId = 'staff-1', staffName = 'Frontdesk Staff', accessGranted = true, notes = '' }) {
+    const verification = await this.verifyMemberQr({ memberId });
+    const checkInRecord = {
+      id: `CHK-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+      memberId: verification.member.id,
+      memberNumber: verification.member.memberNumber,
+      memberName: verification.member.name,
+      tier: verification.membership?.tier || 'Walk-In',
+      status: verification.status,
+      facility,
+      staffId,
+      staffName,
+      accessGranted,
+      notes: notes || '',
+      timestamp: new Date().toISOString(),
+      verifiedAtTime: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    frontdeskCheckInLogs.unshift(checkInRecord);
+    if (frontdeskCheckInLogs.length > 200) {
+      frontdeskCheckInLogs.pop();
+    }
+
+    return {
+      success: true,
+      checkIn: checkInRecord,
+      verification
+    };
+  }
+
+  /**
+   * Get today's check-ins log
+   */
+  async getFrontdeskCheckIns({ limit = 50 } = {}) {
+    const list = frontdeskCheckInLogs.slice(0, Number(limit) || 50);
+    const todayStr = new Date().toISOString().split('T')[0];
+    const todayLogs = frontdeskCheckInLogs.filter(c => c.timestamp?.startsWith(todayStr));
+
+    const totalScans = todayLogs.length;
+    const activeVerified = todayLogs.filter(c => c.accessGranted).length;
+    const expiredFlagged = todayLogs.filter(c => !c.accessGranted || c.status === 'expired').length;
+
+    return {
+      success: true,
+      stats: {
+        totalScans,
+        activeVerified,
+        expiredFlagged
+      },
+      logs: list
+    };
   }
 }
 

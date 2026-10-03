@@ -12,7 +12,14 @@ const bookingController = require('../bookings/bookingController');
 // Member Management Endpoints
 router.post('/', authenticate, authorize('admin', 'manager', 'staff'), memberController.create);
 router.get('/', authenticate, authorize('admin', 'manager', 'staff'), memberController.list);
+
+// Frontdesk QR Verification & Attendance Check-In Endpoints
+router.post('/verify-qr', optionalAuth, memberController.verifyQr);
+router.get('/frontdesk/checkins', optionalAuth, memberController.getCheckIns);
+router.post('/frontdesk/checkin', optionalAuth, memberController.checkIn);
+
 router.get('/:id/booking-usage', optionalAuth, bookingController.getMemberUsage);
+router.get('/:id/qr-pass', optionalAuth, memberController.getMemberQrPass);
 router.get('/:id', authenticate, memberController.getById);
 router.patch('/:id', authenticate, memberController.update);
 

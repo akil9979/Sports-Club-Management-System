@@ -10,7 +10,8 @@ import {
   ChevronDown,
   ArrowLeft,
   LogOut,
-  Building2
+  Building2,
+  QrCode
 } from 'lucide-react';
 import { useStaffAuth } from './StaffAuthContext.jsx';
 import { useAuth } from '../auth/AuthContext.jsx';
@@ -284,6 +285,18 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
 
         {/* Sub-Navigation for Operations Workspaces */}
         <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-emerald-900/40 overflow-x-auto text-xs scrollbar-none">
+          <button
+            onClick={() => onTabChange && onTabChange('frontdesk')}
+            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+              activeTab === 'frontdesk' || activeTab === 'verification'
+                ? 'btn-champagne font-bold shadow-md shadow-[#dfc99a]/15 text-[#02140e]'
+                : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
+            }`}
+          >
+            <QrCode className="w-3.5 h-3.5" />
+            Frontdesk Verification
+          </button>
+
           <button
             onClick={() => onTabChange && onTabChange('pos')}
             className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${

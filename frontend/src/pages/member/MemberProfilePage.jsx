@@ -9,7 +9,8 @@ import {
   CheckCircle2, 
   AlertCircle, 
   RefreshCw,
-  Sparkles
+  Sparkles,
+  QrCode
 } from 'lucide-react';
 import { getMember, getMembers } from '../../features/membership/membershipApi.js';
 import { calculateAge } from '../../features/membership/memberValidation.js';
@@ -17,6 +18,7 @@ import ActiveMembershipCard from '../../features/membership/ActiveMembershipCard
 import MemberHistoryTable from '../../features/membership/MemberHistoryTable.jsx';
 import MemberProfileEditModal from '../../features/membership/MemberProfileEditModal.jsx';
 import PlanSelectionModal from '../../features/membership/PlanSelectionModal.jsx';
+import DigitalMembershipPassModal from '../../features/membership/DigitalMembershipPassModal.jsx';
 
 function formatDate(dateStr) {
   if (!dateStr) return '—';
@@ -40,6 +42,7 @@ export default function MemberProfilePage() {
   // Modals
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isPlanModalOpen, setIsPlanModalOpen] = useState(false);
+  const [isPassModalOpen, setIsPassModalOpen] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
 
   // Quick Switcher roster
@@ -267,6 +270,15 @@ export default function MemberProfilePage() {
                 <div className="flex flex-wrap items-center gap-3">
                   <button
                     type="button"
+                    onClick={() => setIsPassModalOpen(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-[#dfc99a] border border-[#dfc99a]/40 text-xs font-bold transition-all shadow-md hover:scale-[1.02] active:scale-95"
+                  >
+                    <QrCode className="w-4 h-4 text-[#dfc99a]" />
+                    <span>Digital QR Pass</span>
+                  </button>
+
+                  <button
+                    type="button"
                     onClick={() => setIsEditModalOpen(true)}
                     className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-emerald-200 hover:text-white border border-emerald-800/60 text-xs font-semibold transition-colors"
                   >
@@ -327,7 +339,9 @@ export default function MemberProfilePage() {
             {/* Active Membership Tier & Entitlements Card */}
             <ActiveMembershipCard
               membership={member.activeMembership}
+              member={member}
               onRenewClick={() => setIsPlanModalOpen(true)}
+              onViewDigitalPass={() => setIsPassModalOpen(true)}
             />
 
             {/* Membership History Audit Table */}
@@ -353,6 +367,14 @@ export default function MemberProfilePage() {
           member={member}
           onClose={() => setIsPlanModalOpen(false)}
           onSuccess={handleMembershipAssigned}
+        />
+
+        {/* Digital Membership Pass & QR Modal */}
+        <DigitalMembershipPassModal
+          isOpen={isPassModalOpen}
+          member={member}
+          membership={member.activeMembership}
+          onClose={() => setIsPassModalOpen(false)}
         />
       </div>
     </div>

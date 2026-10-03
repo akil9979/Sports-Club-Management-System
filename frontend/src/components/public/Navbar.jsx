@@ -17,7 +17,8 @@ import {
   LogOut,
   Wine,
   Crown,
-  Building2
+  Building2,
+  QrCode
 } from 'lucide-react';
 
 export default function Navbar() {
@@ -155,6 +156,17 @@ export default function Navbar() {
                     >
                       <Building2 className="w-3.5 h-3.5 text-[#dfc99a]" />
                       <span>Management</span>
+                    </Link>
+                  )}
+
+                  {/* Frontdesk Verification Shortcut for Staff/Manager/Admin */}
+                  {(user?.role === 'staff' || user?.role === 'manager' || user?.role === 'admin') && (
+                    <Link
+                      to="/staff/verification"
+                      className="px-3.5 py-1.5 text-xs font-bold rounded-xl bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30 hover:bg-[#dfc99a]/25 transition flex items-center gap-1.5"
+                    >
+                      <QrCode className="w-3.5 h-3.5 text-[#dfc99a]" />
+                      <span>Frontdesk</span>
                     </Link>
                   )}
 
