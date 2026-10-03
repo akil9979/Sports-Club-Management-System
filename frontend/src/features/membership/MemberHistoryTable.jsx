@@ -25,15 +25,15 @@ function formatDate(dateStr) {
 function getTierBadgeClass(tier) {
   const t = (tier || '').toUpperCase();
   if (t === 'GOLD') {
-    return 'bg-amber-500/10 text-amber-400 border border-amber-500/30';
+    return 'bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30';
   }
   if (t === 'SILVER') {
-    return 'bg-slate-500/20 text-slate-300 border border-slate-500/30';
+    return 'bg-slate-700/40 text-slate-200 border border-slate-600/40';
   }
   if (t === 'JUNIOR') {
-    return 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30';
+    return 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30';
   }
-  return 'bg-slate-800 text-slate-400 border border-slate-700';
+  return 'bg-[#07261c] text-emerald-400 border border-emerald-800/60';
 }
 
 function getStatusBadge(status) {
@@ -54,7 +54,7 @@ function getStatusBadge(status) {
     );
   }
   return (
-    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#07261c] text-emerald-400 border border-emerald-800/60">
       {status || 'Unknown'}
     </span>
   );
@@ -92,31 +92,31 @@ export default function MemberHistoryTable({ memberId, onRenewClick, refreshTrig
   });
 
   return (
-    <div className={`bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl backdrop-blur-md ${className}`}>
+    <div className={`bg-[#041c14]/90 border border-emerald-900/40 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-md ${className}`}>
       {/* Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-slate-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-emerald-900/40">
         <div>
           <div className="flex items-center gap-2">
-            <h3 className="text-xl font-bold text-white tracking-tight">Membership Subscription History</h3>
-            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-slate-800 text-slate-400 border border-slate-700">
+            <h3 className="text-xl font-serif font-bold text-[#fcfaf5] tracking-tight">Membership Subscription History</h3>
+            <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-[#07261c] text-emerald-300 border border-emerald-800/60">
               {history.length} {history.length === 1 ? 'Record' : 'Records'}
             </span>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-emerald-300/70 mt-1">
             Complete audit trail of membership tiers, billing terms, validity periods, and payments for member #{memberId}.
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           {/* Filter Pill Tabs */}
-          <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+          <div className="flex bg-[#02140e] p-1 rounded-xl border border-emerald-900/60 text-xs">
             <button
               type="button"
               onClick={() => setFilter('all')}
               className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
                 filter === 'all'
-                  ? 'bg-amber-500/20 text-amber-300 font-semibold shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  ? 'bg-[#dfc99a]/20 text-[#dfc99a] font-semibold shadow-sm'
+                  : 'text-emerald-400/70 hover:text-white'
               }`}
             >
               All ({history.length})
@@ -127,7 +127,7 @@ export default function MemberHistoryTable({ memberId, onRenewClick, refreshTrig
               className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
                 filter === 'active'
                   ? 'bg-emerald-500/20 text-emerald-300 font-semibold shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-emerald-400/70 hover:text-white'
               }`}
             >
               Active ({history.filter(h => h.status === 'active').length})
@@ -138,7 +138,7 @@ export default function MemberHistoryTable({ memberId, onRenewClick, refreshTrig
               className={`px-3 py-1.5 rounded-lg font-medium transition-colors ${
                 filter === 'expired'
                   ? 'bg-rose-500/20 text-rose-300 font-semibold shadow-sm'
-                  : 'text-slate-400 hover:text-white'
+                  : 'text-emerald-400/70 hover:text-white'
               }`}
             >
               Expired ({history.filter(h => h.status === 'expired').length})
@@ -150,7 +150,7 @@ export default function MemberHistoryTable({ memberId, onRenewClick, refreshTrig
             onClick={fetchHistory}
             disabled={loading}
             title="Refresh History"
-            className="p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors disabled:opacity-50"
+            className="p-2 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-emerald-300 hover:text-white border border-emerald-800/60 transition-colors disabled:opacity-50"
           >
             <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? 'animate-spin' : ''}`} />
           </button>
@@ -160,13 +160,13 @@ export default function MemberHistoryTable({ memberId, onRenewClick, refreshTrig
       {/* Content Area */}
       {loading ? (
         <div className="py-12 space-y-4">
-          <div className="flex items-center justify-center gap-3 text-slate-400 text-sm">
-            <RefreshCw className="w-5 h-5 animate-spin text-amber-400 shrink-0" />
+          <div className="flex items-center justify-center gap-3 text-emerald-400 text-sm">
+            <RefreshCw className="w-5 h-5 animate-spin text-[#dfc99a] shrink-0" />
             <span>Retrieving membership subscription audit log...</span>
           </div>
           <div className="space-y-3">
             {[1, 2, 3].map((n) => (
-              <div key={n} className="h-14 bg-slate-800/40 rounded-xl animate-pulse"></div>
+              <div key={n} className="h-14 bg-[#07261c]/40 rounded-xl animate-pulse"></div>
             ))}
           </div>
         </div>
@@ -176,24 +176,24 @@ export default function MemberHistoryTable({ memberId, onRenewClick, refreshTrig
             <AlertCircle className="w-6 h-6 shrink-0" />
           </div>
           <p className="text-sm font-medium text-rose-300 mb-1">Failed to load membership history</p>
-          <p className="text-xs text-slate-400 max-w-md mx-auto mb-4">{error}</p>
+          <p className="text-xs text-emerald-400/70 max-w-md mx-auto mb-4">{error}</p>
           <button
             type="button"
             onClick={fetchHistory}
-            className="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 transition-colors"
+            className="px-4 py-2 text-xs font-semibold rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-white border border-emerald-800/60 transition-colors"
           >
             Retry Request
           </button>
         </div>
       ) : filteredHistory.length === 0 ? (
         <div className="py-12 text-center">
-          <div className="w-14 h-14 rounded-2xl bg-slate-800/80 text-slate-400 flex items-center justify-center mx-auto mb-3 border border-slate-700/60">
+          <div className="w-14 h-14 rounded-2xl bg-[#07261c] text-emerald-400 flex items-center justify-center mx-auto mb-3 border border-emerald-800/60">
             <FileText className="w-7 h-7 shrink-0" />
           </div>
-          <h4 className="text-base font-semibold text-white mb-1">
+          <h4 className="text-base font-serif font-semibold text-[#fcfaf5] mb-1">
             {filter === 'all' ? 'No Membership History Records' : `No ${filter} membership records found`}
           </h4>
-          <p className="text-xs text-slate-400 max-w-sm mx-auto mb-5">
+          <p className="text-xs text-emerald-300/70 max-w-sm mx-auto mb-5">
             {filter === 'all'
               ? 'This member does not have any active or past subscription terms registered yet.'
               : `There are currently no records matching the '${filter}' filter.`}
@@ -202,7 +202,7 @@ export default function MemberHistoryTable({ memberId, onRenewClick, refreshTrig
             <button
               type="button"
               onClick={onRenewClick}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02]"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl btn-champagne font-bold text-xs shadow-lg shadow-[#dfc99a]/15 transition-all hover:scale-[1.02]"
             >
               <Plus className="w-4 h-4 shrink-0" />
               Assign Membership Plan
@@ -213,7 +213,7 @@ export default function MemberHistoryTable({ memberId, onRenewClick, refreshTrig
         <div className="overflow-x-auto mt-4 -mx-6 px-6">
           <table className="w-full text-left border-collapse min-w-[680px]">
             <thead>
-              <tr className="border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+              <tr className="border-b border-emerald-900/40 text-[11px] font-bold text-emerald-400/70 uppercase tracking-wider">
                 <th className="py-3 px-3">Plan & Tier</th>
                 <th className="py-3 px-3">Validity Period</th>
                 <th className="py-3 px-3">Billing & Amount</th>
@@ -222,11 +222,11 @@ export default function MemberHistoryTable({ memberId, onRenewClick, refreshTrig
                 <th className="py-3 px-3 text-right">Registered</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 text-xs">
+            <tbody className="divide-y divide-emerald-900/30 text-xs">
               {filteredHistory.map((item) => (
                 <tr
                   key={item.id}
-                  className="hover:bg-slate-800/30 transition-colors group"
+                  className="hover:bg-[#07261c]/40 transition-colors group"
                 >
                   {/* Plan & Tier */}
                   <td className="py-3.5 px-3">
@@ -235,10 +235,10 @@ export default function MemberHistoryTable({ memberId, onRenewClick, refreshTrig
                         {item.tier || 'STANDARD'}
                       </span>
                       <div>
-                        <span className="font-semibold text-white group-hover:text-amber-400 transition-colors">
+                        <span className="font-semibold text-white group-hover:text-[#dfc99a] transition-colors">
                           {item.planName || 'Plan'}
                         </span>
-                        <div className="text-[10px] text-slate-400 font-mono">
+                        <div className="text-[10px] text-emerald-400/60 font-mono">
                           ID: {item.id}
                         </div>
                       </div>
@@ -247,20 +247,20 @@ export default function MemberHistoryTable({ memberId, onRenewClick, refreshTrig
 
                   {/* Validity Period */}
                   <td className="py-3.5 px-3">
-                    <div className="text-slate-200 font-medium">
+                    <div className="text-emerald-100 font-medium">
                       {formatDate(item.startDate)} → {formatDate(item.endDate)}
                     </div>
-                    <div className="text-[10px] text-slate-400">
+                    <div className="text-[10px] text-emerald-400/60">
                       {item.billingCycle === 'annual' ? '12 Months Term' : '1 Month Term'}
                     </div>
                   </td>
 
                   {/* Billing & Amount */}
                   <td className="py-3.5 px-3">
-                    <div className="font-bold text-white">
+                    <div className="font-bold text-[#dfc99a]">
                       {formatCurrency(item.price)}
                     </div>
-                    <div className="text-[10px] text-slate-400 capitalize">
+                    <div className="text-[10px] text-emerald-400/60 capitalize">
                       {item.billingCycle || 'monthly'}
                     </div>
                   </td>
@@ -268,10 +268,10 @@ export default function MemberHistoryTable({ memberId, onRenewClick, refreshTrig
                   {/* Payment Details */}
                   <td className="py-3.5 px-3">
                     <div className="flex items-center gap-1.5">
-                      <span className="uppercase text-[10px] font-semibold px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                      <span className="uppercase text-[10px] font-semibold px-1.5 py-0.5 rounded bg-[#07261c] text-emerald-200 border border-emerald-800/60">
                         {item.paymentMethod || 'N/A'}
                       </span>
-                      <span className="text-[11px] font-mono text-slate-400 truncate max-w-[110px]" title={item.referenceNumber}>
+                      <span className="text-[11px] font-mono text-emerald-400/60 truncate max-w-[110px]" title={item.referenceNumber}>
                         {item.referenceNumber || '—'}
                       </span>
                     </div>
@@ -283,7 +283,7 @@ export default function MemberHistoryTable({ memberId, onRenewClick, refreshTrig
                   </td>
 
                   {/* Registered Timestamp */}
-                  <td className="py-3.5 px-3 text-right text-slate-400 text-[11px]">
+                  <td className="py-3.5 px-3 text-right text-emerald-400/60 text-[11px]">
                     {item.createdAt ? formatDate(item.createdAt) : '—'}
                   </td>
                 </tr>

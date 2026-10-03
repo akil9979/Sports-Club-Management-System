@@ -2,11 +2,11 @@ import React from 'react';
 import { Clock, Flame, CheckCircle, Utensils, CheckCheck } from 'lucide-react';
 
 const STATUS_MAP = {
-  PENDING: { label: 'Pending Order', short: 'Pending', color: 'bg-amber-500/15 text-amber-400 border-amber-500/30', icon: Clock, pulse: true },
-  PREPARING: { label: 'In Kitchen / Bar', short: 'Preparing', color: 'bg-sky-500/15 text-sky-400 border-sky-500/30', icon: Flame, pulse: true },
-  READY: { label: 'Ready for Service', short: 'Ready', color: 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30', icon: CheckCircle },
-  SERVED: { label: 'Served to Table', short: 'Served', color: 'bg-indigo-500/15 text-indigo-400 border-indigo-500/30', icon: Utensils },
-  SETTLED: { label: 'Tab Settled', short: 'Settled', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', icon: CheckCheck }
+  PENDING: { label: 'Pending Order', short: 'Pending', color: 'bg-[#dfc99a]/15 text-[#dfc99a] border-[#dfc99a]/35', icon: Clock, pulse: true },
+  PREPARING: { label: 'In Kitchen / Bar', short: 'Preparing', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40', icon: Flame, pulse: true },
+  READY: { label: 'Ready for Service', short: 'Ready', color: 'bg-emerald-400/20 text-emerald-200 border-emerald-400/40', icon: CheckCircle },
+  SERVED: { label: 'Served to Table', short: 'Served', color: 'bg-teal-500/20 text-teal-300 border-teal-500/40', icon: Utensils },
+  SETTLED: { label: 'Tab Settled', short: 'Settled', color: 'bg-[#dfc99a]/25 text-[#fcfaf5] border-[#dfc99a]/50', icon: CheckCheck }
 };
 
 const SIZES = {
@@ -27,3 +27,4 @@ export default function KitchenStatusBadge({ status = 'PENDING', size = 'md', sh
     </span>
   );
 }
+

@@ -2,9 +2,12 @@ import { describe, it, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import {
   login,
+  pinLogin,
   register,
   logout,
   getCurrentUser,
+  getAdminUsers,
+  updateUserRole,
   getToken,
   setToken,
   removeToken,
@@ -355,7 +358,62 @@ describe('Frontend Authentication Flow - MEMBER 2', () => {
     });
   });
 
-  describe('6. Validation Helpers', () => {
+  describe('6. Staff PIN Login & Terminal Auth', () => {
+    it('should successfully authenticate staff using valid 4-digit PIN', async () => {
+      const res = await pinLogin({ pin: '1234' });
+      assert.equal(res.success, true);
+      assert.ok(res.data.token, 'Should issue session token');
+      assert.equal(res.data.user.role, 'staff');
+      assert.equal(getToken(), res.data.token);
+    });
+
+    it('should reject invalid staff PIN', async () => {
+      await assert.rejects(
+        async () => {
+          await pinLogin({ pin: '0000' });
+        },
+        (err) => {
+          assert.equal(err.status, 401);
+          return true;
+        }
+      );
+    });
+
+    it('should reject empty staff PIN', async () => {
+      await assert.rejects(
+        async () => {
+          await pinLogin({ pin: '' });
+        },
+        (err) => {
+          assert.equal(err.status, 400);
+          return true;
+        }
+      );
+    });
+  });
+
+  describe('7. Admin User & Role Management', () => {
+    it('should list all registered users for administration', async () => {
+      const users = await getAdminUsers();
+      assert.ok(Array.isArray(users), 'Must return array of users');
+      assert.ok(users.length >= 3, 'Must contain seed demo users');
+      const admin = users.find(u => u.role === 'admin');
+      const staff = users.find(u => u.role === 'staff');
+      const member = users.find(u => u.role === 'member');
+      assert.ok(admin, 'Admin user must exist in list');
+      assert.ok(staff, 'Staff user must exist in list');
+      assert.ok(member, 'Member user must exist in list');
+    });
+
+    it('should update a user role dynamically', async () => {
+      const users = await getAdminUsers();
+      const targetUser = users.find(u => u.role === 'member') || users[0];
+      const updated = await updateUserRole(targetUser.id, 'manager');
+      assert.equal(updated.role, 'manager');
+    });
+  });
+
+  describe('8. Validation Helpers', () => {
     it('should correctly validate email formats', () => {
       assert.equal(isValidEmail('member@example.com'), true);
       assert.equal(isValidEmail('staff.lead+club@sub.domain.co'), true);

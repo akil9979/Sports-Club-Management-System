@@ -13,7 +13,7 @@ export default function PublicLayout() {
   }, [pathname]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-950 text-slate-100 selection:bg-emerald-500 selection:text-slate-950">
+    <div className="min-h-screen flex flex-col bg-[#02140e] text-[#f4efe4] selection:bg-[#dfc99a] selection:text-[#02140e]">
       {/* Top Navbar */}
       <Navbar />
 
@@ -26,7 +26,7 @@ export default function PublicLayout() {
       <div className="fixed bottom-6 right-6 z-40 flex items-center gap-3">
         <Link
           to="/courts"
-          className="hidden md:inline-flex items-center gap-2 px-4 py-3 rounded-full bg-slate-900/90 text-slate-200 border border-slate-700/80 shadow-2xl backdrop-blur-md hover:bg-slate-800 transition-all text-xs font-semibold"
+          className="hidden md:inline-flex items-center gap-2 px-4 py-3 rounded-full bg-[#041c14]/90 text-[#ede0c4] border border-[#dfc99a]/25 shadow-2xl backdrop-blur-md hover:bg-[#07261c] hover:border-[#dfc99a]/50 transition-all text-xs font-semibold"
           title="Check Live Court Availability"
         >
           <Calendar className="w-4 h-4 text-emerald-400" />
@@ -34,10 +34,10 @@ export default function PublicLayout() {
         </Link>
         <Link
           to="/enquiry"
-          className="group inline-flex items-center gap-2 px-5 py-3.5 rounded-full bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400 text-slate-950 font-extrabold text-sm shadow-xl shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-105 active:scale-95 transition-all duration-200"
+          className="btn-champagne group inline-flex items-center gap-2 px-5 py-3.5 rounded-full text-xs sm:text-sm shadow-2xl"
           aria-label="Claim Free Trial Pass"
         >
-          <Sparkles className="w-4 h-4 text-amber-900 group-hover:rotate-12 transition-transform" />
+          <Sparkles className="w-4 h-4 text-[#87632b] group-hover:rotate-12 transition-transform" />
           <span>Book Free Trial</span>
         </Link>
       </div>

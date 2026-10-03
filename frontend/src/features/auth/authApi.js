@@ -234,6 +234,60 @@ export async function getCurrentUser() {
 }
 
 /**
+ * Quick POS/Terminal PIN login for staff
+ */
+export async function pinLogin({ pin, employeeId }) {
+  if (!pin) throw createError('PIN code is required', 400);
+
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/auth/pin-login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin, employeeId })
+    });
+
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw createError(body.message || 'Invalid employee identifier or PIN', res.status || 401);
+    }
+
+    const { staff, token } = body.data || {};
+    const safeUser = {
+      id: staff?.id || 'staff-session',
+      email: staff?.email || 'staff@championsclub.com',
+      role: 'staff',
+      firstName: staff?.name ? staff.name.split(' ')[0] : 'Staff',
+      lastName: staff?.name ? staff.name.split(' ').slice(1).join(' ') : 'Member',
+      department: staff?.department || 'Operations'
+    };
+
+    if (token) setToken(token);
+    setStoredUser(safeUser);
+
+    return { success: true, data: { user: safeUser, staff, token }, message: body.message || 'Terminal authenticated' };
+  } catch (err) {
+    if (err.status) throw err;
+
+    // Offline PIN fallback simulation
+    if (pin === '1234' || pin === '9999') {
+      const token = `pin-token-${Date.now()}`;
+      const safeUser = {
+        id: 'staff-terminal',
+        email: 'priya.nair@championsclub.com',
+        role: 'staff',
+        firstName: 'Priya',
+        lastName: 'Nair',
+        department: 'bar'
+      };
+      setToken(token);
+      setStoredUser(safeUser);
+      return { success: true, data: { user: safeUser, token }, message: 'Terminal authenticated' };
+    }
+    throw createError('Invalid PIN for staff member', 401);
+  }
+}
+
+/**
  * Logout
  */
 export async function logout() {
@@ -252,4 +306,59 @@ export async function logout() {
     removeStoredUser();
   }
   return { success: true, message: 'Logged out successfully' };
+}
+
+/**
+ * Admin: List all registered club users
+ */
+export async function getAdminUsers() {
+  const token = getToken();
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/auth/users`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error('Failed to fetch users');
+    const body = await res.json();
+    return body.data || [];
+  } catch {
+    return [...SEED_USERS, ...dynamicUsers].map((u) => ({
+      id: u.id,
+      email: u.email,
+      role: u.role,
+      firstName: u.firstName,
+      lastName: u.lastName,
+      phone: u.phone || '+919876543200',
+      isActive: true,
+      createdAt: new Date().toISOString(),
+      memberNumber: u.memberNumber || null
+    }));
+  }
+}
+
+/**
+ * Admin: Update user role
+ */
+export async function updateUserRole(userId, role) {
+  const token = getToken();
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/auth/users/${userId}/role`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ role })
+    });
+    const body = await res.json().catch(() => ({}));
+    if (!res.ok) throw createError(body.message || 'Failed to update user role', res.status || 500);
+    return body.data;
+  } catch (err) {
+    if (err.status) throw err;
+    const user = [...SEED_USERS, ...dynamicUsers].find((u) => u.id === userId);
+    if (user) {
+      user.role = role;
+      return user;
+    }
+    throw createError('User not found', 404);
+  }
 }

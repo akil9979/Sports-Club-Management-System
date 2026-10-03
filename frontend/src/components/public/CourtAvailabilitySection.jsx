@@ -7,7 +7,9 @@ import {
   XCircle, 
   AlertCircle, 
   ShieldAlert,
-  ChevronRight
+  ChevronRight,
+  Sparkles,
+  Crown
 } from 'lucide-react';
 import { getCourts, getCourtAvailability } from '../../services/api.js';
 
@@ -105,28 +107,28 @@ export default function CourtAvailabilitySection({ embedded = false }) {
   }) || [];
 
   return (
-    <section id="courts-section" className={`w-full ${embedded ? 'py-4' : 'py-20 bg-slate-900/40 border-t border-slate-900'}`}>
+    <section id="courts-section" className={`w-full ${embedded ? 'py-4' : 'py-20 bg-[#02140e]/60 border-t border-[#dfc99a]/15'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-10 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-            <Calendar className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Live Court Schedule</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#dfc99a]/10 text-[#dfc99a] border border-[#dfc99a]/25 backdrop-blur-md">
+            <Calendar className="w-3.5 h-3.5 text-[#dfc99a]" />
+            <span>Championship Schedule</span>
           </div>
           <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
             Real-Time Court Availability
           </h2>
-          <p className="text-slate-400 text-sm sm:text-base leading-relaxed">
-            Eliminate phone tag and WhatsApp delays. Check real-time court availability across Tennis, 
-            Box Cricket, and Padel with guaranteed zero double-bookings.
+          <p className="text-[#ede0c4]/80 text-sm sm:text-base leading-relaxed">
+            Live schedule for Centre Court Plexipave, French Red Clay, Box Cricket arenas, 
+            and Panoramic Padel with guaranteed reservation locking.
           </p>
         </div>
 
         {/* LOADING COURTS STATE */}
         {loadingCourts && (
           <div className="glass-panel p-8 rounded-2xl max-w-xl mx-auto text-center space-y-4 animate-pulse">
-            <div className="h-6 w-48 bg-slate-800 rounded mx-auto"></div>
-            <div className="h-10 w-full bg-slate-800 rounded-xl"></div>
+            <div className="h-6 w-48 bg-[#06261b] rounded mx-auto"></div>
+            <div className="h-10 w-full bg-[#06261b] rounded-xl"></div>
           </div>
         )}
 
@@ -137,7 +139,7 @@ export default function CourtAvailabilitySection({ embedded = false }) {
             <p className="text-sm text-rose-300">{courtError}</p>
             <button
               onClick={fetchCourts}
-              className="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-semibold hover:bg-slate-700"
+              className="px-4 py-2 bg-[#06261b] text-white rounded-xl text-xs font-semibold hover:bg-[#0a3425]"
             >
               Retry Loading Courts
             </button>
@@ -148,22 +150,22 @@ export default function CourtAvailabilitySection({ embedded = false }) {
         {!loadingCourts && !courtError && courts.length > 0 && (
           <div className="space-y-8">
             {/* Court Selector Pills */}
-            <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            <div className="flex items-center justify-start sm:justify-center gap-2.5 overflow-x-auto pb-2 scrollbar-none">
               {courts.map((court) => {
                 const active = court.id === selectedCourtId;
                 return (
                   <button
                     key={court.id}
                     onClick={() => setSelectedCourtId(court.id)}
-                    className={`shrink-0 px-4 py-3 rounded-2xl text-xs sm:text-sm font-semibold transition-all border flex items-center gap-2.5 ${
+                    className={`shrink-0 px-4 py-3 rounded-2xl text-xs sm:text-sm font-bold transition-all border flex items-center gap-2.5 ${
                       active
-                        ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-lg shadow-emerald-500/20 font-bold'
-                        : 'bg-slate-900/90 text-slate-300 border-slate-800 hover:border-slate-700 hover:text-white'
+                        ? 'bg-gradient-to-r from-[#f7f1e3] via-[#dfc99a] to-[#c59e4b] text-[#02140e] border-[#dfc99a] shadow-lg shadow-[#dfc99a]/20'
+                        : 'bg-[#041c14] text-[#ede0c4]/80 border-[#dfc99a]/15 hover:border-[#dfc99a]/40 hover:text-white'
                     }`}
                   >
                     <span>{court.name}</span>
-                    <span className={`text-[10px] uppercase px-2 py-0.5 rounded-full ${
-                      active ? 'bg-slate-950 text-emerald-300' : 'bg-slate-800 text-slate-400'
+                    <span className={`text-[10px] uppercase px-2 py-0.5 rounded-full font-extrabold ${
+                      active ? 'bg-[#02140e] text-[#dfc99a]' : 'bg-[#07261c] text-[#dfc99a]/80'
                     }`}>
                       {court.type}
                     </span>
@@ -174,62 +176,62 @@ export default function CourtAvailabilitySection({ embedded = false }) {
 
             {/* Selected Court Specs Header */}
             {activeCourt && (
-              <div className="glass-panel p-6 rounded-3xl border border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+              <div className="glass-panel p-6 rounded-3xl flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <h3 className="text-xl sm:text-2xl font-bold text-white tracking-tight">
                       {activeCourt.name}
                     </h3>
-                    <span className="px-2.5 py-0.5 rounded-md text-xs font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+                    <span className="px-2.5 py-0.5 rounded-md text-xs font-bold bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30">
                       {activeCourt.type}
                     </span>
                   </div>
-                  <p className="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
+                  <p className="text-xs sm:text-sm text-[#ede0c4]/80 max-w-2xl leading-relaxed">
                     {activeCourt.description}
                   </p>
-                  <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-slate-400">
+                  <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-[#ede0c4]/70">
                     <span className="flex items-center gap-1.5">
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                      Surface: <strong className="text-slate-200">{activeCourt.surface}</strong>
+                      Surface: <strong className="text-[#f4efe4]">{activeCourt.surface}</strong>
                     </span>
                     <span>•</span>
                     <span className="flex items-center gap-1.5">
-                      Lighting: <strong className="text-slate-200">{activeCourt.lighting}</strong>
+                      Lighting: <strong className="text-[#f4efe4]">{activeCourt.lighting}</strong>
                     </span>
                     <span>•</span>
-                    <span>Max: <strong className="text-slate-200">{activeCourt.maxPlayers} players</strong></span>
+                    <span>Max: <strong className="text-[#f4efe4]">{activeCourt.maxPlayers} players</strong></span>
                   </div>
                 </div>
 
                 {/* Rate Card Preview */}
-                <div className="shrink-0 flex items-center gap-4 bg-slate-900/80 p-4 rounded-2xl border border-slate-800/80">
+                <div className="shrink-0 flex items-center gap-4 bg-[#02140e] p-4 rounded-2xl border border-[#dfc99a]/20">
                   <div className="text-right">
-                    <div className="text-[11px] uppercase tracking-wider text-slate-500 font-semibold">Standard Rate</div>
+                    <div className="text-[10px] uppercase tracking-wider text-[#ede0c4]/60 font-semibold">Standard Guest Rate</div>
                     <div className="text-lg font-bold text-white">₹{activeCourt.hourlyRate}/hr</div>
                   </div>
-                  <div className="h-8 w-px bg-slate-800" />
+                  <div className="h-8 w-px bg-[#dfc99a]/20" />
                   <div className="text-left">
-                    <div className="text-[11px] uppercase tracking-wider text-emerald-400 font-semibold">Gold Tier</div>
-                    <div className="text-lg font-bold text-emerald-400">FREE</div>
+                    <div className="text-[10px] uppercase tracking-wider text-[#dfc99a] font-bold">Gold Tier</div>
+                    <div className="text-lg font-extrabold text-[#dfc99a]">100% INCLUDED</div>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Date Picker Bar & Filter Controls */}
-            <div className="glass-panel p-4 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="glass-panel p-4 rounded-2xl flex flex-col md:flex-row items-center justify-between gap-4">
               {/* Date Pills */}
-              <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0">
+              <div className="flex items-center gap-2 overflow-x-auto w-full md:w-auto pb-1 md:pb-0 scrollbar-none">
                 {dateOptions.map(({ dateStr, label }) => {
                   const isSelected = selectedDate === dateStr;
                   return (
                     <button
                       key={dateStr}
                       onClick={() => setSelectedDate(dateStr)}
-                      className={`shrink-0 px-3.5 py-2 rounded-xl text-xs font-medium transition-all ${
+                      className={`shrink-0 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all ${
                         isSelected
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 font-bold'
-                          : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-white hover:border-slate-700'
+                          ? 'bg-[#dfc99a]/20 text-[#dfc99a] border border-[#dfc99a]/60 font-bold shadow-md'
+                          : 'bg-[#041c14] text-[#ede0c4]/70 border border-[#dfc99a]/12 hover:text-white hover:border-[#dfc99a]/30'
                       }`}
                     >
                       {label}
@@ -241,15 +243,15 @@ export default function CourtAvailabilitySection({ embedded = false }) {
                   value={selectedDate}
                   min={getTodayString()}
                   onChange={(e) => setSelectedDate(e.target.value)}
-                  className="px-2.5 py-1.5 rounded-xl bg-slate-900 text-xs text-slate-300 border border-slate-800 focus:outline-none focus:border-emerald-500"
+                  className="px-2.5 py-1.5 rounded-xl bg-[#041c14] text-xs text-[#ede0c4] border border-[#dfc99a]/20 focus:outline-none focus:border-[#dfc99a]"
                 />
               </div>
 
               {/* Time Period Filter */}
               <div className="flex items-center gap-1.5 w-full md:w-auto justify-end">
-                <span className="text-xs text-slate-500 hidden sm:inline mr-2">Filter:</span>
+                <span className="text-xs text-[#ede0c4]/60 hidden sm:inline mr-2">Filter:</span>
                 {[
-                  { id: 'all', label: 'All Slots' },
+                  { id: 'all', label: 'All Sessions' },
                   { id: 'morning', label: 'Morning' },
                   { id: 'afternoon', label: 'Afternoon' },
                   { id: 'evening', label: 'Evening' },
@@ -257,10 +259,10 @@ export default function CourtAvailabilitySection({ embedded = false }) {
                   <button
                     key={filter.id}
                     onClick={() => setTimeFilter(filter.id)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
                       timeFilter === filter.id
-                        ? 'bg-slate-800 text-white font-bold'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                        ? 'bg-[#dfc99a] text-[#02140e] font-bold shadow'
+                        : 'text-[#ede0c4]/70 hover:text-white hover:bg-[#041c14]'
                     }`}
                   >
                     {filter.label}
@@ -275,10 +277,10 @@ export default function CourtAvailabilitySection({ embedded = false }) {
               {loadingSlots && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                   {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
-                    <div key={i} className="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3 animate-pulse">
-                      <div className="h-4 w-28 bg-slate-800 rounded"></div>
-                      <div className="h-6 w-20 bg-slate-800 rounded-md"></div>
-                      <div className="h-9 w-full bg-slate-800 rounded-xl"></div>
+                    <div key={i} className="glass-panel p-4 rounded-2xl space-y-3 animate-pulse">
+                      <div className="h-4 w-28 bg-[#06261b] rounded"></div>
+                      <div className="h-6 w-20 bg-[#06261b] rounded-md"></div>
+                      <div className="h-9 w-full bg-[#06261b] rounded-xl"></div>
                     </div>
                   ))}
                 </div>
@@ -291,7 +293,7 @@ export default function CourtAvailabilitySection({ embedded = false }) {
                   <p className="text-sm text-rose-300">{slotsError}</p>
                   <button
                     onClick={() => setSelectedDate(new Date().toISOString().split('T')[0])}
-                    className="px-4 py-2 bg-slate-800 text-xs font-semibold text-white rounded-xl"
+                    className="px-4 py-2 bg-[#06261b] text-xs font-semibold text-white rounded-xl"
                   >
                     Reset to Today
                   </button>
@@ -300,17 +302,17 @@ export default function CourtAvailabilitySection({ embedded = false }) {
 
               {/* EMPTY SLOTS STATE */}
               {!loadingSlots && !slotsError && filteredSlots.length === 0 && (
-                <div className="glass-panel p-8 rounded-2xl text-center space-y-3 max-w-lg mx-auto border-slate-800">
-                  <Clock className="w-10 h-10 text-slate-500 mx-auto" />
-                  <h4 className="text-white font-bold text-base">No Slots Matching This Filter</h4>
-                  <p className="text-xs text-slate-400">
-                    All slots in this time category are either fully booked or not scheduled. Try choosing another time range or another date.
+                <div className="glass-panel p-8 rounded-2xl text-center space-y-3 max-w-lg mx-auto">
+                  <Clock className="w-10 h-10 text-[#dfc99a]/40 mx-auto" />
+                  <h4 className="text-white font-bold text-base">No Sessions Matching Filter</h4>
+                  <p className="text-xs text-[#ede0c4]/70">
+                    All court slots in this period are either fully reserved or offline for maintenance.
                   </p>
                   <button
                     onClick={() => setTimeFilter('all')}
-                    className="px-4 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-xl text-xs font-bold hover:bg-emerald-500/20"
+                    className="px-4 py-2 bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30 rounded-xl text-xs font-bold hover:bg-[#dfc99a]/25"
                   >
-                    View All Times
+                    View All Sessions
                   </button>
                 </div>
               )}
@@ -327,23 +329,23 @@ export default function CourtAvailabilitySection({ embedded = false }) {
                         key={slot.id}
                         className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
                           isAvailable
-                            ? 'glass-panel border-emerald-500/30 hover:border-emerald-500/70 hover:shadow-lg hover:shadow-emerald-500/10'
+                            ? 'glass-panel border-emerald-500/30 hover:border-[#dfc99a]/60 hover:shadow-lg hover:shadow-emerald-500/10'
                             : isSocial
-                            ? 'glass-panel border-amber-500/30 bg-amber-950/10'
-                            : 'bg-slate-950/60 border-slate-800/60 opacity-60'
+                            ? 'glass-panel border-[#dfc99a]/40 bg-[#dfc99a]/5'
+                            : 'bg-[#02140e]/70 border-[#dfc99a]/10 opacity-60'
                         }`}
                       >
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex items-center gap-2">
-                            <Clock className={`w-4 h-4 ${isAvailable ? 'text-emerald-400' : 'text-slate-500'}`} />
+                            <Clock className={`w-4 h-4 ${isAvailable ? 'text-emerald-400' : 'text-[#ede0c4]/40'}`} />
                             <span className="text-sm font-bold text-white tracking-tight">
                               {slot.time}
                             </span>
                           </div>
 
                           {slot.isPrime && (
-                            <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30 uppercase">
-                              Prime
+                            <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-[#dfc99a]/20 text-[#dfc99a] border border-[#dfc99a]/40 uppercase tracking-wider">
+                              Prime Slot
                             </span>
                           )}
                         </div>
@@ -352,23 +354,23 @@ export default function CourtAvailabilitySection({ embedded = false }) {
                         <div className="mb-4">
                           {isAvailable ? (
                             <div className="flex items-center justify-between">
-                              <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-400">
+                              <span className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400">
                                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                                 Available
                               </span>
-                              <span className="text-xs font-bold text-slate-300">
+                              <span className="text-xs font-bold text-[#ede0c4]">
                                 ₹{slot.rate}/hr
                               </span>
                             </div>
                           ) : isSocial ? (
-                            <div className="flex items-center gap-1.5 text-xs font-semibold text-amber-400">
+                            <div className="flex items-center gap-1.5 text-xs font-bold text-[#dfc99a]">
                               <Users className="w-3.5 h-3.5" />
-                              <span>Social Play Mixer</span>
+                              <span>Club Mixer Session</span>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-1.5 text-xs font-medium text-slate-500">
+                            <div className="flex items-center gap-1.5 text-xs font-medium text-[#ede0c4]/50">
                               <XCircle className="w-3.5 h-3.5" />
-                              <span>Booked by Member</span>
+                              <span>Reserved by Member</span>
                             </div>
                           )}
                         </div>
@@ -377,21 +379,21 @@ export default function CourtAvailabilitySection({ embedded = false }) {
                         {isAvailable ? (
                           <Link
                             to={`/enquiry?court=${encodeURIComponent(activeCourt.name)}&date=${selectedDate}&time=${encodeURIComponent(slot.time)}&intent=book_slot`}
-                            className="w-full py-2 px-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 text-xs font-extrabold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                            className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-[#f7f1e3] to-[#dfc99a] hover:from-[#fcfaf5] hover:to-[#ede0c4] text-[#02140e] text-xs font-extrabold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                           >
-                            <span>Book / Hold Slot</span>
-                            <ChevronRight className="w-3.5 h-3.5" />
+                            <span>Hold / Reserve Slot</span>
+                            <ChevronRight className="w-3.5 h-3.5 text-[#02140e]" />
                           </Link>
                         ) : isSocial ? (
                           <Link
                             to={`/enquiry?intent=social_play&date=${selectedDate}`}
-                            className="w-full py-2 px-3 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
+                            className="w-full py-2 px-3 rounded-xl bg-[#dfc99a]/20 hover:bg-[#dfc99a]/30 text-[#dfc99a] border border-[#dfc99a]/40 text-xs font-bold flex items-center justify-center gap-1.5 transition-colors"
                           >
                             <span>Join Mixer (Open)</span>
                           </Link>
                         ) : (
-                          <div className="w-full py-2 text-center text-xs font-medium text-slate-600 bg-slate-900/60 rounded-xl cursor-not-allowed">
-                            Unavailable
+                          <div className="w-full py-2 text-center text-xs font-medium text-[#ede0c4]/40 bg-[#041c14] rounded-xl cursor-not-allowed">
+                            Reserved
                           </div>
                         )}
                       </div>
@@ -401,14 +403,14 @@ export default function CourtAvailabilitySection({ embedded = false }) {
               )}
             </div>
 
-            {/* Problem Statement Rules Callout */}
-            <div className="p-5 rounded-2xl bg-slate-900/60 border border-slate-800 text-xs text-slate-400 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-              <div className="flex items-center gap-2 text-slate-300 font-medium">
-                <ShieldAlert className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Club Booking Policy: 60-min sessions • 30-min rolling slot interval • Max 2 sessions/day per member.</span>
+            {/* Club Policy Callout */}
+            <div className="p-5 rounded-2xl bg-[#041c14] border border-[#dfc99a]/20 text-xs text-[#ede0c4]/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+              <div className="flex items-center gap-2 text-[#f4efe4] font-medium">
+                <ShieldAlert className="w-4 h-4 text-[#dfc99a] shrink-0" />
+                <span>Session Policy: 60-min tournament sessions • 30-min rolling interval • Max 2 sessions/day per member.</span>
               </div>
-              <div className="text-emerald-400 font-semibold">
-                Gold Members: 100% Free Court Time
+              <div className="text-[#dfc99a] font-bold">
+                Gold Tier Members: 100% Complimentary Court Time
               </div>
             </div>
           </div>

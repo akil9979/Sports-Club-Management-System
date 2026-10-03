@@ -93,6 +93,38 @@ class AuthController {
       next(err);
     }
   }
+
+  async getUsers(req, res, next) {
+    try {
+      const users = await authService.getAllUsers();
+      res.status(200).json({
+        success: true,
+        data: users,
+        count: users.length
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async updateRole(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { role } = req.body;
+      if (!role) {
+        return res.status(400).json({ success: false, error: 'Bad Request', message: 'Role is required' });
+      }
+
+      const updated = await authService.updateUserRole(id, role);
+      res.status(200).json({
+        success: true,
+        data: updated,
+        message: `User role updated to "${role}" successfully`
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
 }
 
 module.exports = new AuthController();

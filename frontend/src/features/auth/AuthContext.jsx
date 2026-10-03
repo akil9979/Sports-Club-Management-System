@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import {
   login as apiLogin,
+  pinLogin as apiPinLogin,
   register as apiRegister,
   logout as apiLogout,
   getCurrentUser,
@@ -52,6 +53,19 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const pinLogin = useCallback(async ({ pin, employeeId }) => {
+    setAuthError(null);
+    try {
+      const res = await apiPinLogin({ pin, employeeId });
+      setUser(res.data.user);
+      setToken(res.data.token);
+      return res;
+    } catch (err) {
+      setAuthError(err.message || 'PIN login failed');
+      throw err;
+    }
+  }, []);
+
   const register = useCallback(async (userData) => {
     setAuthError(null);
     try {
@@ -83,6 +97,11 @@ export function AuthProvider({ children }) {
     return profile;
   }, []);
 
+  const role = user?.role || null;
+  const isAdmin = role === 'admin';
+  const isStaff = ['staff', 'manager', 'admin'].includes(role);
+  const isMember = Boolean(user);
+
   const hasRole = useCallback((...roles) => {
     if (!user?.role) return false;
     if (user.role === 'admin') return true;
@@ -94,11 +113,16 @@ export function AuthProvider({ children }) {
       value={{
         user,
         token,
+        role,
+        isAdmin,
+        isStaff,
+        isMember,
         isAuthenticated: Boolean(user && token),
         isLoading,
         authError,
         setAuthError,
         login,
+        pinLogin,
         register,
         logout,
         refreshUser,

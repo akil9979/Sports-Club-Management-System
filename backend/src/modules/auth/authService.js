@@ -256,6 +256,74 @@ class AuthService {
       } : null
     };
   }
+
+  /**
+   * Admin: List all system users with role, membership, and employee info
+   */
+  async getAllUsers() {
+    const res = await query(
+      `SELECT u.id, u.email, u.role, u.first_name, u.last_name, u.phone, u.is_active, u.created_at,
+              m.id AS member_id, m.member_number, m.status AS member_status,
+              e.id AS employee_id, e.department, e.designation
+       FROM users u
+       LEFT JOIN members m ON m.user_id = u.id
+       LEFT JOIN employees e ON e.user_id = u.id
+       ORDER BY u.created_at DESC`
+    );
+
+    return res.rows.map(row => ({
+      id: row.id,
+      email: row.email,
+      role: row.role,
+      firstName: row.first_name,
+      lastName: row.last_name,
+      phone: row.phone,
+      isActive: row.is_active,
+      createdAt: row.created_at,
+      memberId: row.member_id,
+      memberNumber: row.member_number,
+      memberStatus: row.member_status,
+      employeeId: row.employee_id,
+      department: row.department,
+      designation: row.designation
+    }));
+  }
+
+  /**
+   * Admin: Update user role
+   */
+  async updateUserRole(userId, newRole) {
+    const validRoles = ['admin', 'manager', 'staff', 'coach', 'member', 'guest'];
+    if (!validRoles.includes(newRole)) {
+      const error = new Error(`Invalid role. Valid roles are: ${validRoles.join(', ')}`);
+      error.statusCode = 422;
+      throw error;
+    }
+
+    const res = await query(
+      `UPDATE users
+       SET role = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE id = $2
+       RETURNING id, email, role, first_name, last_name, is_active, updated_at`,
+      [newRole, userId]
+    );
+
+    if (res.rowCount === 0) {
+      const error = new Error('User not found');
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return {
+      id: res.rows[0].id,
+      email: res.rows[0].email,
+      role: res.rows[0].role,
+      firstName: res.rows[0].first_name,
+      lastName: res.rows[0].last_name,
+      isActive: res.rows[0].is_active,
+      updatedAt: res.rows[0].updated_at
+    };
+  }
 }
 
 module.exports = new AuthService();

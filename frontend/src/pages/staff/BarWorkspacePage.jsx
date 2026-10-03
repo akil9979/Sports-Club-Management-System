@@ -477,17 +477,17 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
     <div className="space-y-4">
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="fixed bottom-6 right-6 z-50 bg-slate-900 border border-emerald-500/40 text-emerald-300 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-bottom-2">
+        <div className="fixed bottom-6 right-6 z-50 bg-[#041c14] border border-emerald-500/40 text-emerald-300 px-4 py-2.5 rounded-xl shadow-2xl flex items-center gap-2.5 text-xs font-semibold animate-in fade-in slide-in-from-bottom-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Edge Case Simulator Toolbar */}
-      <div className="bg-slate-900/60 border border-slate-800 rounded-xl px-4 py-2 flex flex-wrap items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2 text-slate-400">
-          <Sliders className="w-4 h-4 text-emerald-400" />
-          <span className="font-semibold text-slate-300">Operations & Edge Simulator:</span>
+      <div className="bg-[#041c14]/80 border border-emerald-900/50 rounded-2xl px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 text-xs backdrop-blur-md">
+        <div className="flex items-center gap-2 text-emerald-400/70">
+          <Sliders className="w-4 h-4 text-[#dfc99a]" />
+          <span className="font-semibold text-emerald-100">Operations & Edge Simulator:</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
@@ -495,10 +495,10 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
           <button
             type="button"
             onClick={() => setSimulatePaymentFailure(!simulatePaymentFailure)}
-            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition ${
+            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
               simulatePaymentFailure
                 ? 'bg-rose-500 text-white shadow'
-                : 'bg-slate-800 text-slate-300 hover:text-white'
+                : 'bg-[#07261c] text-emerald-200 hover:text-white border border-emerald-800/60'
             }`}
           >
             {simulatePaymentFailure ? 'Reset Payment Failure' : 'Test Payment Failure'}
@@ -512,10 +512,10 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
               setSimulateEmptyTables(false);
               setSimulateEmptyMenu(false);
             }}
-            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition ${
+            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
               simulateError
                 ? 'bg-rose-500 text-white shadow'
-                : 'bg-slate-800 text-slate-300 hover:text-white'
+                : 'bg-[#07261c] text-emerald-200 hover:text-white border border-emerald-800/60'
             }`}
           >
             {simulateError ? 'Reset Network Error' : 'Test Network Failure'}
@@ -528,10 +528,10 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
               setSimulateEmptyTables(!simulateEmptyTables);
               setSimulateError(false);
             }}
-            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition ${
+            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
               simulateEmptyTables
-                ? 'bg-amber-500 text-slate-950 shadow'
-                : 'bg-slate-800 text-slate-300 hover:text-white'
+                ? 'btn-champagne shadow'
+                : 'bg-[#07261c] text-emerald-200 hover:text-white border border-emerald-800/60'
             }`}
           >
             {simulateEmptyTables ? 'Restore Tables' : 'Test No Tables'}
@@ -544,10 +544,10 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
               setSimulateEmptyMenu(!simulateEmptyMenu);
               setSimulateError(false);
             }}
-            className={`px-2.5 py-1 rounded-md text-[11px] font-semibold transition ${
+            className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition ${
               simulateEmptyMenu
-                ? 'bg-amber-500 text-slate-950 shadow'
-                : 'bg-slate-800 text-slate-300 hover:text-white'
+                ? 'btn-champagne shadow'
+                : 'bg-[#07261c] text-emerald-200 hover:text-white border border-emerald-800/60'
             }`}
           >
             {simulateEmptyMenu ? 'Restore Menu' : 'Test No Menu'}
@@ -567,9 +567,9 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
               loadOrders();
               showToast('Demo data and tabs reset to seed state.');
             }}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-md text-[11px] flex items-center gap-1 transition"
+            className="px-2.5 py-1 bg-[#07261c] hover:bg-[#0b3829] text-emerald-200 rounded-lg text-[11px] flex items-center gap-1 transition border border-emerald-800/60"
           >
-            <RefreshCw className="w-3 h-3" />
+            <RefreshCw className="w-3 h-3 text-[#dfc99a]" />
             Reset Demo Data
           </button>
         </div>
@@ -577,15 +577,15 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
 
       {/* Edge Case Alert: Table Already In Active Use */}
       {tableActiveNotice && (
-        <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center justify-between text-xs text-amber-300">
+        <div className="p-3 bg-[#07261c] border border-[#dfc99a]/40 rounded-xl flex items-center justify-between text-xs text-[#dfc99a]">
           <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+            <AlertTriangle className="w-4 h-4 text-[#dfc99a] shrink-0" />
             <span>{tableActiveNotice}</span>
           </div>
           <button
             type="button"
             onClick={() => setTableActiveNotice(null)}
-            className="text-slate-400 hover:text-white text-[11px] px-2 py-0.5 rounded bg-slate-800"
+            className="text-emerald-200 hover:text-white text-[11px] px-2 py-0.5 rounded bg-[#02140e] border border-emerald-900/60"
           >
             Dismiss
           </button>
@@ -673,20 +673,20 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
       {/* KDS (Kitchen Display System) Full View */}
       {activePortalTab === 'kds' && (
         <div className="space-y-4">
-          <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div className="bg-[#041c14]/90 border border-emerald-900/40 rounded-3xl p-6 shadow-xl backdrop-blur-md">
+            <div className="flex items-center justify-between pb-4 border-b border-emerald-900/40">
               <div className="flex items-center gap-2">
                 <Flame className="w-6 h-6 text-sky-400" />
                 <div>
-                  <h3 className="text-lg font-bold text-white">
+                  <h3 className="text-lg font-serif font-bold text-[#fcfaf5]">
                     Kitchen & Bar Expediter Display (KDS)
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-emerald-300/70">
                     Live tickets queue for kitchen grill and main lounge bar
                   </p>
                 </div>
               </div>
-              <span className="text-xs font-mono bg-sky-500/10 text-sky-400 border border-sky-500/20 px-3 py-1 rounded-full">
+              <span className="text-xs font-mono bg-sky-500/15 text-sky-300 border border-sky-500/30 px-3 py-1 rounded-full font-bold">
                 {orders.filter((o) => o.status === 'open').length} Live Tickets
               </span>
             </div>
@@ -697,9 +697,9 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
                 .map((order) => (
                   <div
                     key={order.id}
-                    className="p-4 rounded-xl border border-slate-800 bg-slate-950/70 space-y-3"
+                    className="p-4 rounded-2xl border border-emerald-900/50 bg-[#02140e]/80 space-y-3 shadow-lg"
                   >
-                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <div className="flex items-center justify-between border-b border-emerald-900/40 pb-2">
                       <div>
                         <span className="font-mono font-bold text-white text-base">
                           {order.id}
@@ -713,12 +713,12 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
 
                     <div className="space-y-2 py-1 text-xs">
                       {order.items.map((item, i) => (
-                        <div key={i} className="flex justify-between items-center text-slate-300">
+                        <div key={i} className="flex justify-between items-center text-emerald-100">
                           <span className="font-mono font-bold text-white">
                             {item.quantity}x {item.name}
                           </span>
                           {item.notes && (
-                            <span className="text-[10px] text-amber-400 italic">
+                            <span className="text-[10px] text-[#dfc99a] italic">
                               {item.notes}
                             </span>
                           )}
@@ -726,8 +726,8 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
                       ))}
                     </div>
 
-                    <div className="pt-2 border-t border-slate-800 flex items-center justify-between">
-                      <span className="text-[11px] text-slate-400 font-mono">
+                    <div className="pt-2 border-t border-emerald-900/40 flex items-center justify-between">
+                      <span className="text-[11px] text-emerald-400/70 font-mono">
                         Placed: {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
 
@@ -745,7 +745,7 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
                           <button
                             type="button"
                             onClick={() => handleUpdateKitchenStatus(order.id, 'READY')}
-                            className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition"
+                            className="px-3 py-1 btn-emerald rounded-lg text-xs font-bold transition"
                           >
                             Mark Ready
                           </button>
@@ -754,7 +754,7 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
                           <button
                             type="button"
                             onClick={() => handleUpdateKitchenStatus(order.id, 'SERVED')}
-                            className="px-3 py-1 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-xs font-bold transition"
+                            className="px-3 py-1 btn-champagne rounded-lg text-xs font-bold transition"
                           >
                             Mark Served
                           </button>
@@ -770,15 +770,15 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
 
       {/* Settled Orders Audit Tab */}
       {activePortalTab === 'audit' && (
-        <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-5 space-y-4">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+        <div className="bg-[#041c14]/90 border border-emerald-900/40 rounded-3xl p-6 space-y-4 shadow-xl backdrop-blur-md">
+          <div className="flex items-center justify-between pb-4 border-b border-emerald-900/40">
             <div className="flex items-center gap-2">
-              <Receipt className="w-6 h-6 text-purple-400" />
+              <Receipt className="w-6 h-6 text-[#dfc99a]" />
               <div>
-                <h3 className="text-lg font-bold text-white">
+                <h3 className="text-lg font-serif font-bold text-[#fcfaf5]">
                   Settled Tabs & Payment Audit
                 </h3>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-emerald-300/70">
                   Closed transactions, member discount ledger, and receipts audit
                 </p>
               </div>
@@ -787,7 +787,7 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-950/70 border-b border-slate-800 text-slate-400 uppercase font-mono text-[10px]">
+              <thead className="bg-[#02140e] border-b border-emerald-900/40 text-emerald-400/70 uppercase font-mono text-[10px]">
                 <tr>
                   <th className="p-3">Order ID</th>
                   <th className="p-3">Table</th>
@@ -800,24 +800,24 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
                   <th className="p-3">Settled At</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800 font-mono">
+              <tbody className="divide-y divide-emerald-900/30 font-mono">
                 {orders
                   .filter((o) => o.status === 'settled')
                   .map((ord) => (
-                    <tr key={ord.id} className="hover:bg-slate-800/40">
+                    <tr key={ord.id} className="hover:bg-[#07261c]/40 transition-colors">
                       <td className="p-3 font-bold text-white">{ord.id}</td>
-                      <td className="p-3 text-slate-300">{ord.tableName}</td>
-                      <td className="p-3 text-slate-300">{ord.memberName || 'Guest'}</td>
+                      <td className="p-3 text-emerald-200">{ord.tableName}</td>
+                      <td className="p-3 text-emerald-100">{ord.memberName || 'Guest'}</td>
                       <td className="p-3">
-                        <span className="text-emerald-400 font-semibold">
+                        <span className="text-[#dfc99a] font-semibold">
                           {ord.membershipTier || 'Guest'}
                         </span>
                       </td>
-                      <td className="p-3 uppercase text-slate-300">{ord.paymentMethod || 'card'}</td>
-                      <td className="p-3 text-slate-400">₹{ord.subtotal}</td>
+                      <td className="p-3 uppercase text-emerald-300">{ord.paymentMethod || 'card'}</td>
+                      <td className="p-3 text-emerald-400/70">₹{ord.subtotal}</td>
                       <td className="p-3 text-emerald-400">-₹{ord.discountAmount || 0}</td>
-                      <td className="p-3 font-bold text-emerald-400">₹{ord.total}</td>
-                      <td className="p-3 text-slate-400">
+                      <td className="p-3 font-bold text-[#dfc99a]">₹{ord.total}</td>
+                      <td className="p-3 text-emerald-400/70">
                         {ord.settledAt ? new Date(ord.settledAt).toLocaleTimeString() : 'Recently'}
                       </td>
                     </tr>

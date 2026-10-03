@@ -9,12 +9,14 @@ import {
   Mail, 
   User, 
   RefreshCw,
-  Clock
+  Clock,
+  Crown,
+  Trophy
 } from 'lucide-react';
 import { submitLead } from '../../services/api.js';
 
 /**
- * Pure JavaScript form validation without third-party schema libraries (No Zod/Yup)
+ * Pure JavaScript form validation without third-party schema libraries
  */
 function validateEnquiry(formData) {
   const errors = {};
@@ -44,7 +46,7 @@ function validateEnquiry(formData) {
     errors.phone = 'Please enter a valid phone number with at least 10 digits';
   }
 
-  // Message validation (required when asking for a quote or custom enquiry)
+  // Message validation
   if (formData.message && formData.message.trim().length > 0 && formData.message.trim().length < 5) {
     errors.message = 'Please provide a little more detail (at least 5 characters)';
   }
@@ -68,10 +70,10 @@ export default function EnquiryFormSection({ embedded = false }) {
   const [formData, setFormData] = useState(() => {
     let initialMsg = '';
     if (queryCourt) {
-      initialMsg += `I would like to book or hold court slot on ${queryCourt} on ${queryDate} at ${queryTime}. `;
+      initialMsg += `I would like to reserve session on ${queryCourt} on ${queryDate} at ${queryTime}. `;
     }
     if (queryProduct) {
-      initialMsg += `Inquiry for Pro Shop product: ${queryProduct}. `;
+      initialMsg += `Inquiry for Pro Shop gear: ${queryProduct}. `;
     }
     if (queryPlan) {
       initialMsg += `Interested in ${queryPlan} membership tier. `;
@@ -179,58 +181,58 @@ export default function EnquiryFormSection({ embedded = false }) {
   };
 
   return (
-    <section id="enquiry-section" className={`w-full ${embedded ? 'py-4' : 'py-20 bg-slate-900/40 border-t border-slate-900'}`}>
+    <section id="enquiry-section" className={`w-full ${embedded ? 'py-4' : 'py-20 bg-[#02140e] border-t border-[#dfc99a]/15'}`}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto">
           {/* Section Heading */}
           <div className="text-center mb-10 space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
-              <span>Direct Club Enquiries & Free Trial</span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#dfc99a]/10 text-[#dfc99a] border border-[#dfc99a]/25 backdrop-blur-md">
+              <Crown className="w-3.5 h-3.5 text-[#dfc99a]" />
+              <span>Direct Concierge Dispatch</span>
             </div>
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
-              Book a Free Trial Session or Send an Enquiry
+              Reserve Your Complimentary Trial or Send an Inquiry
             </h2>
-            <p className="text-slate-400 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
-              No lost messages, no unanswered phone calls. Submit your details below to schedule your court trial, 
+            <p className="text-[#ede0c4]/80 text-sm sm:text-base leading-relaxed max-w-2xl mx-auto">
+              Direct connection with our club concierge. Submit your details below to schedule your court trial, 
               request membership onboarding, or reserve pro gear.
             </p>
           </div>
 
           {/* SUCCESS BANNER STATE */}
           {submitSuccess && (
-            <div className="glass-panel p-8 rounded-3xl border border-emerald-500/40 bg-gradient-to-b from-emerald-950/40 to-slate-900 text-center space-y-5 animate-in fade-in duration-300">
-              <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto">
+            <div className="glass-panel p-8 sm:p-10 rounded-3xl border border-[#dfc99a]/40 bg-gradient-to-b from-[#06261b] to-[#02140e] text-center space-y-5 animate-in fade-in duration-300 shadow-2xl">
+              <div className="w-16 h-16 rounded-full bg-[#dfc99a]/20 text-[#dfc99a] border border-[#dfc99a]/40 flex items-center justify-center mx-auto shadow-lg shadow-[#dfc99a]/10">
                 <CheckCircle2 className="w-10 h-10" />
               </div>
               <div className="space-y-2">
-                <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                <span className="text-xs font-black uppercase tracking-wider text-[#dfc99a] px-3.5 py-1 rounded-full bg-[#dfc99a]/15 border border-[#dfc99a]/30">
                   Confirmation #{submitSuccess.leadId}
                 </span>
-                <h3 className="text-2xl font-bold text-white tracking-tight">
-                  Enquiry Successfully Received!
+                <h3 className="text-2xl font-bold text-white tracking-tight pt-2">
+                  Inquiry Successfully Received
                 </h3>
-                <p className="text-sm text-slate-300 max-w-lg mx-auto leading-relaxed">
+                <p className="text-sm text-[#ede0c4] max-w-lg mx-auto leading-relaxed">
                   {submitSuccess.message}
                 </p>
               </div>
 
-              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-slate-400">
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4 text-xs text-[#ede0c4]/70">
                 <div className="flex items-center gap-1.5">
-                  <Clock className="w-4 h-4 text-emerald-400" />
+                  <Clock className="w-4 h-4 text-[#dfc99a]" />
                   <span>Response time: Within 2 hours</span>
                 </div>
                 <span>•</span>
                 <div className="flex items-center gap-1.5">
-                  <Phone className="w-4 h-4 text-emerald-400" />
-                  <span>Front desk direct: +91 98765-43210</span>
+                  <Phone className="w-4 h-4 text-[#dfc99a]" />
+                  <span>Concierge Direct: +91 98765-43210</span>
                 </div>
               </div>
 
               <button
                 type="button"
                 onClick={() => setSubmitSuccess(null)}
-                className="mt-4 px-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold transition-colors"
+                className="mt-4 px-6 py-2.5 rounded-xl bg-[#041c14] hover:bg-[#07261c] text-white text-xs font-semibold border border-[#dfc99a]/25 transition-colors"
               >
                 Send Another Request
               </button>
@@ -239,18 +241,18 @@ export default function EnquiryFormSection({ embedded = false }) {
 
           {/* ENQUIRY FORM */}
           {!submitSuccess && (
-            <div className="glass-panel p-6 sm:p-10 rounded-3xl border border-slate-800 shadow-2xl relative">
+            <div className="glass-panel p-6 sm:p-10 rounded-3xl border border-[#dfc99a]/25 shadow-2xl relative">
               {/* Context Banner if Prefilled */}
               {(queryCourt || queryPlan || queryProduct) && (
-                <div className="mb-6 p-4 rounded-2xl bg-emerald-950/30 border border-emerald-500/30 flex items-center justify-between text-xs text-emerald-300">
+                <div className="mb-6 p-4 rounded-2xl bg-[#dfc99a]/10 border border-[#dfc99a]/30 flex items-center justify-between text-xs text-[#dfc99a]">
                   <div className="flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                    <Sparkles className="w-4 h-4 text-[#dfc99a] shrink-0" />
                     <span>
                       Inquiry pre-filled for:{' '}
-                      <strong>{queryCourt || queryPlan || queryProduct}</strong>
+                      <strong className="text-white">{queryCourt || queryPlan || queryProduct}</strong>
                     </span>
                   </div>
-                  <span className="text-[10px] text-emerald-400 font-bold uppercase">Active Context</span>
+                  <span className="text-[10px] text-[#dfc99a] font-bold uppercase">Active Context</span>
                 </div>
               )}
 
@@ -270,11 +272,11 @@ export default function EnquiryFormSection({ embedded = false }) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                   {/* Name Field */}
                   <div className="space-y-2">
-                    <label htmlFor="enquiry-name" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    <label htmlFor="enquiry-name" className="block text-xs font-bold uppercase tracking-wider text-[#ede0c4]">
                       Full Name <span className="text-rose-400">*</span>
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#dfc99a]/60">
                         <User className="w-4 h-4" />
                       </div>
                       <input
@@ -301,11 +303,11 @@ export default function EnquiryFormSection({ embedded = false }) {
 
                   {/* Email Field */}
                   <div className="space-y-2">
-                    <label htmlFor="enquiry-email" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    <label htmlFor="enquiry-email" className="block text-xs font-bold uppercase tracking-wider text-[#ede0c4]">
                       Email Address <span className="text-rose-400">*</span>
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#dfc99a]/60">
                         <Mail className="w-4 h-4" />
                       </div>
                       <input
@@ -315,7 +317,7 @@ export default function EnquiryFormSection({ embedded = false }) {
                         value={formData.email}
                         onChange={handleChange}
                         onBlur={handleBlur}
-                        placeholder="e.g. vikram@example.com"
+                        placeholder="e.g. name@domain.com"
                         className={`w-full pl-10 pr-4 py-3 rounded-xl text-sm glass-input ${
                           errors.email ? 'border-rose-500/80 focus:border-rose-500' : ''
                         }`}
@@ -332,11 +334,11 @@ export default function EnquiryFormSection({ embedded = false }) {
 
                   {/* Phone Field */}
                   <div className="space-y-2">
-                    <label htmlFor="enquiry-phone" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                      Phone Number (WhatsApp) <span className="text-rose-400">*</span>
+                    <label htmlFor="enquiry-phone" className="block text-xs font-bold uppercase tracking-wider text-[#ede0c4]">
+                      Phone Number / Mobile <span className="text-rose-400">*</span>
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#dfc99a]/60">
                         <Phone className="w-4 h-4" />
                       </div>
                       <input
@@ -363,7 +365,7 @@ export default function EnquiryFormSection({ embedded = false }) {
 
                   {/* Sport Category */}
                   <div className="space-y-2">
-                    <label htmlFor="enquiry-sport" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                    <label htmlFor="enquiry-sport" className="block text-xs font-bold uppercase tracking-wider text-[#ede0c4]">
                       Sport of Primary Interest
                     </label>
                     <select
@@ -371,34 +373,34 @@ export default function EnquiryFormSection({ embedded = false }) {
                       name="sport"
                       value={formData.sport}
                       onChange={handleChange}
-                      className="w-full px-4 py-3 rounded-xl text-sm glass-input bg-slate-900"
+                      className="w-full px-4 py-3 rounded-xl text-sm glass-input bg-[#02140e]"
                     >
-                      <option value="Tennis">Tennis (Hard & Red Clay)</option>
-                      <option value="Cricket">Box Cricket (Indoor Turfs)</option>
+                      <option value="Tennis">Tennis (Centre Court Hard & Clay)</option>
+                      <option value="Cricket">Box Cricket (Indoor AstroTurf)</option>
                       <option value="Padel">Padel (Panoramic Glass)</option>
-                      <option value="Multi-Sport">Multi-Sport / All Access</option>
+                      <option value="Multi-Sport">Multi-Sport All-Access</option>
                     </select>
                   </div>
                 </div>
 
                 {/* Membership Tier / Trial Interest */}
                 <div className="space-y-2">
-                  <label className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                    What are you looking for?
+                  <label className="block text-xs font-bold uppercase tracking-wider text-[#ede0c4]">
+                    Select Interest Category
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                     {[
-                      { id: 'Trial Session', label: 'Free Trial Session' },
+                      { id: 'Trial Session', label: 'Complimentary Pass' },
                       { id: 'Gold', label: 'Gold Tier Plan' },
                       { id: 'Silver', label: 'Silver Tier Plan' },
                       { id: 'Junior', label: 'Junior (U18) Tier' },
                     ].map((tier) => (
                       <label
                         key={tier.id}
-                        className={`px-3 py-3 rounded-xl border text-xs font-semibold cursor-pointer text-center transition-all flex items-center justify-center ${
+                        className={`px-3 py-3 rounded-xl border text-xs font-bold cursor-pointer text-center transition-all flex items-center justify-center ${
                           formData.interestTier === tier.id
-                            ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500 font-bold shadow-md'
-                            : 'bg-slate-900/60 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
+                            ? 'bg-[#dfc99a]/20 text-[#dfc99a] border-[#dfc99a] shadow-md'
+                            : 'bg-[#041c14] text-[#ede0c4]/70 border-[#dfc99a]/15 hover:text-white hover:border-[#dfc99a]/35'
                         }`}
                       >
                         <input
@@ -417,8 +419,8 @@ export default function EnquiryFormSection({ embedded = false }) {
 
                 {/* Custom Message Field */}
                 <div className="space-y-2">
-                  <label htmlFor="enquiry-message" className="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                    Message or Special Requests <span className="text-slate-500 font-normal">(Optional)</span>
+                  <label htmlFor="enquiry-message" className="block text-xs font-bold uppercase tracking-wider text-[#ede0c4]">
+                    Special Requests or Notes <span className="text-[#ede0c4]/50 font-normal">(Optional)</span>
                   </label>
                   <div className="relative">
                     <textarea
@@ -428,7 +430,7 @@ export default function EnquiryFormSection({ embedded = false }) {
                       value={formData.message}
                       onChange={handleChange}
                       onBlur={handleBlur}
-                      placeholder="Specify preferred timing, coaching inquiries, stringing requests, or any questions for the club staff..."
+                      placeholder="Specify preferred session timing, coaching clinics, restringing inquiries, or questions for club concierge..."
                       className={`w-full p-4 rounded-xl text-sm glass-input ${
                         errors.message ? 'border-rose-500/80 focus:border-rose-500' : ''
                       }`}
@@ -447,22 +449,22 @@ export default function EnquiryFormSection({ embedded = false }) {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="w-full py-4 px-6 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-400 text-slate-950 font-extrabold text-base shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    className="btn-champagne w-full py-4 px-6 rounded-xl text-sm sm:text-base flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {submitting ? (
                       <>
-                        <RefreshCw className="w-5 h-5 animate-spin" />
-                        <span>Sending to Front Desk...</span>
+                        <RefreshCw className="w-5 h-5 animate-spin text-[#02140e]" />
+                        <span>Dispatching to Concierge...</span>
                       </>
                     ) : (
                       <>
-                        <Send className="w-5 h-5" />
-                        <span>Submit Enquiry & Book Trial</span>
+                        <Send className="w-5 h-5 text-[#02140e]" />
+                        <span>Submit Inquiry & Reserve Pass</span>
                       </>
                     )}
                   </button>
-                  <p className="text-center text-[11px] text-slate-500 mt-3">
-                    Your inquiry goes directly into The Champions Club digital dispatch board. We respect your privacy.
+                  <p className="text-center text-[11px] text-[#ede0c4]/60 mt-3">
+                    Your inquiry is sent directly to The Champions Club duty manager. We respect your privacy.
                   </p>
                 </div>
               </form>

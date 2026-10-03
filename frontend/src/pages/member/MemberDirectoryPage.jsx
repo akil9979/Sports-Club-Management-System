@@ -8,22 +8,23 @@ import {
   Users, 
   Mail, 
   Phone, 
-  ChevronRight 
+  ChevronRight,
+  Crown
 } from 'lucide-react';
 import { getMembers } from '../../features/membership/membershipApi.js';
 
 function getTierBadgeClass(tier) {
   const t = (tier || '').toUpperCase();
   if (t === 'GOLD') {
-    return 'bg-amber-500/10 text-amber-400 border border-amber-500/30';
+    return 'bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30 font-extrabold';
   }
   if (t === 'SILVER') {
-    return 'bg-slate-500/20 text-slate-300 border border-slate-500/30';
+    return 'bg-slate-700/40 text-slate-200 border border-slate-600/40 font-bold';
   }
   if (t === 'JUNIOR') {
-    return 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/30';
+    return 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 font-bold';
   }
-  return 'bg-slate-800 text-slate-400 border border-slate-700';
+  return 'bg-[#041c14] text-[#ede0c4]/60 border border-[#dfc99a]/12 font-medium';
 }
 
 function formatDate(dateStr) {
@@ -99,58 +100,58 @@ export default function MemberDirectoryPage() {
   }, [members, searchQuery, tierFilter, statusFilter]);
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 py-10 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#02140e] text-[#f4efe4] py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-8">
         {/* Header Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs text-slate-400 mb-2">
-              <Link to="/" className="hover:text-amber-400 transition-colors">Home</Link>
+            <div className="flex items-center gap-2 text-xs text-[#ede0c4]/60 mb-2">
+              <Link to="/" className="hover:text-[#dfc99a] transition-colors">Club Home</Link>
               <span>/</span>
-              <span className="text-amber-400 font-medium">Membership Portal</span>
+              <span className="text-[#dfc99a] font-semibold">Member Desk</span>
             </div>
             <div className="flex items-center gap-3">
-              <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
                 Member Roster & Entitlements
               </h1>
-              <span className="px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-amber-500/10 text-amber-400 border border-amber-500/20">
-                {members.length} Members
+              <span className="px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30">
+                {members.length} Enrolled
               </span>
             </div>
-            <p className="text-sm text-slate-400 mt-1 max-w-2xl">
-              Directory of registered club members. Track Gold, Silver, and Junior tiers, expiry timelines, and court privileges.
+            <p className="text-sm text-[#ede0c4]/80 mt-1 max-w-2xl">
+              Official roster of registered club members. Inspect Gold, Silver, and Junior tiers, validity timelines, and court privileges.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
             <Link
               to="/members/register"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs shadow-lg shadow-amber-500/20 transition-all hover:scale-[1.02]"
+              className="btn-champagne inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-extrabold shadow-lg"
             >
-              <Plus className="w-4 h-4 shrink-0" />
-              Register New Member
+              <Plus className="w-4 h-4 shrink-0 text-[#02140e]" />
+              Enroll New Member
             </Link>
           </div>
         </div>
 
         {/* Filter & Search Bar */}
-        <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl backdrop-blur-md space-y-4">
+        <div className="glass-panel rounded-3xl p-5 shadow-2xl space-y-4 border border-[#dfc99a]/20">
           <div className="flex flex-col md:flex-row gap-4">
             {/* Search Input */}
             <div className="flex-1 relative">
-              <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 shrink-0" />
+              <Search className="w-5 h-5 absolute left-3.5 top-1/2 -translate-y-1/2 text-[#dfc99a]/70 shrink-0" />
               <input
                 type="text"
                 placeholder="Search by name, email, phone, or member #..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-11 pr-4 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/60 transition-all"
+                className="w-full pl-11 pr-4 py-2.5 bg-[#02140e] border border-[#dfc99a]/20 rounded-xl text-sm text-white placeholder-[#ede0c4]/40 focus:outline-none focus:border-[#dfc99a] transition-all"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery('')}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white text-xs"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#ede0c4]/60 hover:text-white text-xs"
                 >
                   Clear
                 </button>
@@ -159,36 +160,36 @@ export default function MemberDirectoryPage() {
 
             {/* Tier Select */}
             <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0">
+              <label className="text-xs font-bold text-[#ede0c4] uppercase tracking-wider shrink-0">
                 Tier:
               </label>
               <select
                 value={tierFilter}
                 onChange={(e) => setTierFilter(e.target.value)}
-                className="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/60"
+                className="px-3 py-2.5 bg-[#02140e] border border-[#dfc99a]/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#dfc99a]"
               >
                 <option value="ALL">All Tiers</option>
-                <option value="GOLD">Gold Tier</option>
-                <option value="SILVER">Silver Tier</option>
-                <option value="JUNIOR">Junior Tier</option>
-                <option value="NONE">No Tier / None</option>
+                <option value="GOLD">Gold Championship</option>
+                <option value="SILVER">Silver Standard</option>
+                <option value="JUNIOR">Junior (U18)</option>
+                <option value="NONE">Walk-In / None</option>
               </select>
             </div>
 
             {/* Status Select */}
             <div className="flex items-center gap-2">
-              <label className="text-xs font-semibold text-slate-400 uppercase tracking-wider shrink-0">
+              <label className="text-xs font-bold text-[#ede0c4] uppercase tracking-wider shrink-0">
                 Status:
               </label>
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/60"
+                className="px-3 py-2.5 bg-[#02140e] border border-[#dfc99a]/20 rounded-xl text-xs text-white focus:outline-none focus:border-[#dfc99a]"
               >
                 <option value="ALL">All Statuses</option>
                 <option value="ACTIVE">Active Plan</option>
                 <option value="EXPIRED">Expired Plan</option>
-                <option value="NO_PLAN">No Active Plan</option>
+                <option value="NO_PLAN">Walk-In / Guest</option>
               </select>
             </div>
 
@@ -197,14 +198,14 @@ export default function MemberDirectoryPage() {
               onClick={fetchMembers}
               disabled={loading}
               title="Refresh Roster"
-              className="p-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-colors disabled:opacity-50"
+              className="p-2.5 rounded-xl bg-[#041c14] hover:bg-[#07261c] text-[#ede0c4] hover:text-white border border-[#dfc99a]/20 transition-colors disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`w-4 h-4 shrink-0 ${loading ? 'animate-spin text-[#dfc99a]' : ''}`} />
             </button>
           </div>
 
           {/* Quick Active Filter Counters */}
-          <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-slate-400">
+          <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-[#ede0c4]/70">
             <span>Showing <strong className="text-white">{filteredMembers.length}</strong> of {members.length} members</span>
             {(searchQuery || tierFilter !== 'ALL' || statusFilter !== 'ALL') && (
               <button
@@ -214,7 +215,7 @@ export default function MemberDirectoryPage() {
                   setTierFilter('ALL');
                   setStatusFilter('ALL');
                 }}
-                className="text-amber-400 hover:underline font-medium"
+                className="text-[#dfc99a] hover:underline font-bold"
               >
                 Reset Filters
               </button>
@@ -225,31 +226,31 @@ export default function MemberDirectoryPage() {
         {/* Member Grid / Roster List */}
         {loading ? (
           <div className="py-20 text-center space-y-4">
-            <div className="w-12 h-12 border-4 border-amber-500/20 border-t-amber-500 rounded-full animate-spin mx-auto"></div>
-            <p className="text-sm text-slate-400">Loading member directory...</p>
+            <div className="w-12 h-12 border-4 border-[#dfc99a]/20 border-t-[#dfc99a] rounded-full animate-spin mx-auto"></div>
+            <p className="text-sm text-[#ede0c4]/70">Retrieving club member roster...</p>
           </div>
         ) : error ? (
-          <div className="bg-slate-900 border border-rose-500/30 rounded-3xl p-8 text-center max-w-lg mx-auto">
+          <div className="glass-panel border border-rose-500/30 rounded-3xl p-8 text-center max-w-lg mx-auto">
             <div className="w-14 h-14 rounded-2xl bg-rose-500/10 text-rose-400 flex items-center justify-center mx-auto mb-4 border border-rose-500/20">
               <AlertCircle className="w-7 h-7 shrink-0" />
             </div>
             <h3 className="text-lg font-bold text-white mb-2">Failed to load member roster</h3>
-            <p className="text-xs text-slate-400 mb-6">{error}</p>
+            <p className="text-xs text-[#ede0c4]/70 mb-6">{error}</p>
             <button
               type="button"
               onClick={fetchMembers}
-              className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold"
+              className="px-5 py-2.5 rounded-xl bg-[#041c14] hover:bg-[#07261c] text-white text-xs font-semibold border border-[#dfc99a]/20"
             >
               Retry
             </button>
           </div>
         ) : filteredMembers.length === 0 ? (
-          <div className="bg-slate-900/60 border border-slate-800/80 rounded-3xl p-12 text-center">
-            <div className="w-14 h-14 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-4">
+          <div className="glass-panel rounded-3xl p-12 text-center">
+            <div className="w-14 h-14 rounded-2xl bg-[#041c14] text-[#dfc99a]/60 flex items-center justify-center mx-auto mb-4 border border-[#dfc99a]/20">
               <Users className="w-7 h-7 shrink-0" />
             </div>
             <h3 className="text-lg font-bold text-white mb-1">No Members Found</h3>
-            <p className="text-xs text-slate-400 max-w-sm mx-auto mb-6">
+            <p className="text-xs text-[#ede0c4]/70 max-w-sm mx-auto mb-6">
               No registered club members matched your search query and filter criteria.
             </p>
             <button
@@ -259,7 +260,7 @@ export default function MemberDirectoryPage() {
                 setTierFilter('ALL');
                 setStatusFilter('ALL');
               }}
-              className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold"
+              className="px-4 py-2 rounded-xl bg-[#041c14] hover:bg-[#07261c] text-white text-xs font-semibold border border-[#dfc99a]/20"
             >
               Clear All Filters
             </button>
@@ -275,20 +276,20 @@ export default function MemberDirectoryPage() {
                 <div
                   key={member.id}
                   onClick={() => navigate(`/members/${member.id}`)}
-                  className="group bg-slate-900/90 hover:bg-slate-850 border border-slate-800 hover:border-amber-500/40 rounded-3xl p-6 shadow-xl backdrop-blur-md transition-all duration-200 cursor-pointer flex flex-col justify-between"
+                  className="group glass-panel glass-panel-hover rounded-3xl p-6 shadow-xl cursor-pointer flex flex-col justify-between"
                 >
                   <div>
                     {/* Header: Avatar, Name, Tier */}
                     <div className="flex items-start justify-between gap-3 mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-700/20 border border-amber-500/30 text-amber-400 font-bold text-base flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#f7f1e3] via-[#dfc99a] to-[#c59e4b] text-[#02140e] font-black text-base flex items-center justify-center shrink-0 shadow-md">
                           {member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                         </div>
                         <div>
-                          <h3 className="text-base font-bold text-white group-hover:text-amber-400 transition-colors">
+                          <h3 className="text-base font-bold text-white group-hover:text-[#dfc99a] transition-colors">
                             {member.name}
                           </h3>
-                          <span className="text-[11px] font-mono text-slate-400">
+                          <span className="text-[11px] font-mono text-[#dfc99a]/80 font-bold">
                             {member.memberNumber || member.id}
                           </span>
                         </div>
@@ -296,28 +297,28 @@ export default function MemberDirectoryPage() {
 
                       {/* Tier Badge */}
                       {activePlan ? (
-                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] uppercase tracking-wider shrink-0 ${
                           isExpired
-                            ? 'bg-rose-500/10 text-rose-400 border border-rose-500/30'
+                            ? 'bg-rose-500/15 text-rose-400 border border-rose-500/30 font-extrabold'
                             : getTierBadgeClass(tier)
                         }`}>
                           {isExpired ? 'Expired' : tier}
                         </span>
                       ) : (
-                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-slate-800 text-slate-400 border border-slate-700 shrink-0">
+                        <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-[#041c14] text-[#ede0c4]/60 border border-[#dfc99a]/15 shrink-0">
                           Walk-In
                         </span>
                       )}
                     </div>
 
                     {/* Contact Snippets */}
-                    <div className="space-y-1.5 text-xs text-slate-400 mb-4 pb-4 border-b border-slate-800/80">
+                    <div className="space-y-1.5 text-xs text-[#ede0c4]/80 mb-4 pb-4 border-b border-[#dfc99a]/12">
                       <div className="flex items-center gap-2 truncate">
-                        <Mail className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                        <Mail className="w-3.5 h-3.5 text-[#dfc99a]/60 shrink-0" />
                         <span className="truncate">{member.email}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Phone className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                        <Phone className="w-3.5 h-3.5 text-[#dfc99a]/60 shrink-0" />
                         <span>{member.phone}</span>
                       </div>
                     </div>
@@ -327,27 +328,27 @@ export default function MemberDirectoryPage() {
                       {activePlan ? (
                         <div className="space-y-1">
                           <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-slate-400">Plan:</span>
-                            <span className="text-slate-200 font-semibold">{activePlan.planName}</span>
+                            <span className="text-[#ede0c4]/60">Plan Tier:</span>
+                            <span className="text-white font-bold">{activePlan.planName}</span>
                           </div>
                           <div className="flex items-center justify-between text-[11px]">
-                            <span className="text-slate-400">{isExpired ? 'Expired On:' : 'Renews / Expires:'}</span>
-                            <span className={`font-medium ${isExpired ? 'text-rose-400 font-bold' : 'text-slate-300'}`}>
+                            <span className="text-[#ede0c4]/60">{isExpired ? 'Expired On:' : 'Renews / Valid:'}</span>
+                            <span className={`font-semibold ${isExpired ? 'text-rose-400 font-bold' : 'text-[#dfc99a]'}`}>
                               {formatDate(activePlan.endDate)}
                             </span>
                           </div>
                         </div>
                       ) : (
-                        <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 text-[11px] text-slate-400 italic">
-                          No active plan. Standard guest/walk-in pricing applies.
+                        <div className="p-2.5 rounded-xl bg-[#02140e] border border-[#dfc99a]/15 text-[11px] text-[#ede0c4]/60 italic">
+                          No active subscription. Guest court rates apply.
                         </div>
                       )}
                     </div>
                   </div>
 
                   {/* Bottom Action */}
-                  <div className="pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs font-semibold text-amber-400 group-hover:text-amber-300">
-                    <span>View Profile & History</span>
+                  <div className="pt-3 border-t border-[#dfc99a]/12 flex items-center justify-between text-xs font-bold text-[#dfc99a] group-hover:text-[#f7f1e3]">
+                    <span>Inspect Profile & Ledgers</span>
                     <ChevronRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform shrink-0" />
                   </div>
                 </div>
