@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Clock,
   Wine,
@@ -7,16 +7,25 @@ import {
   Receipt,
   Lock,
   ChevronDown,
-  ArrowLeft
+  ArrowLeft,
+  LogOut
 } from 'lucide-react';
 import { useStaffAuth } from './StaffAuthContext.jsx';
+import { useAuth } from '../auth/AuthContext.jsx';
 
 export default function OperationsPortalShell({ children, activeTab, onTabChange }) {
+  const navigate = useNavigate();
   const { currentStaff, staffList, isLocked, shiftStart, switchStaff, lockTerminal, unlockTerminal } = useStaffAuth();
+  const { logout } = useAuth();
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
   const [staffDropdownOpen, setStaffDropdownOpen] = useState(false);
+
+  const handlePortalLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   // Live clock
   useEffect(() => {
@@ -225,6 +234,16 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
                       </span>
                     </button>
                   ))}
+                  <div className="pt-1 mt-1 border-t border-slate-800">
+                    <button
+                      type="button"
+                      onClick={handlePortalLogout}
+                      className="w-full px-3 py-2 text-left text-rose-400 hover:bg-rose-500/10 flex items-center gap-2 font-medium transition"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Sign Out Account</span>
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
@@ -237,6 +256,16 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
               title="Lock Terminal Screen"
             >
               <Lock className="w-4 h-4" />
+            </button>
+
+            {/* Sign Out Button */}
+            <button
+              type="button"
+              onClick={handlePortalLogout}
+              className="p-2 rounded-xl bg-slate-800/80 hover:bg-rose-500/20 hover:text-rose-300 text-slate-400 border border-slate-700/60 transition"
+              title="Sign Out of Operations Portal"
+            >
+              <LogOut className="w-4 h-4" />
             </button>
           </div>
         </div>

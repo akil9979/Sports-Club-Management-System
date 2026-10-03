@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../features/auth/AuthContext.jsx';
 import { 
   Trophy, 
   Menu, 
@@ -11,13 +12,24 @@ import {
   ChevronRight,
   Sparkles,
   Clock,
-  Users
+  Users,
+  LogIn,
+  LogOut,
+  User,
+  Wine
 } from 'lucide-react';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -119,23 +131,66 @@ export default function Navbar() {
 
             {/* Right Action CTA */}
             <div className="hidden md:flex items-center gap-3">
-              <Link
-                to="/courts"
-                className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700 rounded-lg transition-colors flex items-center gap-1.5"
-              >
-                <Calendar className="w-4 h-4 text-emerald-400" />
-                <span>Check Slots</span>
-              </Link>
-              <Link
-                to="/enquiry"
-                className="relative inline-flex items-center justify-center p-0.5 overflow-hidden rounded-lg font-medium group transition-all duration-200"
-              >
-                <span className="w-full h-full bg-gradient-to-br from-emerald-400 via-teal-400 to-emerald-500 group-hover:from-emerald-300 group-hover:to-teal-400 absolute"></span>
-                <span className="relative px-4 py-2 text-sm transition-all ease-out bg-slate-950 rounded-[7px] group-hover:bg-opacity-0 font-semibold text-emerald-300 group-hover:text-slate-950 flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-amber-400 group-hover:text-slate-950" />
-                  <span>Book Trial Pass</span>
-                </span>
-              </Link>
+              {isAuthenticated ? (
+                <>
+                  {/* Staff Portal Shortcut for Staff/Manager/Admin */}
+                  {(user?.role === 'staff' || user?.role === 'manager' || user?.role === 'admin') && (
+                    <Link
+                      to="/staff/bar"
+                      className="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 transition flex items-center gap-1.5"
+                    >
+                      <Wine className="w-3.5 h-3.5" />
+                      <span>Staff Portal</span>
+                    </Link>
+                  )}
+
+                  {/* Authenticated User Chip */}
+                  <div className="flex items-center gap-2 pl-2 pr-3 py-1 bg-slate-900 border border-slate-800 rounded-full text-xs">
+                    <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-[11px] border border-emerald-500/30">
+                      {user?.firstName ? user.firstName.charAt(0).toUpperCase() : 'U'}
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <span className="font-semibold text-white leading-tight">
+                        {user?.firstName || 'Member'}
+                      </span>
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider leading-tight">
+                        {user?.role || 'Active'}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Logout Button */}
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="p-2 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 transition-colors"
+                    title="Sign Out of Champions Club"
+                  >
+                    <LogOut className="w-4 h-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Link
+                    to="/login"
+                    className="px-4 py-2 text-sm font-medium text-slate-300 hover:text-white border border-slate-800 hover:border-slate-700 rounded-lg transition-colors flex items-center gap-1.5"
+                  >
+                    <LogIn className="w-4 h-4 text-emerald-400" />
+                    <span>Sign In</span>
+                  </Link>
+
+                  <Link
+                    to="/signup"
+                    className="relative inline-flex items-center justify-center p-0.5 overflow-hidden rounded-lg font-medium group transition-all duration-200"
+                  >
+                    <span className="w-full h-full bg-gradient-to-br from-emerald-400 via-teal-400 to-emerald-500 group-hover:from-emerald-300 group-hover:to-teal-400 absolute"></span>
+                    <span className="relative px-4 py-2 text-sm transition-all ease-out bg-slate-950 rounded-[7px] group-hover:bg-opacity-0 font-semibold text-emerald-300 group-hover:text-slate-950 flex items-center gap-1.5">
+                      <Sparkles className="w-4 h-4 text-amber-400 group-hover:text-slate-950" />
+                      <span>Join Club</span>
+                    </span>
+                  </Link>
+                </>
+              )}
             </div>
 
             {/* Mobile Hamburger Button */}
@@ -155,6 +210,32 @@ export default function Navbar() {
         {/* Mobile Navigation Drawer */}
         {isOpen && (
           <div className="lg:hidden bg-slate-950/95 border-b border-slate-800 px-4 pt-3 pb-6 space-y-2 backdrop-blur-xl">
+            {/* Authenticated user status in mobile drawer */}
+            {isAuthenticated && (
+              <div className="p-3 mb-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 font-bold flex items-center justify-center text-xs border border-emerald-500/30">
+                    {user?.firstName ? user.firstName.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold text-white">{user?.firstName} {user?.lastName}</div>
+                    <div className="text-[11px] text-slate-400 uppercase tracking-wider">{user?.role}</div>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    closeMobileMenu();
+                    handleLogout();
+                  }}
+                  className="px-3 py-1.5 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20 text-xs font-semibold flex items-center gap-1"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            )}
+
             {navLinks.map((link) => {
               const active = isActive(link.path);
               const Icon = link.icon;
@@ -177,23 +258,39 @@ export default function Navbar() {
                 </Link>
               );
             })}
+
             <div className="pt-4 border-t border-slate-800 space-y-2">
-              <Link
-                to="/courts"
-                onClick={closeMobileMenu}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 font-medium"
-              >
-                <Calendar className="w-4 h-4 text-emerald-400" />
-                <span>View Court Availability</span>
-              </Link>
-              <Link
-                to="/enquiry"
-                onClick={closeMobileMenu}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold shadow-lg shadow-emerald-500/20"
-              >
-                <Sparkles className="w-4 h-4 text-amber-900" />
-                <span>Book Free Trial Session</span>
-              </Link>
+              {(user?.role === 'staff' || user?.role === 'manager' || user?.role === 'admin') && (
+                <Link
+                  to="/staff/bar"
+                  onClick={closeMobileMenu}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-semibold"
+                >
+                  <Wine className="w-4 h-4" />
+                  <span>Open Staff Portal</span>
+                </Link>
+              )}
+
+              {!isAuthenticated ? (
+                <>
+                  <Link
+                    to="/login"
+                    onClick={closeMobileMenu}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 font-medium"
+                  >
+                    <LogIn className="w-4 h-4 text-emerald-400" />
+                    <span>Sign In to Account</span>
+                  </Link>
+                  <Link
+                    to="/signup"
+                    onClick={closeMobileMenu}
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold shadow-lg shadow-emerald-500/20"
+                  >
+                    <Sparkles className="w-4 h-4 text-amber-900" />
+                    <span>Create Club Account</span>
+                  </Link>
+                </>
+              ) : null}
             </div>
           </div>
         )}
