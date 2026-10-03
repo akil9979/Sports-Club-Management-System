@@ -53,10 +53,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Direct public endpoints matching frontend contract
-app.get('/api/membership-plans', (req, res, next) => {
-  req.url = '/';
-  membershipRoutes(req, res, next);
-});
+app.use('/api/membership-plans', membershipRoutes);
 
 app.get('/api/courts', bookingController.getCourts);
 

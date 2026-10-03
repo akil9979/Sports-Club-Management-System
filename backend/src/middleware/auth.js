@@ -22,7 +22,16 @@ async function authenticate(req, res, next) {
     }
 
     const token = authHeader.split(' ')[1];
-    const decoded = jwt.verify(token, config.jwtSecret);
+    let decoded;
+    try {
+      decoded = jwt.verify(token, config.jwtSecret);
+    } catch (jwtErr) {
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized',
+        message: jwtErr.name === 'TokenExpiredError' ? 'Session expired, please login again' : 'Invalid token signature'
+      });
+    }
 
     const userResult = await query(
       `SELECT id, email, role, first_name, last_name, is_active 
@@ -42,11 +51,7 @@ async function authenticate(req, res, next) {
     req.user = userResult.rows[0];
     next();
   } catch (err) {
-    return res.status(401).json({
-      success: false,
-      error: 'Unauthorized',
-      message: err.name === 'TokenExpiredError' ? 'Session expired, please login again' : 'Invalid token signature'
-    });
+    next(err);
   }
 }
 
