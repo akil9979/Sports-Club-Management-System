@@ -21,7 +21,8 @@ VALUES
     ('33333333-3333-3333-3333-333333333331', 'devon.conway@example.com', '$2a$10$f5WhRamHTc8GD9U8e9OIVu.HLePosGYKWNxSnNDQVUteuLwUYJRAW', 'member', 'Devon', 'Conway', '+919876543211', true),
     ('33333333-3333-3333-3333-333333333332', 'sarah.jenkins@example.com', '$2a$10$f5WhRamHTc8GD9U8e9OIVu.HLePosGYKWNxSnNDQVUteuLwUYJRAW', 'member', 'Sarah', 'Jenkins', '+919876543212', true),
     ('33333333-3333-3333-3333-333333333333', 'rajesh.sharma@example.com', '$2a$10$f5WhRamHTc8GD9U8e9OIVu.HLePosGYKWNxSnNDQVUteuLwUYJRAW', 'member', 'Rajesh', 'Sharma', '+919876543213', true),
-    ('33333333-3333-3333-3333-333333333334', 'michael.chang@example.com', '$2a$10$f5WhRamHTc8GD9U8e9OIVu.HLePosGYKWNxSnNDQVUteuLwUYJRAW', 'member', 'Michael', 'Chang', '+919876543214', true)
+    ('33333333-3333-3333-3333-333333333334', 'michael.chang@example.com', '$2a$10$f5WhRamHTc8GD9U8e9OIVu.HLePosGYKWNxSnNDQVUteuLwUYJRAW', 'member', 'Michael', 'Chang', '+919876543214', true),
+    ('33333333-3333-3333-3333-333333333335', 'marcus.finch@example.com', '$2a$10$f5WhRamHTc8GD9U8e9OIVu.HLePosGYKWNxSnNDQVUteuLwUYJRAW', 'member', 'Marcus', 'Finch', '+919876543215', true)
 ON CONFLICT (email) DO NOTHING;
 
 -- ----------------------------------------------------------------------------
@@ -32,7 +33,8 @@ VALUES
     ('MEM-8801', '33333333-3333-3333-3333-333333333331', 'CC-2026-8801', 'Devon', 'Conway', 'devon.conway@example.com', '+919876543211', 'male', '1991-07-08', 'active'),
     ('MEM-4920', '33333333-3333-3333-3333-333333333332', 'CC-2026-4920', 'Sarah', 'Jenkins', 'sarah.jenkins@example.com', '+919876543212', 'female', '1995-03-22', 'active'),
     ('MEM-1002', '33333333-3333-3333-3333-333333333333', 'CC-2026-1002', 'Rajesh', 'Sharma', 'rajesh.sharma@example.com', '+919876543213', 'male', '1988-11-14', 'active'),
-    ('MEM-3120', '33333333-3333-3333-3333-333333333334', 'CC-2026-3120', 'Michael', 'Chang', 'michael.chang@example.com', '+919876543214', 'male', '1993-02-19', 'active')
+    ('MEM-3120', '33333333-3333-3333-3333-333333333334', 'CC-2026-3120', 'Michael', 'Chang', 'michael.chang@example.com', '+919876543214', 'male', '1993-02-19', 'active'),
+    ('MEM-1092', '33333333-3333-3333-3333-333333333335', 'CC-2026-1092', 'Marcus', 'Finch', 'marcus.finch@example.com', '+919876543215', 'male', '1985-05-15', 'expired')
 ON CONFLICT (id) DO NOTHING;
 
 -- ----------------------------------------------------------------------------
@@ -67,7 +69,8 @@ VALUES
     ('MEM-8801', 'gold', CURRENT_DATE - INTERVAL '60 days', CURRENT_DATE + INTERVAL '305 days', 'active', true, 'annual'),
     ('MEM-4920', 'silver', CURRENT_DATE - INTERVAL '30 days', CURRENT_DATE + INTERVAL '335 days', 'active', true, 'monthly'),
     ('MEM-1002', 'gold', CURRENT_DATE - INTERVAL '90 days', CURRENT_DATE + INTERVAL '275 days', 'active', true, 'annual'),
-    ('MEM-3120', 'gold', CURRENT_DATE - INTERVAL '15 days', CURRENT_DATE + INTERVAL '350 days', 'active', true, 'monthly')
+    ('MEM-3120', 'gold', CURRENT_DATE - INTERVAL '15 days', CURRENT_DATE + INTERVAL '350 days', 'active', true, 'monthly'),
+    ('MEM-1092', 'silver', CURRENT_DATE - INTERVAL '400 days', CURRENT_DATE - INTERVAL '35 days', 'expired', false, 'monthly')
 ON CONFLICT DO NOTHING;
 
 -- ----------------------------------------------------------------------------
