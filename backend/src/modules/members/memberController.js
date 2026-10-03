@@ -4,8 +4,55 @@
  */
 
 const memberService = require('./memberService');
+const membershipService = require('../memberships/membershipService');
+const { validators } = require('../../middleware/validator');
 
 class MemberController {
+  async create(req, res, next) {
+    try {
+      const { firstName, lastName, email, phone, gender, dateOfBirth, address, emergencyContactName, emergencyContactPhone, password, role, planId, billingCycle, startDate, endDate } = req.body;
+
+      if (!validators.isNonEmptyString(firstName, 1)) {
+        return res.status(422).json({ success: false, error: 'Validation Error', message: 'First name is required' });
+      }
+      if (!validators.isNonEmptyString(lastName, 1)) {
+        return res.status(422).json({ success: false, error: 'Validation Error', message: 'Last name is required' });
+      }
+      if (!validators.isEmail(email)) {
+        return res.status(422).json({ success: false, error: 'Validation Error', message: 'Valid email is required' });
+      }
+      if (!validators.isNonEmptyString(phone, 1)) {
+        return res.status(422).json({ success: false, error: 'Validation Error', message: 'Phone number is required' });
+      }
+
+      const member = await memberService.createMember({
+        firstName,
+        lastName,
+        email,
+        phone,
+        gender,
+        dateOfBirth,
+        address,
+        emergencyContactName,
+        emergencyContactPhone,
+        password,
+        role,
+        planId,
+        billingCycle,
+        startDate,
+        endDate
+      });
+
+      res.status(201).json({
+        success: true,
+        data: member,
+        message: 'Member created successfully'
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async list(req, res, next) {
     try {
       const { search, status, tier, limit, offset } = req.query;
@@ -39,6 +86,48 @@ class MemberController {
         success: true,
         data: updated,
         message: 'Member updated successfully'
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async createMembership(req, res, next) {
+    try {
+      const memberId = req.params.id;
+      const { planId, billingCycle, startDate, endDate, autoRenew } = req.body;
+
+      if (!validators.isNonEmptyString(planId)) {
+        return res.status(422).json({ success: false, error: 'Validation Error', message: 'planId is required' });
+      }
+
+      const result = await membershipService.subscribe({
+        memberId,
+        planId,
+        billingCycle,
+        startDate,
+        endDate,
+        autoRenew
+      });
+
+      res.status(201).json({
+        success: true,
+        data: result,
+        message: 'Membership created successfully'
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getMemberships(req, res, next) {
+    try {
+      const memberId = req.params.id;
+      const memberships = await membershipService.getMemberMemberships(memberId);
+      res.status(200).json({
+        success: true,
+        data: memberships,
+        count: memberships.length
       });
     } catch (err) {
       next(err);

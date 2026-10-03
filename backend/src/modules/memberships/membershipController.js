@@ -30,7 +30,7 @@ class MembershipController {
 
   async subscribe(req, res, next) {
     try {
-      const { memberId, planId, billingCycle, startDate } = req.body;
+      const { memberId, planId, billingCycle, startDate, endDate, autoRenew } = req.body;
 
       if (!validators.isNonEmptyString(memberId)) {
         return res.status(422).json({ success: false, error: 'Validation Error', message: 'memberId is required' });
@@ -39,11 +39,45 @@ class MembershipController {
         return res.status(422).json({ success: false, error: 'Validation Error', message: 'planId is required' });
       }
 
-      const result = await membershipService.subscribe({ memberId, planId, billingCycle, startDate });
+      const result = await membershipService.subscribe({ memberId, planId, billingCycle, startDate, endDate, autoRenew });
       res.status(201).json({
         success: true,
         data: result,
         message: 'Membership subscription created successfully'
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async subscribeForMember(req, res, next) {
+    try {
+      const memberId = req.params.id;
+      const { planId, billingCycle, startDate, endDate, autoRenew } = req.body;
+
+      if (!validators.isNonEmptyString(planId)) {
+        return res.status(422).json({ success: false, error: 'Validation Error', message: 'planId is required' });
+      }
+
+      const result = await membershipService.subscribe({ memberId, planId, billingCycle, startDate, endDate, autoRenew });
+      res.status(201).json({
+        success: true,
+        data: result,
+        message: 'Membership subscription created successfully'
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getMemberMemberships(req, res, next) {
+    try {
+      const memberId = req.params.id;
+      const memberships = await membershipService.getMemberMemberships(memberId);
+      res.status(200).json({
+        success: true,
+        data: memberships,
+        count: memberships.length
       });
     } catch (err) {
       next(err);
