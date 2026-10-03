@@ -284,10 +284,10 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
         </div>
 
         {/* Sub-Navigation for Operations Workspaces */}
-        <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-emerald-900/40 overflow-x-auto text-xs scrollbar-none">
+        <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-emerald-900/40 overflow-x-auto text-xs pb-1 scrollbar-none">
           <button
             onClick={() => onTabChange && onTabChange('frontdesk')}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+            className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
               activeTab === 'frontdesk' || activeTab === 'verification'
                 ? 'btn-champagne font-bold shadow-md shadow-[#dfc99a]/15 text-[#02140e]'
                 : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
@@ -299,7 +299,7 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
 
           <button
             onClick={() => onTabChange && onTabChange('pos')}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+            className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
               activeTab === 'pos'
                 ? 'btn-champagne font-bold shadow-md shadow-[#dfc99a]/10'
                 : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
@@ -311,7 +311,7 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
 
           <button
             onClick={() => onTabChange && onTabChange('kds')}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+            className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
               activeTab === 'kds'
                 ? 'bg-sky-500 text-slate-950 font-bold shadow-md shadow-sky-500/10'
                 : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
@@ -323,7 +323,7 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
 
           <button
             onClick={() => onTabChange && onTabChange('audit')}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+            className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
               activeTab === 'audit'
                 ? 'bg-[#dfc99a] text-[#02140e] font-bold shadow-md shadow-[#dfc99a]/10'
                 : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
@@ -335,7 +335,7 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
 
           <button
             onClick={() => onTabChange && onTabChange('crm')}
-            className={`px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+            className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
               activeTab === 'crm'
                 ? 'btn-champagne font-bold shadow-md shadow-[#dfc99a]/10'
                 : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'

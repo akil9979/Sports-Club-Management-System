@@ -328,7 +328,7 @@ export default function FrontdeskVerificationWorkspace() {
           </div>
 
           {/* Quick Metrics Bar */}
-          <div className="grid grid-cols-3 gap-3 text-center sm:text-left">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3 text-center sm:text-left w-full lg:w-auto">
             <div className="p-3 rounded-2xl bg-[#02140e] border border-emerald-900/50">
               <span className="text-[10px] uppercase font-bold text-emerald-400/60 block">
                 Total Scans
@@ -678,32 +678,32 @@ export default function FrontdeskVerificationWorkspace() {
 
               {/* Full Member Credentials Grid */}
               <div className="space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-emerald-900/40">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#dfc99a] via-[#c59e4b] to-[#8c6b24] text-[#02140e] font-serif font-black text-xl flex items-center justify-center shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-emerald-900/40">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-gradient-to-br from-[#dfc99a] via-[#c59e4b] to-[#8c6b24] text-[#02140e] font-serif font-black text-lg sm:text-xl flex items-center justify-center shadow-md shrink-0">
                       {verificationResult.member.name?.slice(0, 2).toUpperCase()}
                     </div>
-                    <div>
-                      <h4 className="text-xl font-serif font-black text-white">
+                    <div className="min-w-0 flex-1">
+                      <h4 className="text-lg sm:text-xl font-serif font-black text-white truncate">
                         {verificationResult.member.name}
                       </h4>
-                      <div className="flex items-center gap-2 text-xs text-emerald-300/70 mt-0.5">
+                      <div className="flex items-center gap-2 text-xs text-emerald-300/70 mt-0.5 truncate">
                         <span className="font-mono text-[#dfc99a] font-bold">
                           {verificationResult.member.memberNumber || verificationResult.member.id}
                         </span>
                         <span>•</span>
-                        <span>{verificationResult.membership?.planName || 'Walk-in Member'}</span>
+                        <span className="truncate">{verificationResult.membership?.planName || 'Walk-in Member'}</span>
                       </div>
                     </div>
                   </div>
 
-                  <span className={`px-3 py-1 rounded-xl text-xs font-black uppercase tracking-wider border ${tierMeta.iconBg}`}>
+                  <span className={`self-start sm:self-auto px-3 py-1 rounded-xl text-xs font-black uppercase tracking-wider border shrink-0 ${tierMeta.iconBg}`}>
                     {tier} Member
                   </span>
                 </div>
 
                 {/* Demographic & Contact Details */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3 text-xs">
                   <div className="p-3 rounded-2xl bg-[#02140e] border border-emerald-900/50">
                     <span className="text-[10px] uppercase font-bold text-emerald-400/60 block">
                       Phone Number
@@ -826,18 +826,18 @@ export default function FrontdeskVerificationWorkspace() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-1">
                     {checkInSuccessToast && (
                       <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1.5 animate-pulse">
-                        <CheckCircle2 className="w-4 h-4" />
-                        {checkInSuccessToast}
+                        <CheckCircle2 className="w-4 h-4 shrink-0" />
+                        <span>{checkInSuccessToast}</span>
                       </span>
                     )}
                     <button
                       type="button"
                       onClick={handleCheckIn}
                       disabled={isCheckingIn}
-                      className="ml-auto px-5 py-2.5 rounded-xl btn-champagne font-bold text-xs flex items-center gap-2 transition active:scale-95 shadow-md shadow-[#dfc99a]/15 disabled:opacity-50"
+                      className="sm:ml-auto px-5 py-2.5 rounded-xl btn-champagne font-bold text-xs flex items-center justify-center gap-2 transition active:scale-95 shadow-md shadow-[#dfc99a]/15 disabled:opacity-50"
                     >
                       <span>Confirm Facility Check-In</span>
                       <ArrowRight className="w-4 h-4" />

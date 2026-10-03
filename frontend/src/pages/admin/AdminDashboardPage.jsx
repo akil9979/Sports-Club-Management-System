@@ -305,19 +305,19 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search name, email..."
-                className="px-3.5 py-2 rounded-xl bg-[#02140e]/90 border border-emerald-900/60 text-xs text-white placeholder-emerald-700/60 focus:outline-none focus:border-[#dfc99a] w-48 sm:w-60"
+                className="px-3.5 py-2 rounded-xl bg-[#02140e]/90 border border-emerald-900/60 text-xs text-white placeholder-emerald-700/60 focus:outline-none focus:border-[#dfc99a] flex-1 sm:w-60"
               />
               <select
                 value={filterRole}
                 onChange={e => setFilterRole(e.target.value)}
                 aria-label="Filter users by role"
-                className="px-3 py-2 rounded-xl bg-[#02140e]/90 border border-emerald-900/60 text-xs text-white focus:outline-none focus:border-[#dfc99a]"
+                className="px-3 py-2 rounded-xl bg-[#02140e]/90 border border-emerald-900/60 text-xs text-white focus:outline-none focus:border-[#dfc99a] shrink-0"
               >
                 <option value="all">All Roles</option>
                 <option value="admin">Admin</option>

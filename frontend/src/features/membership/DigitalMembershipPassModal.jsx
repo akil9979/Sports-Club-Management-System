@@ -98,13 +98,13 @@ export default function DigitalMembershipPassModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in">
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-2.5 sm:p-6 animate-in fade-in">
       <div className="relative bg-[#041c14] border border-emerald-900/60 rounded-3xl max-w-xl w-full shadow-2xl overflow-hidden flex flex-col my-auto max-h-[95vh]">
         
         {/* Header Bar */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-emerald-900/40 bg-[#02140e]/90">
-          <div className="flex items-center gap-2.5">
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${tierStyle.iconBg} shadow-sm`}>
+        <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 sm:py-4 border-b border-emerald-900/40 bg-[#02140e]/90 gap-2">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center shrink-0 ${tierStyle.iconBg} shadow-sm`}>
               {tier === 'Gold' ? (
                 <Crown className="w-4 h-4 text-[#dfc99a]" />
               ) : tier === 'Silver' ? (
@@ -115,15 +115,15 @@ export default function DigitalMembershipPassModal({
                 <QrCode className="w-4 h-4 text-emerald-400" />
               )}
             </div>
-            <div>
-              <h2 className="text-sm font-serif font-bold text-[#fcfaf5] tracking-wide flex items-center gap-2">
-                Official Digital Membership Pass
-                <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${tierStyle.iconBg}`}>
+            <div className="min-w-0 flex-1">
+              <h2 className="text-xs sm:text-sm font-serif font-bold text-[#fcfaf5] tracking-wide flex flex-wrap items-center gap-1.5">
+                <span>Official Digital Pass</span>
+                <span className={`text-[9px] sm:text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${tierStyle.iconBg}`}>
                   {tier}
                 </span>
               </h2>
-              <p className="text-[11px] text-emerald-400/70">
-                Authorized credentials for Frontdesk verification & club check-in
+              <p className="text-[10px] sm:text-[11px] text-emerald-400/70 truncate">
+                Authorized credentials for Frontdesk verification & check-in
               </p>
             </div>
           </div>
@@ -131,7 +131,7 @@ export default function DigitalMembershipPassModal({
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-emerald-400 hover:text-white hover:bg-[#07261c] transition"
+            className="p-1.5 sm:p-2 rounded-xl text-emerald-400 hover:text-white hover:bg-[#07261c] transition shrink-0"
             title="Close Pass"
           >
             <X className="w-5 h-5" />
@@ -139,7 +139,7 @@ export default function DigitalMembershipPassModal({
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="overflow-y-auto p-5 sm:p-6 space-y-6">
+        <div className="overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6">
 
           {/* Status Alert Banner */}
           {isExpired ? (
@@ -175,7 +175,7 @@ export default function DigitalMembershipPassModal({
           {/* Premium Digital Wallet Card (Apple / VIP Pass Style) */}
           <div 
             ref={cardRef}
-            className={`rounded-3xl p-6 sm:p-7 border relative overflow-hidden shadow-2xl transition-all ${
+            className={`rounded-3xl p-4 sm:p-7 border relative overflow-hidden shadow-2xl transition-all ${
               tier === 'Gold'
                 ? 'bg-gradient-to-br from-[#120e06] via-[#041c14] to-[#02140e] border-[#dfc99a]/50 shadow-[#dfc99a]/10'
                 : tier === 'Silver'
@@ -192,28 +192,28 @@ export default function DigitalMembershipPassModal({
             </div>
 
             {/* Top Pass Brand & Tier Identity */}
-            <div className="flex items-start justify-between gap-4 pb-5 border-b border-white/10 relative z-10">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#dfc99a] via-[#c59e4b] to-[#8c6b24] text-[#02140e] font-serif font-black text-base flex items-center justify-center shadow-md">
+            <div className="flex items-start justify-between gap-3 pb-4 sm:pb-5 border-b border-white/10 relative z-10">
+              <div className="flex items-center gap-2.5 sm:gap-3">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-gradient-to-br from-[#dfc99a] via-[#c59e4b] to-[#8c6b24] text-[#02140e] font-serif font-black text-sm sm:text-base flex items-center justify-center shadow-md shrink-0">
                   CC
                 </div>
                 <div>
-                  <h3 className="text-base font-serif font-black tracking-wide text-white">
+                  <h3 className="text-sm sm:text-base font-serif font-black tracking-wide text-white">
                     CHAMPIONS CLUB
                   </h3>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#dfc99a] font-bold">
+                  <div className="flex items-center gap-1.5 sm:gap-2 mt-0.5">
+                    <span className="text-[9px] sm:text-[10px] font-mono uppercase tracking-widest text-[#dfc99a] font-bold">
                       {payload.membership.planName}
                     </span>
                     <span className="text-white/40">•</span>
-                    <span className="text-[10px] text-emerald-300/70 uppercase">
-                      Frontdesk Credential
+                    <span className="text-[9px] sm:text-[10px] text-emerald-300/70 uppercase">
+                      Frontdesk Pass
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className={`px-3 py-1 rounded-xl text-xs font-black uppercase tracking-wider flex items-center gap-1.5 border shadow-inner ${
+              <div className={`px-2.5 sm:px-3 py-1 rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-1.5 border shadow-inner shrink-0 ${
                 tier === 'Gold'
                   ? 'bg-[#dfc99a]/20 text-[#dfc99a] border-[#dfc99a]/40'
                   : tier === 'Silver'
@@ -230,14 +230,14 @@ export default function DigitalMembershipPassModal({
             </div>
 
             {/* Middle Section: Member Photo/Avatar + Centered High-Res QR Code */}
-            <div className="py-6 flex flex-col sm:flex-row items-center justify-between gap-6 border-b border-white/10 relative z-10">
+            <div className="py-5 sm:py-6 flex flex-col sm:flex-row items-center justify-between gap-5 sm:gap-6 border-b border-white/10 relative z-10">
               {/* Member Summary */}
-              <div className="flex-1 space-y-3 text-center sm:text-left">
+              <div className="flex-1 space-y-2.5 sm:space-y-3 text-center sm:text-left min-w-0">
                 <div>
                   <span className="text-[10px] uppercase tracking-wider text-emerald-400/70 font-semibold block">
                     Club Member Owner
                   </span>
-                  <h4 className="text-xl sm:text-2xl font-serif font-black text-white mt-0.5 tracking-tight">
+                  <h4 className="text-lg sm:text-2xl font-serif font-black text-white mt-0.5 tracking-tight truncate">
                     {payload.member.name}
                   </h4>
                   <div className="inline-block mt-1 font-mono text-xs font-bold px-2.5 py-0.5 rounded-lg bg-[#02140e]/90 text-[#dfc99a] border border-[#dfc99a]/30">
@@ -252,7 +252,7 @@ export default function DigitalMembershipPassModal({
                   </div>
                   <div className="flex items-center justify-center sm:justify-start gap-1.5">
                     <Mail className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                    <span className="truncate max-w-[200px]">{payload.member.email}</span>
+                    <span className="truncate max-w-[170px] sm:max-w-[240px]">{payload.member.email}</span>
                   </div>
                   {payload.member.age !== null && (
                     <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[11px] text-emerald-300">
@@ -265,27 +265,27 @@ export default function DigitalMembershipPassModal({
 
               {/* High-Resolution QR Code Block */}
               <div className="shrink-0 flex flex-col items-center">
-                <div className="p-3 bg-white rounded-2xl shadow-2xl border-2 border-emerald-900/40 relative group">
+                <div className="p-2.5 sm:p-3 bg-white rounded-2xl shadow-2xl border-2 border-emerald-900/40 relative group">
                   {qrDataUrl ? (
                     <img 
                       src={qrDataUrl} 
                       alt={`QR Code Pass for ${payload.member.name}`}
-                      className="w-36 h-36 sm:w-40 sm:h-40 rounded-lg object-contain"
+                      className="w-32 h-32 sm:w-40 sm:h-40 rounded-lg object-contain"
                     />
                   ) : (
-                    <div className="w-36 h-36 sm:w-40 sm:h-40 flex items-center justify-center text-slate-800">
+                    <div className="w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center text-slate-800">
                       <div className="w-6 h-6 border-2 border-slate-900 border-t-transparent rounded-full animate-spin" />
                     </div>
                   )}
                 </div>
-                <span className="text-[10px] font-mono text-emerald-400/80 mt-2 font-semibold">
+                <span className="text-[10px] font-mono text-emerald-400/80 mt-1.5 sm:mt-2 font-semibold">
                   SCAN AT FRONTDESK
                 </span>
               </div>
             </div>
 
             {/* Bottom Strip: Dates & Key Privileges */}
-            <div className="pt-5 grid grid-cols-2 sm:grid-cols-4 gap-3 text-left relative z-10">
+            <div className="pt-4 sm:pt-5 grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3 text-left relative z-10">
               <div>
                 <span className="text-[9px] uppercase tracking-wider text-emerald-400/60 font-semibold block">
                   Valid From

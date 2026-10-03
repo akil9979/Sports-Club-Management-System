@@ -226,24 +226,24 @@ export default function MemberProfilePage() {
             {/* Member Details Card */}
             <div className="bg-[#041c14]/90 border border-emerald-900/40 rounded-3xl p-6 sm:p-8 shadow-xl backdrop-blur-md">
               <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 pb-6 border-b border-emerald-900/40">
-                <div className="flex items-start gap-4">
+                <div className="flex items-start gap-3.5 sm:gap-4 min-w-0 flex-1">
                   {/* Avatar */}
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-[#dfc99a] via-[#c59e4b] to-[#8c6b24] text-[#02140e] font-serif font-black text-2xl sm:text-3xl flex items-center justify-center shadow-lg shadow-[#dfc99a]/15 shrink-0">
+                  <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-br from-[#dfc99a] via-[#c59e4b] to-[#8c6b24] text-[#02140e] font-serif font-black text-xl sm:text-3xl flex items-center justify-center shadow-lg shadow-[#dfc99a]/15 shrink-0">
                     {member.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                   </div>
 
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="text-2xl font-serif font-black text-[#fcfaf5]">{member.name}</h2>
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-[#07261c] text-emerald-300 border border-emerald-800/60">
+                      <h2 className="text-xl sm:text-2xl font-serif font-black text-[#fcfaf5] truncate">{member.name}</h2>
+                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold font-mono bg-[#07261c] text-emerald-300 border border-emerald-800/60 shrink-0">
                         {member.memberNumber || member.id}
                       </span>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-emerald-300/70 mt-2">
-                      <div className="flex items-center gap-1.5">
+                      <div className="flex items-center gap-1.5 truncate">
                         <Mail className="w-4 h-4 text-emerald-500/70 shrink-0" />
-                        <span className="text-emerald-100">{member.email}</span>
+                        <span className="text-emerald-100 truncate">{member.email}</span>
                       </div>
 
                       <div className="flex items-center gap-1.5">
@@ -267,11 +267,11 @@ export default function MemberProfilePage() {
                 </div>
 
                 {/* Profile Controls */}
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex flex-wrap items-center gap-2.5 sm:gap-3 w-full md:w-auto">
                   <button
                     type="button"
                     onClick={() => setIsPassModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-[#dfc99a] border border-[#dfc99a]/40 text-xs font-bold transition-all shadow-md hover:scale-[1.02] active:scale-95"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-[#dfc99a] border border-[#dfc99a]/40 text-xs font-bold transition-all shadow-md hover:scale-[1.02] active:scale-95 flex-1 sm:flex-initial"
                   >
                     <QrCode className="w-4 h-4 text-[#dfc99a]" />
                     <span>Digital QR Pass</span>
@@ -280,7 +280,7 @@ export default function MemberProfilePage() {
                   <button
                     type="button"
                     onClick={() => setIsEditModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-emerald-200 hover:text-white border border-emerald-800/60 text-xs font-semibold transition-colors"
+                    className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-emerald-200 hover:text-white border border-emerald-800/60 text-xs font-semibold transition-colors flex-1 sm:flex-initial"
                   >
                     <Edit3 className="w-4 h-4 shrink-0" />
                     Edit Profile
@@ -289,7 +289,7 @@ export default function MemberProfilePage() {
                   <button
                     type="button"
                     onClick={() => setIsPlanModalOpen(true)}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl btn-champagne font-bold text-xs shadow-lg shadow-[#dfc99a]/15 transition-all hover:scale-[1.02]"
+                    className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl btn-champagne font-bold text-xs shadow-lg shadow-[#dfc99a]/15 transition-all hover:scale-[1.02] w-full sm:w-auto"
                   >
                     <Sparkles className="w-4 h-4 shrink-0" />
                     {member.activeMembership ? 'Renew / Upgrade Plan' : 'Activate Membership'}
