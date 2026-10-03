@@ -157,6 +157,15 @@ export default function Navbar() {
                     </Link>
                   )}
 
+                  {/* Member Book Court Shortcut */}
+                  <Link
+                    to="/member/bookings"
+                    className="px-3 py-1.5 text-xs font-bold rounded-xl bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30 hover:bg-[#dfc99a]/25 transition flex items-center gap-1.5"
+                  >
+                    <Calendar className="w-3.5 h-3.5 text-[#dfc99a]" />
+                    <span>Book Court</span>
+                  </Link>
+
                   {/* Authenticated User Chip */}
                   <div className="flex items-center gap-2 pl-2 pr-3 py-1 bg-[#041c14] border border-[#dfc99a]/20 rounded-full text-xs">
                     <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#dfc99a] to-[#c59e4b] text-[#02140e] font-black flex items-center justify-center text-[10px]">
@@ -289,6 +298,17 @@ export default function Navbar() {
                 >
                   <Wine className="w-4 h-4" />
                   <span>Open Staff POS Portal</span>
+                </Link>
+              )}
+
+              {isAuthenticated && (
+                <Link
+                  to="/member/bookings"
+                  onClick={closeMobileMenu}
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#dfc99a]/15 border border-[#dfc99a]/35 text-[#dfc99a] font-bold text-xs"
+                >
+                  <Calendar className="w-4 h-4 text-[#dfc99a]" />
+                  <span>Book Court Reservation</span>
                 </Link>
               )}
 

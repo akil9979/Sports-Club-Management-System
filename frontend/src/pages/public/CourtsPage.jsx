@@ -65,6 +65,16 @@ export default function CourtsPage() {
           From fast-paced acrylic hard courts and forgiving European red clay to high-octane box cricket turfs and panoramic padel, 
           every playing surface is maintained to tournament standards daily.
         </p>
+        <div className="pt-2 flex justify-center">
+          <a
+            href="/member/bookings"
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gradient-to-r from-[#f7f1e3] via-[#dfc99a] to-[#c59e4b] hover:from-[#fcfaf5] hover:to-[#ede0c4] text-[#02140e] text-xs font-black uppercase tracking-wider shadow-lg shadow-[#dfc99a]/20 transition-all"
+          >
+            <Crown className="w-4 h-4 text-[#02140e]" />
+            <span>Open Member Booking Concierge</span>
+            <span>→</span>
+          </a>
+        </div>
       </div>
 
       {/* Live Availability Section Embed */}

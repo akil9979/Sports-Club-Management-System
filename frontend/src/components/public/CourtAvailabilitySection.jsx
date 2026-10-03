@@ -378,7 +378,7 @@ export default function CourtAvailabilitySection({ embedded = false }) {
                         {/* Action CTA */}
                         {isAvailable ? (
                           <Link
-                            to={`/enquiry?court=${encodeURIComponent(activeCourt.name)}&date=${selectedDate}&time=${encodeURIComponent(slot.time)}&intent=book_slot`}
+                            to={`/member/bookings?courtId=${encodeURIComponent(activeCourt.id)}&date=${encodeURIComponent(selectedDate)}`}
                             className="w-full py-2 px-3 rounded-xl bg-gradient-to-r from-[#f7f1e3] to-[#dfc99a] hover:from-[#fcfaf5] hover:to-[#ede0c4] text-[#02140e] text-xs font-extrabold flex items-center justify-center gap-1.5 transition-colors shadow-sm"
                           >
                             <span>Hold / Reserve Slot</span>
