@@ -11,9 +11,10 @@
     "db:test": "node tests/db-integrity.test.js",
     "test:api": "node tests/api-integration.test.js",
     "test:auth": "node tests/auth-member-membership.test.js",
+    "test:bookings": "node tests/court-booking-engine.test.js",
     "test:shop": "node tests/shop-inventory.test.js",
     "test:bar": "node tests/bar-operations.test.js",
-    "test": "node tests/db-integrity.test.js && node tests/api-integration.test.js && node tests/auth-member-membership.test.js && node tests/shop-inventory.test.js && node tests/bar-operations.test.js"
+    "test": "node tests/db-integrity.test.js && node tests/api-integration.test.js && node tests/auth-member-membership.test.js && node tests/court-booking-engine.test.js && node tests/shop-inventory.test.js && node tests/bar-operations.test.js"
   },
   "keywords": [
     "champions-club",

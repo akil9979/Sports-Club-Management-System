@@ -30,6 +30,7 @@ function errorHandler(err, req, res, next) {
         return res.status(409).json({
           success: false,
           error: 'Slot Conflict',
+          code: 'COURT_SLOT_UNAVAILABLE',
           message: 'The requested court slot is already booked and conflicts with an existing booking.'
         });
 
@@ -51,6 +52,7 @@ function errorHandler(err, req, res, next) {
     return res.status(err.statusCode || 422).json({
       success: false,
       error: 'Validation Error',
+      code: err.code || 'VALIDATION_ERROR',
       message: err.message,
       errors: err.errors || []
     });
@@ -63,14 +65,17 @@ function errorHandler(err, req, res, next) {
     path: req.originalUrl,
     method: req.method,
     statusCode,
+    code: err.code,
     message: err.message,
     stack: isDev ? err.stack : undefined
   });
 
   res.status(statusCode).json({
     success: false,
-    error: err.name || 'Internal Server Error',
+    error: err.name || 'API Error',
+    code: err.code || undefined,
     message: err.message || 'An unexpected error occurred',
+    errors: err.errors || undefined,
     ...(isDev && { stack: err.stack })
   });
 }

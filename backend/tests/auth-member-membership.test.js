@@ -330,7 +330,7 @@ async function runAuthMemberMembershipTests() {
         endDate: '2026-10-01' // End before start
       }
     });
-    assert(invalidDateRes.status === 422, 'POST /api/members/:id/memberships rejected invalid date range with HTTP 422');
+    assert(invalidDateRes.status === 422, `POST /api/members/:id/memberships rejected invalid date range with HTTP 422 (Received: HTTP ${invalidDateRes.status}, Body: ${JSON.stringify(invalidDateRes.body)})`);
 
     // 4.6 Valid Adult Upgrade to Gold Plan
     const goldUpgradeRes = await request(`/api/members/${adultMemberId}/memberships`, {

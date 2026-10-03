@@ -54,6 +54,7 @@ app.get('/api/health', async (req, res) => {
 });
 
 // Direct public endpoints matching frontend contract
+app.get('/api/sports', bookingController.getSports);
 app.get('/api/courts', bookingController.getCourts);
 
 // Module API Routing
