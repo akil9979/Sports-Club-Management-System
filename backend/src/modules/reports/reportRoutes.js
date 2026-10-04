@@ -5,11 +5,13 @@
 
 const express = require('express');
 const reportController = require('./reportController');
+const financeController = require('../finance/financeController');
 const { authenticate, authorize } = require('../../middleware/auth');
 
 // Router for /api/dashboard
 const dashboardRouter = express.Router();
 dashboardRouter.get('/summary', authenticate, authorize('admin', 'manager', 'staff'), (req, res, next) => reportController.getDashboardSummary(req, res, next));
+dashboardRouter.get('/owner-summary', authenticate, authorize('admin', 'manager', 'staff'), (req, res, next) => financeController.getOwnerSummary(req, res, next));
 
 // Router for /api/reports
 const reportRouter = express.Router();
@@ -17,8 +19,11 @@ reportRouter.get('/revenue', authenticate, authorize('admin', 'manager', 'staff'
 reportRouter.get('/court-usage', authenticate, authorize('admin', 'manager', 'staff'), (req, res, next) => reportController.getCourtUsageReport(req, res, next));
 reportRouter.get('/memberships', authenticate, authorize('admin', 'manager', 'staff'), (req, res, next) => reportController.getMembershipsReport(req, res, next));
 reportRouter.get('/sales', authenticate, authorize('admin', 'manager', 'staff'), (req, res, next) => reportController.getSalesReport(req, res, next));
+reportRouter.get('/taxes', authenticate, authorize('admin', 'manager', 'staff'), (req, res, next) => financeController.getTaxReport(req, res, next));
+reportRouter.get('/payroll', authenticate, authorize('admin', 'manager', 'staff'), (req, res, next) => financeController.getPayrollSummary(req, res, next));
 
 module.exports = {
   dashboardRouter,
   reportRouter
 };
+

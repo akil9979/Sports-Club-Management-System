@@ -19,7 +19,7 @@ const shopRoutes = require('./modules/shop/shopRoutes');
 const barRoutes = require('./modules/bar/barRoutes');
 const crmRoutes = require('./modules/crm/crmRoutes');
 const staffRoutes = require('./modules/staff/staffRoutes');
-const { invoiceRouter, paymentRouter, expenseRouter } = require('./modules/finance/financeRoutes');
+const { invoiceRouter, paymentRouter, expenseRouter, financeRouter } = require('./modules/finance/financeRoutes');
 const { dashboardRouter, reportRouter } = require('./modules/reports/reportRoutes');
 
 const app = express();
@@ -72,10 +72,12 @@ app.use('/api/leads', crmRoutes);
 app.use('/api/invoices', invoiceRouter);
 app.use('/api/payments', paymentRouter);
 app.use('/api/expenses', expenseRouter);
+app.use('/api/finance', financeRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/reports', reportRouter);
 app.use('/api', staffRoutes);
 app.use('/api', shopRoutes);
+
 
 // Catch-all 404 for unhandled API routes
 app.use('/api/*', (req, res) => {

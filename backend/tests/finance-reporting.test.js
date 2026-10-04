@@ -429,10 +429,91 @@ async function runTests() {
     assert(Array.isArray(salesReport.shop.topProducts), 'Sales report contains shop top products');
     assert(Array.isArray(salesReport.bar.topItems), 'Sales report contains bar top items');
 
+    // ========================================================================
+    // SUITE 8: OWNER MONTH-END FINANCIAL HUB & OPERATIONS
+    // ========================================================================
+    console.log('\n--- SUITE 8: OWNER MONTH-END FINANCIAL HUB & OPERATIONS ---');
+
+    // 8.1 Owner Month-End Consolidated Summary (How much earned, from where, and what is owed)
+    const ownerSummaryRes = await request('/api/finance/owner-summary?period=month', {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    assert(ownerSummaryRes.status === 200, 'Fetches Owner Summary with 200 OK');
+    const ownerSummary = ownerSummaryRes.body.data || ownerSummaryRes.body.summary;
+    assert(ownerSummary.overview !== undefined, 'Owner summary has overview block');
+    assert(typeof ownerSummary.overview.grossRevenue === 'number', 'Overview has numeric grossRevenue');
+    assert(typeof ownerSummary.overview.netIncome === 'number', 'Overview has numeric netIncome');
+    assert(typeof ownerSummary.overview.totalReceivables === 'number', 'Overview has numeric totalReceivables');
+    assert(typeof ownerSummary.overview.totalPayables === 'number', 'Overview has numeric totalPayables');
+    assert(Array.isArray(ownerSummary.revenueBySource), 'Owner summary contains revenueBySource breakdown');
+    assert(Array.isArray(ownerSummary.paymentChannels), 'Owner summary contains paymentChannels breakdown (card, cash, upi, netbanking)');
+    assert(ownerSummary.receivables !== undefined, 'Owner summary contains receivables analysis');
+    assert(ownerSummary.payablesAndLiabilities !== undefined, 'Owner summary contains payables & liabilities');
+    assert(ownerSummary.taxes !== undefined, 'Owner summary contains taxes calculation');
+    assert(ownerSummary.payroll !== undefined, 'Owner summary contains payroll overview');
+
+    // 8.2 Tax Report & Statutory Filing
+    const taxReportRes = await request('/api/finance/tax-report?period=month', {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    assert(taxReportRes.status === 200, 'Fetches Tax Report with 200 OK');
+    const taxReport = taxReportRes.body.data || taxReportRes.body.report;
+    assert(taxReport.taxes !== undefined, 'Tax report has taxes object');
+    assert(typeof taxReport.taxes.totalOutputTax === 'number', 'Tax report has output tax amount');
+    assert(typeof taxReport.taxes.netTaxPayable === 'number', 'Tax report has net tax payable');
+
+    // 8.3 Staff Payroll Calculation
+    const payrollRes = await request('/api/finance/payroll?period=month', {
+      headers: { Authorization: `Bearer ${adminToken}` }
+    });
+    assert(payrollRes.status === 200, 'Fetches Payroll Summary with 200 OK');
+    const payrollData = payrollRes.body.data || payrollRes.body.payroll;
+    assert(payrollData.activeHeadcount >= 1, 'Payroll summary has active headcount');
+    assert(typeof payrollData.totalGrossPayroll === 'number', 'Payroll summary has calculated total gross payroll');
+    assert(Array.isArray(payrollData.departments), 'Payroll summary has department breakdown');
+    assert(Array.isArray(payrollData.employees), 'Payroll summary has employee wage roster');
+
+    // 8.4 Disburse Payroll
+    const disburseRes = await request('/api/finance/payroll/disburse', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: {
+        department: 'all',
+        paymentMethod: 'bank_transfer',
+        periodName: 'October 2026'
+      }
+    });
+    assert(disburseRes.status === 200, 'POST /api/finance/payroll/disburse executes successfully');
+    assert(disburseRes.body.success === true, 'Payroll disbursement returns success');
+    assert(disburseRes.body.expense !== undefined, 'Payroll disbursement generates linked salary expense');
+
+    // 8.5 Create & Update Invoice Status
+    const testInv = await request('/api/invoices', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: {
+        recipientName: 'Corporate Tech Client',
+        invoiceType: 'general',
+        items: [{ description: 'Annual Arena Package', quantity: 1, unitPrice: 30000 }]
+      }
+    });
+    assert(testInv.status === 201, 'Creates corporate test invoice with 201 Created');
+    const invId = testInv.body.data?.id;
+
+    const updateInvRes = await request(`/api/invoices/${invId}/status`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${adminToken}` },
+      body: { status: 'paid', notes: 'Settled via wire transfer' }
+    });
+    assert(updateInvRes.status === 200, 'PATCH /api/invoices/:id/status updates status with 200 OK');
+    assert(updateInvRes.body.invoice.status === 'paid', 'Invoice status updated to paid');
+
+
   } catch (err) {
     console.error('[UNEXPECTED TEST ERROR]:', err);
     failed++;
-  } finally {
+  }
+ finally {
     if (server) {
       server.close();
     }

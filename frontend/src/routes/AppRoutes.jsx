@@ -63,14 +63,23 @@ export default function AppRoutes() {
             <Route element={<ProtectedRoute allowedRoles={['staff', 'manager', 'admin']} />}>
               <Route path="/management" element={<ManagementDashboardPage />} />
               <Route path="/management/dashboard" element={<ManagementDashboardPage />} />
+              <Route path="/management/finance" element={<ManagementDashboardPage />} />
+              <Route path="/management/invoices" element={<ManagementDashboardPage />} />
+              <Route path="/management/payroll" element={<ManagementDashboardPage />} />
+              <Route path="/management/taxes" element={<ManagementDashboardPage />} />
+              <Route path="/management/owner" element={<ManagementDashboardPage />} />
               <Route path="/staff/management" element={<ManagementDashboardPage />} />
+              <Route path="/finance" element={<ManagementDashboardPage />} />
+              <Route path="/owner" element={<ManagementDashboardPage />} />
             </Route>
 
             {/* Protected Admin Executive Portal Routes */}
             <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
               <Route path="/admin" element={<AdminDashboardPage />} />
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+              <Route path="/admin/finance" element={<ManagementDashboardPage />} />
             </Route>
+
 
             <Route path="*" element={<NotFoundPage />} />
           </Route>

@@ -528,6 +528,560 @@ class FinanceService {
 
     return formatExpense(res.rows[0]);
   }
+
+  /**
+   * Update invoice status
+   */
+  async updateInvoiceStatus(invoiceId, status, notes = null) {
+    const normalizedStatus = (status || '').toLowerCase().trim();
+    const validStatuses = ['draft', 'unpaid', 'partially_paid', 'paid', 'void', 'overdue'];
+    if (!validStatuses.includes(normalizedStatus)) {
+      const error = new Error(`Invalid status '${status}'. Allowed: ${validStatuses.join(', ')}`);
+      error.statusCode = 422;
+      throw error;
+    }
+
+    const res = await query(
+      `UPDATE invoices 
+       SET status = $1, updated_at = CURRENT_TIMESTAMP
+       WHERE id::text = $2 OR invoice_number = $2
+       RETURNING *`,
+      [normalizedStatus, invoiceId]
+    );
+
+    if (res.rowCount === 0) {
+      const error = new Error(`Invoice '${invoiceId}' not found`);
+      error.statusCode = 404;
+      throw error;
+    }
+
+    return formatInvoice(res.rows[0]);
+  }
+
+  // ==========================================
+  // OWNER EXECUTIVE MONTH-END & REALTIME HUB
+  // ==========================================
+
+  /**
+   * Consolidated Owner View: How much did we earn, from where, and what do we owe?
+   */
+  async getOwnerSummary(period = 'month') {
+    const periodNormalized = ['today', 'week', 'month'].includes(period) ? period : 'month';
+    const periodFilter = (col) => {
+      if (periodNormalized === 'today') return `${col} >= CURRENT_DATE`;
+      if (periodNormalized === 'week') return `${col} >= CURRENT_DATE - INTERVAL '7 days'`;
+      return `${col} >= CURRENT_DATE - INTERVAL '30 days'`;
+    };
+
+    const round2 = (val) => Math.round((Number(val) || 0) * 100) / 100;
+
+    const [
+      courtRes,
+      shopRes,
+      barRes,
+      memRes,
+      corpInvRes,
+      expensesRes,
+      expCatRes,
+      paymentsMethodRes,
+      duesRes,
+      employeesRes,
+      payrollRes,
+      leavesRes,
+      taxRes
+    ] = await Promise.all([
+      // 1. Courts Revenue
+      query(`
+        SELECT 
+          COALESCE(SUM(total_amount), 0) AS total,
+          COUNT(id) AS count,
+          COALESCE(SUM(CASE WHEN payment_status = 'paid' THEN total_amount ELSE 0 END), 0) AS paid_total,
+          COALESCE(SUM(CASE WHEN payment_status = 'unpaid' THEN total_amount ELSE 0 END), 0) AS unpaid_total
+        FROM bookings
+        WHERE status NOT IN ('cancelled', 'no_show')
+          AND ${periodFilter('created_at')}
+      `),
+
+      // 2. Shop Revenue
+      query(`
+        SELECT 
+          COALESCE(SUM(total_amount), 0) AS total,
+          COALESCE(SUM(subtotal), 0) AS subtotal,
+          COALESCE(SUM(tax_amount), 0) AS tax,
+          COALESCE(SUM(discount_amount), 0) AS discount,
+          COUNT(id) AS count
+        FROM shop_orders
+        WHERE status NOT IN ('cancelled', 'refunded')
+          AND ${periodFilter('created_at')}
+      `),
+
+      // 3. Bar Revenue
+      query(`
+        SELECT 
+          COALESCE(SUM(total), 0) AS total,
+          COALESCE(SUM(subtotal), 0) AS subtotal,
+          COALESCE(SUM(tax), 0) AS tax,
+          COALESCE(SUM(discount_amount), 0) AS discount,
+          COUNT(id) AS count,
+          COALESCE(SUM(CASE WHEN status = 'settled' THEN total ELSE 0 END), 0) AS settled_total,
+          COALESCE(SUM(CASE WHEN status = 'open' THEN total ELSE 0 END), 0) AS open_total
+        FROM bar_orders
+        WHERE status NOT IN ('cancelled', 'voided')
+          AND ${periodFilter('created_at')}
+      `),
+
+      // 4. Memberships Revenue
+      query(`
+        SELECT 
+          COALESCE(SUM(mp.price), 0) AS total,
+          COUNT(ms.id) AS count
+        FROM memberships ms
+        JOIN membership_plans mp ON mp.id = ms.plan_id
+        WHERE ms.status = 'active'
+          AND ${periodFilter('ms.created_at')}
+      `),
+
+      // 5. Corporate & General Invoices
+      query(`
+        SELECT 
+          COALESCE(SUM(total_amount), 0) AS total,
+          COALESCE(SUM(paid_amount), 0) AS paid_total,
+          COALESCE(SUM(total_amount - paid_amount), 0) AS outstanding,
+          COUNT(id) AS count
+        FROM invoices
+        WHERE invoice_type IN ('quotation', 'general', 'membership')
+          AND ${periodFilter('created_at')}
+      `),
+
+      // 6. Total Operating Expenses
+      query(`
+        SELECT 
+          COALESCE(SUM(amount), 0) AS total,
+          COUNT(id) AS count
+        FROM expenses
+        WHERE ${periodFilter('expense_date')}
+      `),
+
+      // 7. Expenses by Category
+      query(`
+        SELECT 
+          category,
+          COALESCE(SUM(amount), 0) AS total,
+          COUNT(id) AS count
+        FROM expenses
+        WHERE ${periodFilter('expense_date')}
+        GROUP BY category
+        ORDER BY total DESC
+      `),
+
+      // 8. Payment Methods Breakdown (Card, Cash, Online/UPI, etc.)
+      query(`
+        SELECT 
+          payment_method,
+          COALESCE(SUM(amount), 0) AS total,
+          COUNT(id) AS count
+        FROM payments
+        WHERE status = 'completed'
+          AND ${periodFilter('paid_at')}
+        GROUP BY payment_method
+        ORDER BY total DESC
+      `),
+
+      // 9. Balance Sheet / Receivables & Dues
+      query(`
+        SELECT 
+          (SELECT COALESCE(SUM(total_amount - paid_amount), 0) FROM invoices WHERE status IN ('unpaid', 'partially_paid', 'overdue')) AS unpaid_invoices_total,
+          (SELECT COUNT(*) FROM invoices WHERE status IN ('unpaid', 'partially_paid', 'overdue')) AS unpaid_invoices_count,
+          (SELECT COUNT(*) FROM invoices WHERE status = 'overdue') AS overdue_invoices_count,
+          (SELECT COALESCE(SUM(total_amount - paid_amount), 0) FROM invoices WHERE status = 'overdue') AS overdue_invoices_total,
+          (SELECT COALESCE(SUM(total), 0) FROM bar_orders WHERE status = 'open') AS open_bar_tabs_total,
+          (SELECT COUNT(*) FROM bar_orders WHERE status = 'open') AS open_bar_tabs_count,
+          (SELECT COALESCE(SUM(total_amount), 0) FROM bookings WHERE payment_status = 'unpaid' AND status NOT IN ('cancelled', 'no_show')) AS unpaid_bookings_total,
+          (SELECT COUNT(*) FROM bookings WHERE payment_status = 'unpaid' AND status NOT IN ('cancelled', 'no_show')) AS unpaid_bookings_count
+      `),
+
+      // 10. Employees & Payroll Metrics
+      query(`
+        SELECT 
+          COUNT(*) AS total_employees,
+          COUNT(CASE WHEN status = 'active' THEN 1 END) AS active_employees,
+          COALESCE(SUM(CASE WHEN status = 'active' THEN salary ELSE 0 END), 0) AS monthly_salary_liability
+        FROM employees
+      `),
+
+      // 11. Recent Salary Payouts
+      query(`
+        SELECT 
+          COALESCE(SUM(amount), 0) AS total_salaries_paid,
+          COUNT(id) AS payout_count
+        FROM expenses
+        WHERE category = 'salaries'
+          AND ${periodFilter('expense_date')}
+      `),
+
+      // 12. Pending Leave Requests
+      query(`
+        SELECT 
+          COUNT(*) AS total_pending,
+          COUNT(CASE WHEN leave_type = 'annual' THEN 1 END) AS pending_annual,
+          COUNT(CASE WHEN leave_type = 'sick' THEN 1 END) AS pending_sick
+        FROM leave_requests
+        WHERE status = 'pending'
+      `),
+
+      // 13. Taxes Summary
+      query(`
+        SELECT 
+          (SELECT COALESCE(SUM(tax_amount), 0) FROM shop_orders WHERE status NOT IN ('cancelled', 'refunded') AND ${periodFilter('created_at')}) AS shop_tax,
+          (SELECT COALESCE(SUM(tax), 0) FROM bar_orders WHERE status NOT IN ('cancelled', 'voided') AND ${periodFilter('created_at')}) AS bar_tax,
+          (SELECT COALESCE(SUM(tax_amount), 0) FROM invoices WHERE ${periodFilter('created_at')}) AS invoice_tax,
+          (SELECT COALESCE(SUM(total_amount * 0.18), 0) FROM bookings WHERE status NOT IN ('cancelled', 'no_show') AND ${periodFilter('created_at')}) AS court_estimated_tax
+      `)
+    ]);
+
+    // Financial totals
+    const courtTotal = parseFloat(courtRes.rows[0].total || 0);
+    const shopTotal = parseFloat(shopRes.rows[0].total || 0);
+    const barTotal = parseFloat(barRes.rows[0].total || 0);
+    const memTotal = parseFloat(memRes.rows[0].total || 0);
+
+    const grossRevenue = courtTotal + shopTotal + barTotal + memTotal;
+    const totalExpenses = parseFloat(expensesRes.rows[0].total || 0);
+    const netIncome = grossRevenue - totalExpenses;
+    const profitMargin = grossRevenue > 0 ? round2((netIncome / grossRevenue) * 100) : 0;
+
+    // Receivables (What is owed to us)
+    const duesRow = duesRes.rows[0];
+    const unpaidInvoices = parseFloat(duesRow.unpaid_invoices_total || 0);
+    const openBarTabs = parseFloat(duesRow.open_bar_tabs_total || 0);
+    const unpaidBookings = parseFloat(duesRow.unpaid_bookings_total || 0);
+    const totalReceivables = unpaidInvoices + openBarTabs + unpaidBookings;
+
+    // Payables & Liabilities (What we owe)
+    const empRow = employeesRes.rows[0];
+    const monthlySalaryLiability = parseFloat(empRow.monthly_salary_liability || 0);
+    const salariesPaidThisPeriod = parseFloat(payrollRes.rows[0].total_salaries_paid || 0);
+    const pendingPayrollLiability = Math.max(0, monthlySalaryLiability - salariesPaidThisPeriod);
+
+    // Taxes
+    const taxRow = taxRes.rows[0];
+    const shopTax = parseFloat(taxRow.shop_tax || 0);
+    const barTax = parseFloat(taxRow.bar_tax || 0);
+    const invoiceTax = parseFloat(taxRow.invoice_tax || 0);
+    const courtTax = parseFloat(taxRow.court_estimated_tax || 0);
+    const totalOutputTax = shopTax + barTax + invoiceTax + courtTax;
+    // Input tax estimate on operating expenses (~12% average)
+    const estimatedInputTax = round2(totalExpenses * 0.10);
+    const netTaxPayable = Math.max(0, totalOutputTax - estimatedInputTax);
+
+    const totalLiabilities = pendingPayrollLiability + netTaxPayable + totalExpenses;
+
+    // Payment methods map
+    const paymentMethodsMap = {
+      card: { total: 0, count: 0 },
+      cash: { total: 0, count: 0 },
+      upi: { total: 0, count: 0 },
+      netbanking: { total: 0, count: 0 },
+      wallet: { total: 0, count: 0 },
+      cheque: { total: 0, count: 0 }
+    };
+
+    let totalRecordedPayments = 0;
+    for (const row of paymentsMethodRes.rows) {
+      const method = (row.payment_method || 'other').toLowerCase();
+      const amt = parseFloat(row.total || 0);
+      const cnt = parseInt(row.count || 0, 10);
+      totalRecordedPayments += amt;
+      if (paymentMethodsMap[method]) {
+        paymentMethodsMap[method].total += amt;
+        paymentMethodsMap[method].count += cnt;
+      } else {
+        paymentMethodsMap.card.total += amt;
+        paymentMethodsMap.card.count += cnt;
+      }
+    }
+
+    return {
+      period: periodNormalized,
+      overview: {
+        grossRevenue: round2(grossRevenue),
+        totalExpenses: round2(totalExpenses),
+        netIncome: round2(netIncome),
+        profitMargin: profitMargin,
+        totalReceivables: round2(totalReceivables),
+        totalPayables: round2(totalLiabilities),
+        totalRecordedPayments: round2(totalRecordedPayments)
+      },
+      revenueBySource: [
+        {
+          source: 'courts',
+          label: 'Court Bookings & Coaching',
+          amount: round2(courtTotal),
+          count: parseInt(courtRes.rows[0].count || 0, 10),
+          paidAmount: round2(courtRes.rows[0].paid_total || 0),
+          unpaidAmount: round2(courtRes.rows[0].unpaid_total || 0),
+          percentage: grossRevenue > 0 ? round2((courtTotal / grossRevenue) * 100) : 0
+        },
+        {
+          source: 'shop',
+          label: 'Pro Shop & Equipment Sales',
+          amount: round2(shopTotal),
+          count: parseInt(shopRes.rows[0].count || 0, 10),
+          percentage: grossRevenue > 0 ? round2((shopTotal / grossRevenue) * 100) : 0
+        },
+        {
+          source: 'bar',
+          label: 'Sports Bar & Lounge Dining',
+          amount: round2(barTotal),
+          count: parseInt(barRes.rows[0].count || 0, 10),
+          settledAmount: round2(barRes.rows[0].settled_total || 0),
+          openTabsAmount: round2(barRes.rows[0].open_total || 0),
+          percentage: grossRevenue > 0 ? round2((barTotal / grossRevenue) * 100) : 0
+        },
+        {
+          source: 'memberships',
+          label: 'Membership Subscriptions',
+          amount: round2(memTotal),
+          count: parseInt(memRes.rows[0].count || 0, 10),
+          percentage: grossRevenue > 0 ? round2((memTotal / grossRevenue) * 100) : 0
+        }
+      ],
+      paymentChannels: [
+        {
+          method: 'card',
+          label: 'Credit / Debit Card (POS)',
+          amount: round2(paymentMethodsMap.card.total),
+          count: paymentMethodsMap.card.count,
+          percentage: totalRecordedPayments > 0 ? round2((paymentMethodsMap.card.total / totalRecordedPayments) * 100) : 0
+        },
+        {
+          method: 'cash',
+          label: 'Cash (Counter / Registers)',
+          amount: round2(paymentMethodsMap.cash.total),
+          count: paymentMethodsMap.cash.count,
+          percentage: totalRecordedPayments > 0 ? round2((paymentMethodsMap.cash.total / totalRecordedPayments) * 100) : 0
+        },
+        {
+          method: 'upi',
+          label: 'UPI & Instant Digital Pay',
+          amount: round2(paymentMethodsMap.upi.total),
+          count: paymentMethodsMap.upi.count,
+          percentage: totalRecordedPayments > 0 ? round2((paymentMethodsMap.upi.total / totalRecordedPayments) * 100) : 0
+        },
+        {
+          method: 'netbanking',
+          label: 'Net Banking & Wire Transfer',
+          amount: round2(paymentMethodsMap.netbanking.total),
+          count: paymentMethodsMap.netbanking.count,
+          percentage: totalRecordedPayments > 0 ? round2((paymentMethodsMap.netbanking.total / totalRecordedPayments) * 100) : 0
+        }
+      ],
+      receivables: {
+        total: round2(totalReceivables),
+        unpaidInvoices: {
+          amount: round2(unpaidInvoices),
+          count: parseInt(duesRow.unpaid_invoices_count || 0, 10),
+          overdueAmount: round2(duesRow.overdue_invoices_total || 0),
+          overdueCount: parseInt(duesRow.overdue_invoices_count || 0, 10)
+        },
+        openBarTabs: {
+          amount: round2(openBarTabs),
+          count: parseInt(duesRow.open_bar_tabs_count || 0, 10)
+        },
+        unpaidBookings: {
+          amount: round2(unpaidBookings),
+          count: parseInt(duesRow.unpaid_bookings_count || 0, 10)
+        }
+      },
+      payablesAndLiabilities: {
+        total: round2(totalLiabilities),
+        pendingPayroll: round2(pendingPayrollLiability),
+        monthlySalaryLiability: round2(monthlySalaryLiability),
+        salariesPaidThisPeriod: round2(salariesPaidThisPeriod),
+        netTaxPayable: round2(netTaxPayable),
+        operatingExpenses: round2(totalExpenses)
+      },
+      expensesByCategory: expCatRes.rows.map(r => ({
+        category: r.category,
+        amount: round2(r.total),
+        count: parseInt(r.count || 0, 10)
+      })),
+      taxes: {
+        totalOutputTax: round2(totalOutputTax),
+        estimatedInputTax: round2(estimatedInputTax),
+        netTaxPayable: round2(netTaxPayable),
+        breakdown: {
+          courtEstimatedTax: round2(courtTax),
+          shopTax: round2(shopTax),
+          barTax: round2(barTax),
+          invoiceTax: round2(invoiceTax)
+        }
+      },
+      payroll: {
+        activeEmployees: parseInt(empRow.active_employees || 0, 10),
+        totalEmployees: parseInt(empRow.total_employees || 0, 10),
+        monthlyBaseLiability: round2(monthlySalaryLiability),
+        paidThisMonth: round2(salariesPaidThisPeriod),
+        pendingDisbursement: round2(pendingPayrollLiability)
+      },
+      pendingActions: {
+        pendingLeaves: parseInt(leavesRes.rows[0].total_pending || 0, 10),
+        overdueInvoices: parseInt(duesRow.overdue_invoices_count || 0, 10),
+        openBarTabs: parseInt(duesRow.open_bar_tabs_count || 0, 10)
+      }
+    };
+  }
+
+  /**
+   * Tax Report for Period
+   */
+  async getTaxReport(period = 'month') {
+    const summary = await this.getOwnerSummary(period);
+    return {
+      period: summary.period,
+      taxes: summary.taxes,
+      grossRevenue: summary.overview.grossRevenue,
+      totalExpenses: summary.overview.totalExpenses
+    };
+  }
+
+  /**
+   * Payroll Summary & Department Wage Calculator
+   */
+  async getPayrollSummary(period = 'month') {
+    const [employeesRes, deptRes, shiftsRes, recentPayoutsRes] = await Promise.all([
+      query(`
+        SELECT id, employee_number, first_name, last_name, email, department,
+               designation, hourly_rate, salary, employment_type, status, joined_date
+        FROM employees
+        ORDER BY department ASC, first_name ASC
+      `),
+      query(`
+        SELECT 
+          department,
+          COUNT(id) AS headcount,
+          COALESCE(SUM(salary), 0) AS total_salary,
+          COALESCE(AVG(hourly_rate), 0) AS avg_hourly_rate
+        FROM employees
+        WHERE status = 'active'
+        GROUP BY department
+        ORDER BY total_salary DESC
+      `),
+      query(`
+        SELECT 
+          s.employee_id,
+          COUNT(s.id) AS shifts_count,
+          COALESCE(SUM(EXTRACT(EPOCH FROM (s.end_time - s.start_time))/3600), 0) AS total_hours
+        FROM staff_shifts s
+        WHERE s.shift_date >= CURRENT_DATE - INTERVAL '30 days'
+        GROUP BY s.employee_id
+      `),
+      query(`
+        SELECT id, expense_number, title, amount, expense_date, payment_method, notes
+        FROM expenses
+        WHERE category = 'salaries'
+        ORDER BY expense_date DESC
+        LIMIT 10
+      `)
+    ]);
+
+    const shiftHoursMap = {};
+    shiftsRes.rows.forEach(r => {
+      shiftHoursMap[r.employee_id] = parseFloat(r.total_hours || 0);
+    });
+
+    const employeesWithCalculations = employeesRes.rows.map(e => {
+      const baseSalary = parseFloat(e.salary || 0);
+      const hourlyRate = parseFloat(e.hourly_rate || 0);
+      const hoursWorked = shiftHoursMap[e.id] || 0;
+      const hourlyWages = hourlyRate * hoursWorked;
+      const totalEstimatedPay = baseSalary > 0 ? baseSalary : hourlyWages;
+
+      return {
+        id: e.id,
+        employeeNumber: e.employee_number,
+        name: `${e.first_name} ${e.last_name}`,
+        email: e.email,
+        department: e.department,
+        designation: e.designation,
+        employmentType: e.employment_type,
+        status: e.status,
+        baseSalary,
+        hourlyRate,
+        hoursWorked: Math.round(hoursWorked * 10) / 10,
+        hourlyWages: Math.round(hourlyWages * 100) / 100,
+        totalPayable: Math.round(totalEstimatedPay * 100) / 100
+      };
+    });
+
+    const totalGrossPayroll = employeesWithCalculations
+      .filter(e => e.status === 'active')
+      .reduce((acc, curr) => acc + curr.totalPayable, 0);
+
+    return {
+      period,
+      totalHeadcount: employeesRes.rowCount,
+      activeHeadcount: employeesRes.rows.filter(e => e.status === 'active').length,
+      totalGrossPayroll: Math.round(totalGrossPayroll * 100) / 100,
+      departments: deptRes.rows.map(d => ({
+        department: d.department,
+        headcount: parseInt(d.headcount, 10),
+        totalSalary: parseFloat(d.total_salary || 0),
+        avgHourlyRate: Math.round(parseFloat(d.avg_hourly_rate || 0) * 100) / 100
+      })),
+      employees: employeesWithCalculations,
+      recentPayouts: recentPayoutsRes.rows.map(formatExpense)
+    };
+  }
+
+  /**
+   * Disburse Staff Payroll and record linked expense
+   */
+  async disbursePayroll(payload = {}) {
+    const department = payload.department || 'all';
+    const paymentMethod = (payload.paymentMethod || 'bank_transfer').toLowerCase();
+    const approvedBy = payload.approvedBy || null;
+    const periodName = payload.periodName || new Date().toLocaleString('en-US', { month: 'long', year: 'numeric' });
+
+    // Calculate sum for target department
+    let sql = `SELECT COALESCE(SUM(salary), 0) AS total, COUNT(id) AS count FROM employees WHERE status = 'active'`;
+    const params = [];
+    if (department !== 'all') {
+      params.push(department.toLowerCase());
+      sql += ` AND LOWER(department) = $1`;
+    }
+
+    const calcRes = await query(sql, params);
+    const amount = parseFloat(payload.amount || calcRes.rows[0].total || 0);
+
+    if (amount <= 0) {
+      const error = new Error('No payroll amount found to disburse');
+      error.statusCode = 422;
+      throw error;
+    }
+
+    const title = `Staff Payroll Payout - ${department === 'all' ? 'All Departments' : department.toUpperCase()} (${periodName})`;
+    const notes = payload.notes || `Disbursement for ${calcRes.rows[0].count} active staff members in ${department} department.`;
+
+    const expense = await this.createExpense({
+      title,
+      amount,
+      category: 'salaries',
+      expenseDate: new Date().toISOString().split('T')[0],
+      vendorName: `Champions Club Staff (${department})`,
+      paymentMethod,
+      approvedBy,
+      notes
+    });
+
+    return {
+      success: true,
+      message: `Payroll disbursed successfully for ${periodName}`,
+      disbursedAmount: amount,
+      expense
+    };
+  }
 }
 
 module.exports = new FinanceService();
+

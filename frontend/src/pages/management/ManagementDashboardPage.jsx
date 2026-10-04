@@ -10,13 +10,21 @@ import {
   AlertTriangle, 
   Clock, 
   CheckCircle2, 
-  Sparkles,
-  Layers,
-  ShieldCheck,
-  ChevronRight
+  Sparkles, 
+  Layers, 
+  ShieldCheck, 
+  ChevronRight, 
+  FileText, 
+  ReceiptText, 
+  CreditCard, 
+  Share2, 
+  Printer, 
+  DollarSign, 
+  Plus 
 } from 'lucide-react';
 import { 
   getDashboardSummary, 
+  getOwnerSummary, 
   getRevenueReport, 
   getCourtUsageReport, 
   getMembershipsReport, 
@@ -29,6 +37,11 @@ import { validatePeriod, SUPPORTED_PERIODS } from '../../features/management/man
 
 // Subcomponents
 import KPICards from '../../components/management/KPICards.jsx';
+import OwnerFinancialOverview from '../../components/management/OwnerFinancialOverview.jsx';
+import ClientInvoicingSection from '../../components/management/ClientInvoicingSection.jsx';
+import StaffPayrollSection from '../../components/management/StaffPayrollSection.jsx';
+import TaxReportingSection from '../../components/management/TaxReportingSection.jsx';
+import ExecutiveBriefingModal from '../../components/management/ExecutiveBriefingModal.jsx';
 import RevenueBySourceSection from '../../components/management/RevenueBySourceSection.jsx';
 import CourtUsageSection from '../../components/management/CourtUsageSection.jsx';
 import MembershipSummarySection from '../../components/management/MembershipSummarySection.jsx';
@@ -40,20 +53,25 @@ import LeaveApprovals from '../../components/management/LeaveApprovals.jsx';
 
 /**
  * ManagementDashboardPage
- * Role: MEMBER 2 (Management Dashboard & Employee/Leave Interfaces)
- * Master dashboard connecting all frozen management & report APIs with
- * interactive today/week/month period toggles, leave approval workflows,
- * and comprehensive staff operations monitoring.
+ * 
+ * Flagship Executive Command Center & Month-End Financial Hub for the Club Owner and Managers:
+ * - Answers: How much did we earn, from where & by what method, and what do we owe?
+ * - Invoices individual members and corporate/business clients
+ * - Disburses staff compensation and calculates payroll
+ * - Reviews and approves employee leaves
+ * - Audits GST/VAT output and input tax credits for month-end tax filing
+ * - Shares numbers via formatted WhatsApp/Email briefing, PDF print, and CSV pack
  */
 export default function ManagementDashboardPage() {
-  const [selectedPeriod, setSelectedPeriod] = useState('today');
-  const [activeTab, setActiveTab] = useState('overview'); // 'overview' | 'retail_courts' | 'staff_leaves' | 'all'
+  const [selectedPeriod, setSelectedPeriod] = useState('month');
+  const [activeTab, setActiveTab] = useState('owner_overview'); // 'owner_overview' | 'invoicing' | 'payroll' | 'taxes' | 'retail_courts' | 'staff_leaves' | 'all'
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
   const [lastRefreshed, setLastRefreshed] = useState(new Date());
 
   // Master Data State
+  const [ownerSummaryData, setOwnerSummaryData] = useState(null);
   const [summaryData, setSummaryData] = useState(null);
   const [revenueData, setRevenueData] = useState(null);
   const [courtData, setCourtData] = useState(null);
@@ -63,9 +81,11 @@ export default function ManagementDashboardPage() {
   const [shifts, setShifts] = useState([]);
   const [leaveRequests, setLeaveRequests] = useState([]);
 
-  // Fetch all management datasets in parallel with partial failure resilience
+  // Modal State
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  // Fetch all management & owner datasets in parallel with partial failure resilience
   const loadDashboardData = useCallback(async (period, isManualRefresh = false) => {
-    // Validate period parameter
     const periodCheck = validatePeriod(period);
     if (!periodCheck.isValid) {
       setError(periodCheck.error);
@@ -90,6 +110,7 @@ export default function ManagementDashboardPage() {
 
     try {
       const [
+        ownerRes,
         summaryRes,
         revenueRes,
         courtRes,
@@ -99,6 +120,7 @@ export default function ManagementDashboardPage() {
         shiftsRes,
         leaveRes
       ] = await Promise.all([
+        safeFetch(() => getOwnerSummary(period), null),
         safeFetch(() => getDashboardSummary(period), null),
         safeFetch(() => getRevenueReport(period), null),
         safeFetch(() => getCourtUsageReport(period), null),
@@ -109,10 +131,7 @@ export default function ManagementDashboardPage() {
         safeFetch(() => getLeaveRequests(), [])
       ]);
 
-      if (!summaryRes && !revenueRes && !employeesRes.length) {
-        throw new Error('Unable to contact club management API service. Please verify backend connection.');
-      }
-
+      setOwnerSummaryData(ownerRes);
       setSummaryData(summaryRes);
       setRevenueData(revenueRes || summaryRes);
       setCourtData(courtRes);
@@ -130,12 +149,10 @@ export default function ManagementDashboardPage() {
     }
   }, []);
 
-  // Fetch on mount or when period changes
   useEffect(() => {
     loadDashboardData(selectedPeriod);
   }, [selectedPeriod, loadDashboardData]);
 
-  // Handle leave approval/rejection callback
   const handleLeaveUpdated = async () => {
     try {
       const [updatedLeaves, updatedEmployees] = await Promise.all([
@@ -161,7 +178,9 @@ export default function ManagementDashboardPage() {
     <div className="min-h-screen bg-[#02140e] text-slate-100 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto space-y-8">
         
-        {/* Top Header / Executive Ribbon */}
+        {/* ========================================================================= */}
+        {/* TOP EXECUTIVE RIBBON & CONTROLS */}
+        {/* ========================================================================= */}
         <div className="bg-gradient-to-r from-[#041c14] via-[#07261c] to-[#02140e] border border-[#dfc99a]/30 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-2xl relative overflow-hidden">
           <div className="absolute top-0 right-0 w-96 h-96 bg-[#dfc99a]/5 rounded-full blur-3xl pointer-events-none" />
           
@@ -169,7 +188,7 @@ export default function ManagementDashboardPage() {
             <div>
               <div className="flex items-center gap-2 mb-2">
                 <span className="px-3 py-0.5 rounded-full text-[10px] font-bold tracking-widest uppercase bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30">
-                  Management & Executive Operations
+                  Owner Executive Command Center
                 </span>
                 <span className="text-[11px] text-[#ede0c4]/50 flex items-center gap-1 font-mono">
                   <Clock className="w-3 h-3 text-[#dfc99a]" />
@@ -177,14 +196,14 @@ export default function ManagementDashboardPage() {
                 </span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
-                Champions Club Command Center
+                Month-End Financials & Operations Hub
               </h1>
-              <p className="text-xs sm:text-sm text-[#ede0c4]/70 mt-1 max-w-2xl">
-                Real-time operational intelligence, court utilization, commercial retail throughput, and staff attendance.
+              <p className="text-xs sm:text-sm text-[#ede0c4]/70 mt-1 max-w-3xl">
+                One consolidated view answering how much was earned, from where, by what method, and what is owed across courts, shop, bar, memberships, payroll, and taxes.
               </p>
             </div>
 
-            {/* Period Switcher & Refresh Button */}
+            {/* Actions: Period Toggles & Share/Export */}
             <div className="flex flex-wrap items-center gap-3">
               {/* Period selection: today | week | month */}
               <div className="bg-[#02140e] p-1.5 rounded-2xl border border-[#dfc99a]/25 flex items-center shadow-inner">
@@ -207,6 +226,16 @@ export default function ManagementDashboardPage() {
                 })}
               </div>
 
+              {/* Share Numbers Button */}
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(true)}
+                className="px-4 py-2.5 rounded-2xl bg-gradient-to-r from-[#dfc99a] to-[#c59e4b] text-[#02140e] font-bold text-xs flex items-center gap-1.5 shadow-lg shadow-[#dfc99a]/20 hover:scale-105 active:scale-95 transition-all"
+              >
+                <Share2 className="w-4 h-4" />
+                <span>Share Numbers</span>
+              </button>
+
               {/* Refresh Action */}
               <button
                 type="button"
@@ -224,15 +253,54 @@ export default function ManagementDashboardPage() {
           <div className="flex flex-wrap items-center gap-2 pt-6 mt-6 border-t border-[#dfc99a]/15 text-xs">
             <button
               type="button"
-              onClick={() => setActiveTab('overview')}
+              onClick={() => setActiveTab('owner_overview')}
               className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 ${
-                activeTab === 'overview'
+                activeTab === 'owner_overview'
                   ? 'bg-[#dfc99a]/20 text-[#dfc99a] border border-[#dfc99a]/40 shadow-sm'
                   : 'text-[#ede0c4]/70 hover:text-white hover:bg-[#dfc99a]/5 border border-transparent'
               }`}
             >
               <TrendingUp className="w-3.5 h-3.5" />
-              Executive Overview
+              Owner Financial Overview
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('invoicing')}
+              className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 ${
+                activeTab === 'invoicing'
+                  ? 'bg-[#dfc99a]/20 text-[#dfc99a] border border-[#dfc99a]/40 shadow-sm'
+                  : 'text-[#ede0c4]/70 hover:text-white hover:bg-[#dfc99a]/5 border border-transparent'
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              Members & Business Invoicing
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('payroll')}
+              className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 ${
+                activeTab === 'payroll'
+                  ? 'bg-[#dfc99a]/20 text-[#dfc99a] border border-[#dfc99a]/40 shadow-sm'
+                  : 'text-[#ede0c4]/70 hover:text-white hover:bg-[#dfc99a]/5 border border-transparent'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              Staff Payroll & Compensation
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setActiveTab('taxes')}
+              className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 ${
+                activeTab === 'taxes'
+                  ? 'bg-[#dfc99a]/20 text-[#dfc99a] border border-[#dfc99a]/40 shadow-sm'
+                  : 'text-[#ede0c4]/70 hover:text-white hover:bg-[#dfc99a]/5 border border-transparent'
+              }`}
+            >
+              <ReceiptText className="w-3.5 h-3.5" />
+              Taxes to Report
             </button>
 
             <button
@@ -257,8 +325,8 @@ export default function ManagementDashboardPage() {
                   : 'text-[#ede0c4]/70 hover:text-white hover:bg-[#dfc99a]/5 border border-transparent'
               }`}
             >
-              <Users className="w-3.5 h-3.5" />
-              Staff & Leaves
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Leave Approvals & Shifts
               {pendingLeavesCount > 0 && (
                 <span className="w-4 h-4 rounded-full bg-amber-500 text-black text-[10px] font-black flex items-center justify-center">
                   {pendingLeavesCount}
@@ -276,12 +344,12 @@ export default function ManagementDashboardPage() {
               }`}
             >
               <Layers className="w-3.5 h-3.5" />
-              Complete Roster & Audit
+              Complete Operations Roster
             </button>
           </div>
         </div>
 
-        {/* Partial or Full Error Banner */}
+        {/* Error Notification */}
         {error && (
           <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center justify-between gap-3 shadow-lg">
             <div className="flex items-center gap-2.5">
@@ -299,11 +367,11 @@ export default function ManagementDashboardPage() {
         )}
 
         {/* Loading Skeleton */}
-        {loading && !summaryData ? (
+        {loading && !ownerSummaryData ? (
           <div className="space-y-6 animate-pulse">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-              {[...Array(5)].map((_, i) => (
-                <div key={i} className="h-28 rounded-2xl bg-[#031811] border border-[#dfc99a]/10" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="h-44 rounded-3xl bg-[#031811] border border-[#dfc99a]/10" />
               ))}
             </div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -313,30 +381,59 @@ export default function ManagementDashboardPage() {
           </div>
         ) : (
           <div className="space-y-8">
-            {/* 1. TOP-LEVEL KPI CARDS (Always visible) */}
-            {summaryData && summaryData.kpis && (
-              <section aria-label="Executive KPIs">
-                <KPICards 
-                  kpis={summaryData.kpis} 
-                  periodLabel={periodLabels[selectedPeriod]} 
+            
+            {/* ========================================================================= */}
+            {/* TAB 1: OWNER FINANCIAL OVERVIEW (THE 3 CORE QUESTIONS) */}
+            {/* ========================================================================= */}
+            {(activeTab === 'owner_overview' || activeTab === 'all') && ownerSummaryData && (
+              <section aria-label="Owner Financial Hub">
+                <OwnerFinancialOverview
+                  summary={ownerSummaryData}
+                  periodLabel={periodLabels[selectedPeriod]}
+                  onOpenInvoiceModal={() => setActiveTab('invoicing')}
+                  onOpenPayrollModal={() => setActiveTab('payroll')}
+                  onOpenShareModal={() => setIsShareModalOpen(true)}
+                  onNavigateTab={(tab) => setActiveTab(tab)}
                 />
               </section>
             )}
 
-            {/* TAB: EXECUTIVE OVERVIEW */}
-            {(activeTab === 'overview' || activeTab === 'all') && (
-              <div className="space-y-8 animate-in fade-in duration-300">
-                {/* Outstanding Financial Indicators */}
-                {summaryData && summaryData.outstandingFinancials && (
-                  <section aria-label="Outstanding Financials">
-                    <FinancialIndicators financials={summaryData.outstandingFinancials} />
-                  </section>
-                )}
+            {/* ========================================================================= */}
+            {/* TAB 2: INVOICING & BUSINESS CLIENTS */}
+            {/* ========================================================================= */}
+            {(activeTab === 'invoicing' || activeTab === 'all') && (
+              <section aria-label="Client Invoicing Section">
+                <ClientInvoicingSection onInvoicesUpdated={() => loadDashboardData(selectedPeriod, true)} />
+              </section>
+            )}
 
-                {/* Revenue Breakdown & Payment Methods */}
-                {revenueData && (
-                  <section aria-label="Revenue Breakdown">
-                    <RevenueBySourceSection revenueData={revenueData} />
+            {/* ========================================================================= */}
+            {/* TAB 3: STAFF PAYROLL & COMPENSATION */}
+            {/* ========================================================================= */}
+            {(activeTab === 'payroll' || activeTab === 'all') && (
+              <section aria-label="Staff Payroll Section">
+                <StaffPayrollSection onPayrollUpdated={() => loadDashboardData(selectedPeriod, true)} />
+              </section>
+            )}
+
+            {/* ========================================================================= */}
+            {/* TAB 4: TAXES TO REPORT */}
+            {/* ========================================================================= */}
+            {(activeTab === 'taxes' || activeTab === 'all') && (
+              <section aria-label="Tax Reporting Section">
+                <TaxReportingSection period={selectedPeriod} periodLabel={periodLabels[selectedPeriod]} />
+              </section>
+            )}
+
+            {/* ========================================================================= */}
+            {/* TAB 5: RETAIL & COURTS DEEP DIVE */}
+            {/* ========================================================================= */}
+            {(activeTab === 'retail_courts' || activeTab === 'all') && (
+              <div className="space-y-8 animate-in fade-in duration-300">
+                {/* Shop & Bar Commercial Summary */}
+                {salesData && (
+                  <section aria-label="Retail and Bar Performance">
+                    <ShopBarSummarySection salesData={salesData} periodLabel={periodLabels[selectedPeriod]} />
                   </section>
                 )}
 
@@ -356,26 +453,9 @@ export default function ManagementDashboardPage() {
               </div>
             )}
 
-            {/* TAB: RETAIL & COURTS */}
-            {(activeTab === 'retail_courts' || activeTab === 'all') && (
-              <div className="space-y-8 animate-in fade-in duration-300">
-                {/* Shop & Bar Commercial Summary */}
-                {salesData && (
-                  <section aria-label="Retail and Bar Performance">
-                    <ShopBarSummarySection salesData={salesData} periodLabel={periodLabels[selectedPeriod]} />
-                  </section>
-                )}
-
-                {/* Court Usage detail if on retail_courts tab */}
-                {activeTab === 'retail_courts' && courtData && (
-                  <section aria-label="Court Detail">
-                    <CourtUsageSection courtData={courtData} periodLabel={periodLabels[selectedPeriod]} />
-                  </section>
-                )}
-              </div>
-            )}
-
-            {/* TAB: STAFF & LEAVES */}
+            {/* ========================================================================= */}
+            {/* TAB 6: STAFF & LEAVE APPROVALS */}
+            {/* ========================================================================= */}
             {(activeTab === 'staff_leaves' || activeTab === 'all') && (
               <div className="space-y-8 animate-in fade-in duration-300">
                 {/* Pending Leave Approvals with Confirmation Workflow */}
@@ -398,34 +478,21 @@ export default function ManagementDashboardPage() {
               </div>
             )}
 
-            {/* In Executive Overview tab, include Leave Approvals preview banner if pending */}
-            {activeTab === 'overview' && pendingLeavesCount > 0 && (
-              <div className="p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-[#031811] to-[#02140e] border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
-                    {pendingLeavesCount}
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-white">Pending Employee Leave Requests</h4>
-                    <p className="text-xs text-[#ede0c4]/60">
-                      {pendingLeavesCount} employee{pendingLeavesCount > 1 ? 's are' : ' is'} awaiting manager approval
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('staff_leaves')}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-[#dfc99a] text-[#02140e] hover:bg-[#ebd8ad] active:scale-95 transition-all flex items-center gap-1.5 self-start sm:self-auto"
-                >
-                  Review Requests
-                  <ChevronRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            )}
           </div>
         )}
+
+        {/* ========================================================================= */}
+        {/* SHARE NUMBERS & EXECUTIVE BRIEFING MODAL */}
+        {/* ========================================================================= */}
+        <ExecutiveBriefingModal
+          isOpen={isShareModalOpen}
+          onClose={() => setIsShareModalOpen(false)}
+          summary={ownerSummaryData}
+          periodLabel={periodLabels[selectedPeriod]}
+        />
+
       </div>
     </div>
   );
 }
+
