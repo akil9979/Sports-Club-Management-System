@@ -71,19 +71,25 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Determine redirect path upon login
-  const getDestination = (userRole) => {
+  // Determine redirect path upon login based on role and specific staff job/department
+  const getDestination = (userRole, userObj = user) => {
     if (location.state?.from?.pathname) {
       return location.state.from.pathname;
     }
     if (userRole === 'admin') return '/admin';
-    if (['staff', 'manager'].includes(userRole)) return '/staff/bar';
+    if (['staff', 'manager'].includes(userRole)) {
+      const jobCode = userObj?.staffJob?.code;
+      if (jobCode === 'shop_inventory') return '/staff/shop';
+      if (jobCode === 'reception') return '/staff/frontdesk';
+      if (jobCode === 'bar') return '/staff/bar';
+      return '/staff/operations';
+    }
     return '/members';
   };
 
   useEffect(() => {
     if (isAuthenticated && user?.role) {
-      navigate(getDestination(user.role), { replace: true });
+      navigate(getDestination(user.role, user), { replace: true });
     }
   }, [isAuthenticated, user, navigate]);
 
@@ -100,7 +106,7 @@ export default function LoginPage() {
       setLoading(true);
       try {
         const res = await pinLogin({ pin: pin.trim() });
-        navigate(getDestination(res.data?.user?.role || 'staff'), { replace: true });
+        navigate(getDestination(res.data?.user?.role || 'staff', res.data?.user), { replace: true });
       } catch (err) {
         setError(err.message || 'Invalid PIN code');
       } finally {
@@ -123,7 +129,7 @@ export default function LoginPage() {
     try {
       const res = await login({ email, password });
       const userRole = res.data?.user?.role || 'member';
-      navigate(getDestination(userRole), { replace: true });
+      navigate(getDestination(userRole, res.data?.user), { replace: true });
     } catch (err) {
       setError(err.message || 'Invalid email or password');
     } finally {

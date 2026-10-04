@@ -19,12 +19,11 @@ import { useAuth } from '../auth/AuthContext.jsx';
 
 export default function OperationsPortalShell({ children, activeTab, onTabChange }) {
   const navigate = useNavigate();
-  const { currentStaff, staffList, isLocked, shiftStart, switchStaff, lockTerminal, unlockTerminal } = useStaffAuth();
+  const { currentStaff, isLocked, shiftStart, lockTerminal, unlockTerminal } = useStaffAuth();
   const { logout, user, can, staffJob, isAdmin } = useAuth();
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
-  const [staffDropdownOpen, setStaffDropdownOpen] = useState(false);
 
   const activeStaffName = user ? `${user.firstName} ${user.lastName || ''}`.trim() : currentStaff.name;
   const activeStaffJob = staffJob?.name || (user?.role === 'admin' ? 'Superadmin (Full Access)' : currentStaff.role);
@@ -192,68 +191,20 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
             </div>
           </div>
 
-          {/* Right: Authenticated Staff Switcher & Quick Lock */}
+          {/* Right: Authenticated Staff Profile & Controls */}
           <div className="flex items-center gap-2">
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setStaffDropdownOpen(!staffDropdownOpen)}
-                className="flex items-center gap-2.5 p-1.5 pr-2.5 bg-[#07261c] hover:bg-[#0b3829] border border-emerald-800/60 rounded-xl transition"
-              >
-                <div className="w-7 h-7 rounded-lg bg-[#dfc99a]/20 text-[#dfc99a] font-bold text-xs flex items-center justify-center border border-[#dfc99a]/30">
-                  {activeAvatar}
+            <div className="flex items-center gap-2.5 p-1.5 pr-3 bg-[#07261c] border border-emerald-800/60 rounded-xl">
+              <div className="w-7 h-7 rounded-lg bg-[#dfc99a]/20 text-[#dfc99a] font-bold text-xs flex items-center justify-center border border-[#dfc99a]/30">
+                {activeAvatar}
+              </div>
+              <div className="text-left hidden sm:block">
+                <div className="text-xs font-bold text-[#fcfaf5] leading-tight">
+                  {activeStaffName}
                 </div>
-                <div className="text-left hidden sm:block">
-                  <div className="text-xs font-bold text-[#fcfaf5] leading-tight">
-                    {activeStaffName}
-                  </div>
-                  <div className="text-[10px] text-emerald-400/70 leading-tight">
-                    {activeStaffJob}
-                  </div>
+                <div className="text-[10px] text-[#dfc99a] font-semibold leading-tight">
+                  {activeStaffJob}
                 </div>
-                <ChevronDown className="w-3.5 h-3.5 text-emerald-400/70" />
-              </button>
-
-              {/* Staff Switcher Dropdown */}
-              {staffDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-[#041c14] border border-emerald-900/50 rounded-2xl shadow-2xl py-2 z-50 text-xs">
-                  <div className="px-3 py-1.5 border-b border-emerald-900/40 text-[10px] font-semibold text-emerald-400/70 uppercase tracking-wider">
-                    Switch Active Staff Shift
-                  </div>
-                  {staffList.map((member) => (
-                    <button
-                      key={member.id}
-                      onClick={() => {
-                        switchStaff(member.id);
-                        setStaffDropdownOpen(false);
-                      }}
-                      className={`w-full px-3 py-2 text-left flex items-center justify-between transition ${
-                        currentStaff.id === member.id
-                          ? 'bg-[#dfc99a]/15 text-[#dfc99a]'
-                          : 'text-emerald-200 hover:bg-[#07261c]'
-                      }`}
-                    >
-                      <div>
-                        <div className="font-semibold text-white">{member.name}</div>
-                        <div className="text-[10px] text-emerald-400/70">{member.role}</div>
-                      </div>
-                      <span className="text-[9px] font-mono bg-[#02140e] px-1.5 py-0.5 rounded text-emerald-300/80 border border-emerald-900/50">
-                        PIN: {member.pin}
-                      </span>
-                    </button>
-                  ))}
-                  <div className="pt-1 mt-1 border-t border-emerald-900/40">
-                    <button
-                      type="button"
-                      onClick={handlePortalLogout}
-                      className="w-full px-3 py-2 text-left text-rose-400 hover:bg-rose-500/10 flex items-center gap-2 font-medium transition"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      <span>Sign Out Account</span>
-                    </button>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
 
             {/* Management Dashboard Button */}

@@ -26,32 +26,6 @@ export default function StaffOperationsPage() {
     return tabs;
   }, [can]);
 
-  // Compute initial tab based on route, params, or first authorized tab
-  const getRequestedTab = () => {
-    const tabParam = searchParams.get('tab');
-    if (tabParam) return tabParam;
-    if (location.pathname.includes('shop')) return 'shop';
-    if (location.pathname.includes('verification') || location.pathname.includes('frontdesk')) {
-      return 'frontdesk';
-    }
-    if (location.pathname.includes('bar')) {
-      return 'pos';
-    }
-    if (location.pathname.includes('crm') || location.pathname.includes('leads')) {
-      return 'crm';
-    }
-    // Default to the first authorized tab
-    return authorizedTabs[0] || 'frontdesk';
-  };
-
-  const [activeTab, setActiveTab] = useState(getRequestedTab);
-
-  // Sync state when URL params or location changes
-  useEffect(() => {
-    const requested = getRequestedTab();
-    setActiveTab(requested);
-  }, [searchParams, location.pathname, authorizedTabs]);
-
   // Check if current activeTab is permitted for this user
   const isTabPermitted = (tab) => {
     if (isAdmin) return true;
@@ -75,6 +49,36 @@ export default function StaffOperationsPage() {
     }
     return false;
   };
+
+  // Compute initial tab based on route, params, or first authorized department tab
+  const getRequestedTab = () => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam && isTabPermitted(tabParam)) return tabParam;
+    if (location.pathname.includes('shop') && isTabPermitted('shop')) return 'shop';
+    if ((location.pathname.includes('verification') || location.pathname.includes('frontdesk')) && isTabPermitted('frontdesk')) {
+      return 'frontdesk';
+    }
+    if (location.pathname.includes('bar') && isTabPermitted('pos')) {
+      return 'pos';
+    }
+    if ((location.pathname.includes('crm') || location.pathname.includes('leads')) && isTabPermitted('crm')) {
+      return 'crm';
+    }
+    // Default strictly to their authorized department tab
+    return authorizedTabs[0] || 'frontdesk';
+  };
+
+  const [activeTab, setActiveTab] = useState(getRequestedTab);
+
+  // Sync state when URL params or location changes, ensuring staff is kept within authorized department
+  useEffect(() => {
+    const requested = getRequestedTab();
+    if (authorizedTabs.length > 0 && !isTabPermitted(requested)) {
+      setActiveTab(authorizedTabs[0]);
+    } else {
+      setActiveTab(requested);
+    }
+  }, [searchParams, location.pathname, authorizedTabs]);
 
   const hasAccess = isTabPermitted(activeTab);
 

@@ -29,7 +29,7 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout, can } = useAuth();
   const dropdownRef = useRef(null);
 
   const handleLogout = async () => {
@@ -194,41 +194,61 @@ export default function Navbar() {
                             </Link>
                           )}
 
-                          <Link
-                            to="/staff/verification"
-                            onClick={() => setPortalsDropdownOpen(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#ede0c4] hover:text-white hover:bg-[#07261c] transition"
-                          >
-                            <QrCode className="w-4 h-4 text-[#dfc99a] shrink-0" />
-                            <div>
-                              <div className="font-bold">Frontdesk Verification</div>
-                              <div className="text-[10px] text-emerald-400/70">QR barcode terminal & check-in</div>
-                            </div>
-                          </Link>
+                          {(user?.role === 'admin' || can('members.view') || can('bookings.view')) && (
+                            <Link
+                              to="/staff/verification"
+                              onClick={() => setPortalsDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#ede0c4] hover:text-white hover:bg-[#07261c] transition"
+                            >
+                              <QrCode className="w-4 h-4 text-[#dfc99a] shrink-0" />
+                              <div>
+                                <div className="font-bold">Frontdesk Verification</div>
+                                <div className="text-[10px] text-emerald-400/70">QR barcode terminal & check-in</div>
+                              </div>
+                            </Link>
+                          )}
 
-                          <Link
-                            to="/staff/bar"
-                            onClick={() => setPortalsDropdownOpen(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-emerald-300 hover:text-white hover:bg-emerald-950/50 transition"
-                          >
-                            <Wine className="w-4 h-4 text-emerald-400 shrink-0" />
-                            <div>
-                              <div className="font-bold">Bar POS & Tables</div>
-                              <div className="text-[10px] text-emerald-400/70">Running tabs & orders</div>
-                            </div>
-                          </Link>
+                          {(user?.role === 'admin' || can('bar_orders.view')) && (
+                            <Link
+                              to="/staff/bar"
+                              onClick={() => setPortalsDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-emerald-300 hover:text-white hover:bg-emerald-950/50 transition"
+                            >
+                              <Wine className="w-4 h-4 text-emerald-400 shrink-0" />
+                              <div>
+                                <div className="font-bold">Bar POS & Tables</div>
+                                <div className="text-[10px] text-emerald-400/70">Running tabs & orders</div>
+                              </div>
+                            </Link>
+                          )}
 
-                          <Link
-                            to="/management"
-                            onClick={() => setPortalsDropdownOpen(false)}
-                            className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#ede0c4] hover:text-white hover:bg-[#07261c] transition"
-                          >
-                            <Building2 className="w-4 h-4 text-[#dfc99a] shrink-0" />
-                            <div>
-                              <div className="font-bold">Management Command</div>
-                              <div className="text-[10px] text-emerald-400/70">Revenue KPIs & shifts</div>
-                            </div>
-                          </Link>
+                          {(user?.role === 'admin' || can('products.view') || can('inventory.view')) && (
+                            <Link
+                              to="/staff/shop"
+                              onClick={() => setPortalsDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#ede0c4] hover:text-white hover:bg-[#07261c] transition"
+                            >
+                              <ShoppingBag className="w-4 h-4 text-[#dfc99a] shrink-0" />
+                              <div>
+                                <div className="font-bold">Pro Shop & Inventory</div>
+                                <div className="text-[10px] text-emerald-400/70">Commercial catalogue & stocks</div>
+                              </div>
+                            </Link>
+                          )}
+
+                          {(user?.role === 'admin' || can('expenses.view')) && (
+                            <Link
+                              to="/management"
+                              onClick={() => setPortalsDropdownOpen(false)}
+                              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-[#ede0c4] hover:text-white hover:bg-[#07261c] transition"
+                            >
+                              <Building2 className="w-4 h-4 text-[#dfc99a] shrink-0" />
+                              <div>
+                                <div className="font-bold">Management Command</div>
+                                <div className="text-[10px] text-emerald-400/70">Revenue KPIs & shifts</div>
+                              </div>
+                            </Link>
+                          )}
                         </div>
                       )}
                     </div>
@@ -369,32 +389,49 @@ export default function Navbar() {
 
               {isStaffOrAdmin && (
                 <>
-                  <Link
-                    to="/staff/verification"
-                    onClick={closeMobileMenu}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#dfc99a]/15 border border-[#dfc99a]/35 text-[#dfc99a] font-bold text-xs"
-                  >
-                    <QrCode className="w-4 h-4 text-[#dfc99a]" />
-                    <span>Frontdesk QR Verification</span>
-                  </Link>
+                  {(user?.role === 'admin' || can('members.view') || can('bookings.view')) && (
+                    <Link
+                      to="/staff/verification"
+                      onClick={closeMobileMenu}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#dfc99a]/15 border border-[#dfc99a]/35 text-[#dfc99a] font-bold text-xs"
+                    >
+                      <QrCode className="w-4 h-4 text-[#dfc99a]" />
+                      <span>Frontdesk QR Verification</span>
+                    </Link>
+                  )}
 
-                  <Link
-                    to="/staff/bar"
-                    onClick={closeMobileMenu}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-bold text-xs"
-                  >
-                    <Wine className="w-4 h-4" />
-                    <span>Open Staff POS Portal</span>
-                  </Link>
+                  {(user?.role === 'admin' || can('bar_orders.view')) && (
+                    <Link
+                      to="/staff/bar"
+                      onClick={closeMobileMenu}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-bold text-xs"
+                    >
+                      <Wine className="w-4 h-4" />
+                      <span>Open Staff POS Portal</span>
+                    </Link>
+                  )}
 
-                  <Link
-                    to="/management"
-                    onClick={closeMobileMenu}
-                    className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#dfc99a]/15 border border-[#dfc99a]/35 text-[#dfc99a] font-bold text-xs"
-                  >
-                    <Building2 className="w-4 h-4 text-[#dfc99a]" />
-                    <span>Management Dashboard</span>
-                  </Link>
+                  {(user?.role === 'admin' || can('products.view') || can('inventory.view')) && (
+                    <Link
+                      to="/staff/shop"
+                      onClick={closeMobileMenu}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#dfc99a]/15 border border-[#dfc99a]/35 text-[#dfc99a] font-bold text-xs"
+                    >
+                      <ShoppingBag className="w-4 h-4 text-[#dfc99a]" />
+                      <span>Pro Shop & Inventory</span>
+                    </Link>
+                  )}
+
+                  {(user?.role === 'admin' || can('expenses.view')) && (
+                    <Link
+                      to="/management"
+                      onClick={closeMobileMenu}
+                      className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#dfc99a]/15 border border-[#dfc99a]/35 text-[#dfc99a] font-bold text-xs"
+                    >
+                      <Building2 className="w-4 h-4 text-[#dfc99a]" />
+                      <span>Management Dashboard</span>
+                    </Link>
+                  )}
                 </>
               )}
 
