@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '../features/auth/AuthContext.jsx';
+import { ShopCartProvider } from '../features/shop/ShopCartContext.jsx';
 import ProtectedRoute from '../features/auth/ProtectedRoute.jsx';
 import PublicLayout from '../layouts/PublicLayout.jsx';
 import HomePage from '../pages/public/HomePage.jsx';
@@ -23,53 +24,67 @@ import ManagementDashboardPage from '../pages/management/ManagementDashboardPage
 export default function AppRoutes() {
   return (
     <AuthProvider>
-      <Routes>
-        {/* Protected Staff & Operations Portal Routes */}
-        <Route element={<ProtectedRoute allowedRoles={['staff', 'manager', 'admin']} />}>
-          <Route path="/staff" element={<Navigate to="/staff/bar" replace />} />
-          <Route path="/staff/bar" element={<StaffOperationsPage />} />
-          <Route path="/staff/operations" element={<StaffOperationsPage />} />
-          <Route path="/operations" element={<Navigate to="/staff/bar" replace />} />
-          <Route path="/bar" element={<Navigate to="/staff/bar" replace />} />
-        </Route>
-
-        {/* Public Club & Member Experience Routes (with Navbar & Layout) */}
-        <Route element={<PublicLayout />}>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/signup" element={<SignupPage />} />
-          <Route path="/register" element={<Navigate to="/signup" replace />} />
-          <Route path="/membership" element={<MembershipPage />} />
-          <Route path="/membership/register" element={<Navigate to="/members/register" replace />} />
-          <Route path="/members" element={<MemberDirectoryPage />} />
-          <Route path="/members/register" element={<MemberRegistrationPage />} />
-          <Route path="/members/shop" element={<MemberShopPage />} />
-          <Route path="/members/:id" element={<MemberProfilePage />} />
-          <Route path="/member" element={<Navigate to="/members" replace />} />
-          <Route path="/member/register" element={<Navigate to="/members/register" replace />} />
-          <Route path="/member/:id" element={<MemberProfilePage />} />
-          <Route path="/courts" element={<CourtsPage />} />
-          <Route path="/member/bookings" element={<MemberBookingsPage />} />
-          <Route path="/bookings" element={<MemberBookingsPage />} />
-          <Route path="/shop" element={<ShopPage />} />
-          <Route path="/enquiry" element={<EnquiryPage />} />
-
-          {/* Protected Management Operations & Dashboard Routes */}
+      <ShopCartProvider>
+        <Routes>
+          {/* Protected Staff & Operations Portal Routes */}
           <Route element={<ProtectedRoute allowedRoles={['staff', 'manager', 'admin']} />}>
-            <Route path="/management" element={<ManagementDashboardPage />} />
-            <Route path="/management/dashboard" element={<ManagementDashboardPage />} />
-            <Route path="/staff/management" element={<ManagementDashboardPage />} />
+            <Route path="/staff" element={<Navigate to="/staff/verification" replace />} />
+            <Route path="/staff/verification" element={<StaffOperationsPage />} />
+            <Route path="/staff/frontdesk" element={<StaffOperationsPage />} />
+            <Route path="/staff/bar" element={<StaffOperationsPage />} />
+            <Route path="/staff/operations" element={<StaffOperationsPage />} />
+            <Route path="/operations" element={<Navigate to="/staff/verification" replace />} />
+            <Route path="/operations/verification" element={<StaffOperationsPage />} />
+            <Route path="/bar" element={<Navigate to="/staff/bar" replace />} />
           </Route>
 
-          {/* Protected Admin Executive Portal Routes */}
-          <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
-            <Route path="/admin" element={<AdminDashboardPage />} />
-            <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
-          </Route>
+          {/* Public Club & Member Experience Routes (with Navbar & Layout) */}
+          <Route element={<PublicLayout />}>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/register" element={<Navigate to="/signup" replace />} />
+            <Route path="/membership" element={<MembershipPage />} />
+            <Route path="/membership/register" element={<Navigate to="/members/register" replace />} />
+            <Route path="/members" element={<MemberDirectoryPage />} />
+            <Route path="/members/register" element={<MemberRegistrationPage />} />
+            <Route path="/members/shop" element={<MemberShopPage />} />
+            <Route path="/members/:id" element={<MemberProfilePage />} />
+            <Route path="/member" element={<Navigate to="/members" replace />} />
+            <Route path="/member/register" element={<Navigate to="/members/register" replace />} />
+            <Route path="/member/:id" element={<MemberProfilePage />} />
+            <Route path="/courts" element={<CourtsPage />} />
+            <Route path="/member/bookings" element={<MemberBookingsPage />} />
+            <Route path="/bookings" element={<MemberBookingsPage />} />
+            <Route path="/shop" element={<ShopPage />} />
+            <Route path="/enquiry" element={<EnquiryPage />} />
 
-          <Route path="*" element={<NotFoundPage />} />
-        </Route>
-      </Routes>
+            {/* Protected Management Operations & Dashboard Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['staff', 'manager', 'admin']} />}>
+              <Route path="/management" element={<ManagementDashboardPage />} />
+              <Route path="/management/dashboard" element={<ManagementDashboardPage />} />
+              <Route path="/management/finance" element={<ManagementDashboardPage />} />
+              <Route path="/management/invoices" element={<ManagementDashboardPage />} />
+              <Route path="/management/payroll" element={<ManagementDashboardPage />} />
+              <Route path="/management/taxes" element={<ManagementDashboardPage />} />
+              <Route path="/management/owner" element={<ManagementDashboardPage />} />
+              <Route path="/staff/management" element={<ManagementDashboardPage />} />
+              <Route path="/finance" element={<ManagementDashboardPage />} />
+              <Route path="/owner" element={<ManagementDashboardPage />} />
+            </Route>
+
+            {/* Protected Admin Executive Portal Routes */}
+            <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
+              <Route path="/admin" element={<AdminDashboardPage />} />
+              <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
+              <Route path="/admin/finance" element={<ManagementDashboardPage />} />
+            </Route>
+
+
+            <Route path="*" element={<NotFoundPage />} />
+          </Route>
+        </Routes>
+      </ShopCartProvider>
     </AuthProvider>
   );
 }

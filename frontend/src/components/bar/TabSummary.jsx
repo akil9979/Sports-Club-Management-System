@@ -236,7 +236,7 @@ export default function TabSummary({
             )}
 
             {/* Manual Tier Selectors */}
-            <div className="flex items-center gap-1 pt-1">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-1 pt-1">
               {['Guest', 'Junior', 'Silver', 'Gold'].map((tier) => (
                 <button
                   key={tier}
@@ -245,11 +245,12 @@ export default function TabSummary({
                     onUpdateMemberTier(tier);
                     setMemberError(null);
                   }}
-                  className={`flex-1 py-1 rounded-lg text-[10px] font-semibold transition ${
+                  className={`py-1 px-1 rounded-lg text-[10px] font-semibold transition text-center truncate ${
                     memberTier === tier
                       ? 'btn-champagne font-bold'
                       : 'bg-[#07261c] text-emerald-400/80 hover:bg-[#0b3829] hover:text-white border border-emerald-900/50'
                   }`}
+                  title={`${tier}${tier === 'Gold' ? ' (15%)' : tier === 'Silver' || tier === 'Junior' ? ' (10%)' : ''}`}
                 >
                   {tier}
                   {tier === 'Gold' ? ' (15%)' : tier === 'Silver' || tier === 'Junior' ? ' (10%)' : ''}
@@ -312,7 +313,7 @@ export default function TabSummary({
                 </div>
 
                 {/* Quantity Controls enforcing Positive Quantity */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
                   {!isSettled ? (
                     <div className="flex items-center border border-emerald-900/60 rounded-xl bg-[#07261c] overflow-hidden">
                       <button

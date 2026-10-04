@@ -11,8 +11,12 @@
     "db:test": "node tests/db-integrity.test.js",
     "test:api": "node tests/api-integration.test.js",
     "test:auth": "node tests/auth-member-membership.test.js",
+    "test:bookings": "node tests/court-booking-engine.test.js",
     "test:shop": "node tests/shop-inventory.test.js",
-    "test": "node tests/db-integrity.test.js && node tests/api-integration.test.js && node tests/auth-member-membership.test.js && node tests/shop-inventory.test.js"
+    "test:bar": "node tests/bar-operations.test.js",
+    "test:operations": "node tests/crm-staff-operations.test.js",
+    "test:finance": "node tests/finance-reporting.test.js",
+    "test": "node tests/db-integrity.test.js && node tests/api-integration.test.js && node tests/auth-member-membership.test.js && node tests/court-booking-engine.test.js && node tests/shop-inventory.test.js && node tests/bar-operations.test.js && node tests/crm-staff-operations.test.js && node tests/finance-reporting.test.js"
   },
   "keywords": [
     "champions-club",
@@ -29,6 +33,7 @@
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "qrcode": "^1.5.4"
   }
 }

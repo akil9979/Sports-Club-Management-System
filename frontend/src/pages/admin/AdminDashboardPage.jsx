@@ -18,8 +18,10 @@ import {
   ChevronRight,
   Sparkles,
   ArrowUpRight,
-  Lock
+  Lock,
+  DollarSign
 } from 'lucide-react';
+
 
 const ROLE_OPTIONS = [
   { value: 'admin', label: 'Admin (Full Access)', color: 'bg-[#dfc99a]/15 text-[#dfc99a] border-[#dfc99a]/30' },
@@ -129,6 +131,13 @@ export default function AdminDashboardPage() {
                 <span>Refresh Data</span>
               </button>
               <Link
+                to="/management"
+                className="px-4 py-2.5 rounded-xl bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/30 hover:bg-[#dfc99a]/25 text-xs font-bold flex items-center gap-1.5 transition-all"
+              >
+                <DollarSign className="w-3.5 h-3.5" />
+                <span>Month-End Financials</span>
+              </Link>
+              <Link
                 to="/staff/bar"
                 className="px-4 py-2.5 rounded-xl btn-champagne text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-[#dfc99a]/15 hover:scale-105 transition-all"
               >
@@ -197,7 +206,23 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Quick Portal Navigation Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Link
+            to="/management"
+            className="group bg-[#041c14]/90 border border-[#dfc99a]/30 hover:border-[#dfc99a] rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5 shadow-lg flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#07261c] text-[#dfc99a] border border-[#dfc99a]/40 flex items-center justify-center">
+                <DollarSign className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Month-End Hub</span>
+                <span className="text-[11px] text-[#dfc99a]/70 block">P&L, Taxes & Payroll</span>
+              </div>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-emerald-600 group-hover:text-[#dfc99a] transition-colors" />
+          </Link>
+
           <Link
             to="/staff/bar"
             className="group bg-[#041c14]/90 border border-emerald-900/40 hover:border-[#dfc99a]/50 rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5 shadow-lg flex items-center justify-between"
@@ -207,8 +232,8 @@ export default function AdminDashboardPage() {
                 <Wine className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Bar & POS Terminal</span>
-                <span className="text-[11px] text-emerald-400/60 block">Manage tabs & kitchen</span>
+                <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Bar & POS</span>
+                <span className="text-[11px] text-emerald-400/60 block">Tabs & kitchen</span>
               </div>
             </div>
             <ArrowUpRight className="w-4 h-4 text-emerald-600 group-hover:text-[#dfc99a] transition-colors" />
@@ -223,8 +248,8 @@ export default function AdminDashboardPage() {
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Member Directory</span>
-                <span className="text-[11px] text-emerald-400/60 block">Profiles & subscriptions</span>
+                <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Members</span>
+                <span className="text-[11px] text-emerald-400/60 block">Directory & tiers</span>
               </div>
             </div>
             <ArrowUpRight className="w-4 h-4 text-emerald-600 group-hover:text-[#dfc99a] transition-colors" />
@@ -239,8 +264,8 @@ export default function AdminDashboardPage() {
                 <Calendar className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Court Availability</span>
-                <span className="text-[11px] text-emerald-400/60 block">Slot schedule & booking</span>
+                <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Courts</span>
+                <span className="text-[11px] text-emerald-400/60 block">Slot schedule</span>
               </div>
             </div>
             <ArrowUpRight className="w-4 h-4 text-emerald-600 group-hover:text-[#dfc99a] transition-colors" />
@@ -255,13 +280,14 @@ export default function AdminDashboardPage() {
                 <ShoppingBag className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Pro Shop & Inventory</span>
-                <span className="text-[11px] text-emerald-400/60 block">Stock & order fulfillment</span>
+                <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Pro Shop</span>
+                <span className="text-[11px] text-emerald-400/60 block">Stock & orders</span>
               </div>
             </div>
             <ArrowUpRight className="w-4 h-4 text-emerald-600 group-hover:text-[#dfc99a] transition-colors" />
           </Link>
         </div>
+
 
         {/* Role Capability Comparison Matrix */}
         <div className="bg-[#041c14]/70 border border-emerald-900/40 rounded-3xl p-6 shadow-xl backdrop-blur-md">
@@ -305,19 +331,19 @@ export default function AdminDashboardPage() {
             </div>
 
             {/* Filters */}
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 w-full sm:w-auto">
               <input
                 type="text"
                 value={searchQuery}
                 onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search name, email..."
-                className="px-3.5 py-2 rounded-xl bg-[#02140e]/90 border border-emerald-900/60 text-xs text-white placeholder-emerald-700/60 focus:outline-none focus:border-[#dfc99a] w-48 sm:w-60"
+                className="px-3.5 py-2 rounded-xl bg-[#02140e]/90 border border-emerald-900/60 text-xs text-white placeholder-emerald-700/60 focus:outline-none focus:border-[#dfc99a] flex-1 sm:w-60"
               />
               <select
                 value={filterRole}
                 onChange={e => setFilterRole(e.target.value)}
                 aria-label="Filter users by role"
-                className="px-3 py-2 rounded-xl bg-[#02140e]/90 border border-emerald-900/60 text-xs text-white focus:outline-none focus:border-[#dfc99a]"
+                className="px-3 py-2 rounded-xl bg-[#02140e]/90 border border-emerald-900/60 text-xs text-white focus:outline-none focus:border-[#dfc99a] shrink-0"
               >
                 <option value="all">All Roles</option>
                 <option value="admin">Admin</option>

@@ -10,7 +10,40 @@ const { validators } = require('../../middleware/validator');
 class MemberController {
   async create(req, res, next) {
     try {
-      const { firstName, lastName, email, phone, gender, dateOfBirth, address, emergencyContactName, emergencyContactPhone, password, role, planId, billingCycle, startDate, endDate } = req.body;
+      let { 
+        firstName, 
+        lastName, 
+        name,
+        email, 
+        phone, 
+        gender, 
+        dateOfBirth, 
+        dob,
+        address, 
+        emergencyContact,
+        emergencyContactName, 
+        emergencyContactPhone, 
+        password, 
+        role, 
+        planId, 
+        billingCycle, 
+        startDate, 
+        endDate 
+      } = req.body;
+
+      if ((!firstName || !lastName) && name && typeof name === 'string') {
+        const parts = name.trim().split(/\s+/);
+        if (!firstName) firstName = parts[0] || '';
+        if (!lastName) lastName = parts.slice(1).join(' ') || parts[0] || '';
+      }
+
+      if (!dateOfBirth && dob) {
+        dateOfBirth = dob;
+      }
+
+      if (!emergencyContactPhone && emergencyContact) {
+        emergencyContactPhone = emergencyContact;
+      }
 
       if (!validators.isNonEmptyString(firstName, 1)) {
         return res.status(422).json({ success: false, error: 'Validation Error', message: 'First name is required' });
@@ -128,6 +161,79 @@ class MemberController {
         success: true,
         data: memberships,
         count: memberships.length
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getMemberQrPass(req, res, next) {
+    try {
+      const memberId = req.params.id;
+      const qrPass = await memberService.getMemberQrPass(memberId);
+      res.status(200).json({
+        success: true,
+        data: qrPass
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async verifyQr(req, res, next) {
+    try {
+      const { qrPayload, memberId, memberNumber, code } = req.body;
+      const target = qrPayload || memberId || memberNumber || code;
+      const result = await memberService.verifyMemberQr({
+        qrPayload: typeof target === 'object' ? target : qrPayload,
+        memberId: memberId || (typeof target === 'string' && !target.startsWith('{') ? target : null),
+        memberNumber
+      });
+      res.status(200).json({
+        success: true,
+        data: result
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async checkIn(req, res, next) {
+    try {
+      const { memberId, facility, staffId, staffName, accessGranted, notes } = req.body;
+      if (!validators.isNonEmptyString(memberId)) {
+        return res.status(422).json({ success: false, error: 'Validation Error', message: 'memberId is required' });
+      }
+      const operatorStaffName = staffName || (req.user ? `${req.user.firstName || ''} ${req.user.lastName || ''}`.trim() : 'Frontdesk Staff');
+      const operatorStaffId = staffId || (req.user ? req.user.id : 'staff-1');
+
+      const result = await memberService.logFrontdeskCheckIn({
+        memberId,
+        facility,
+        staffId: operatorStaffId,
+        staffName: operatorStaffName,
+        accessGranted: accessGranted !== undefined ? Boolean(accessGranted) : true,
+        notes
+      });
+
+      res.status(201).json({
+        success: true,
+        data: result,
+        message: 'Member frontdesk check-in recorded successfully'
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getCheckIns(req, res, next) {
+    try {
+      const { limit } = req.query;
+      const result = await memberService.getFrontdeskCheckIns({ limit });
+      res.status(200).json({
+        success: true,
+        data: result.logs,
+        stats: result.stats
       });
     } catch (err) {
       next(err);

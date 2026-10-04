@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { ShopCartProvider } from '../../features/shop/ShopCartContext.jsx';
 import ShopCatalogueSection from '../../components/public/ShopCatalogueSection.jsx';
 import TrialCTASection from '../../components/public/TrialCTASection.jsx';
 import { 
@@ -20,8 +19,7 @@ export default function ShopPage() {
   const silverSavings = Math.round(calcAmount * 0.10);
 
   return (
-    <ShopCartProvider>
-      <div className="py-12 space-y-16">
+    <div className="py-12 space-y-16">
         {/* Header */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#dfc99a]/10 text-[#dfc99a] border border-[#dfc99a]/25 backdrop-blur-md">
@@ -142,6 +140,5 @@ export default function ShopPage() {
 
         <TrialCTASection />
       </div>
-    </ShopCartProvider>
   );
 }

@@ -12,13 +12,17 @@ import {
   Coffee, 
   Sparkles,
   ArrowRight,
-  ShieldAlert
+  ShieldAlert,
+  QrCode
 } from 'lucide-react';
 
 export default function ActiveMembershipCard({ 
   membership, 
-  onRenewOrChangePlan 
+  onRenewOrChangePlan,
+  onRenewClick,
+  onViewDigitalPass
 }) {
+  const handleRenew = onRenewOrChangePlan || onRenewClick;
   if (!membership) {
     return (
       <div className="p-6 rounded-3xl border border-emerald-900/40 bg-[#041c14]/90 backdrop-blur-md space-y-4">
@@ -171,11 +175,22 @@ export default function ActiveMembershipCard({
           </div>
         </div>
 
-        {/* Change / Upgrade Action */}
-        <div className="flex items-center gap-3">
+        {/* Actions: View Digital Pass & Renew/Upgrade */}
+        <div className="flex flex-wrap items-center gap-2.5">
+          {onViewDigitalPass && (
+            <button
+              type="button"
+              onClick={onViewDigitalPass}
+              className="px-4 py-2.5 rounded-xl btn-champagne text-[#02140e] text-xs font-bold flex items-center gap-2 shadow-md shadow-[#dfc99a]/15 transition hover:scale-[1.02] active:scale-95"
+            >
+              <QrCode className="w-4 h-4 text-[#02140e]" />
+              <span>Digital QR Pass</span>
+            </button>
+          )}
+
           <button
             type="button"
-            onClick={onRenewOrChangePlan}
+            onClick={handleRenew}
             className="px-4 py-2.5 rounded-xl bg-[#07261c] hover:bg-[#0b3829] text-emerald-200 hover:text-white border border-emerald-800/60 text-xs font-semibold flex items-center gap-1.5 transition"
           >
             <span>{isExpired ? 'Reactivate Plan' : 'Change / Renew Plan'}</span>

@@ -7,13 +7,14 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "oxlint",
-    "test": "node --test src/features/membership/__tests__/membership.test.js src/features/bar/__tests__/barOperations.test.js src/features/auth/__tests__/auth.test.js src/features/shop/__tests__/shop.test.js src/features/bookings/__tests__/booking.test.js src/features/crm/__tests__/crm.test.js src/features/management/__tests__/management.test.js",
-
+    "test": "node --test src/features/membership/__tests__/membership.test.js src/features/membership/__tests__/qrVerification.test.js src/features/bar/__tests__/barOperations.test.js src/features/auth/__tests__/auth.test.js src/features/shop/__tests__/shop.test.js src/features/bookings/__tests__/booking.test.js src/features/crm/__tests__/crm.test.js src/features/management/__tests__/management.test.js",
     "preview": "vite preview"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.3",
+    "jsqr": "^1.4.0",
     "lucide-react": "^1.50.0",
+    "qrcode": "^1.5.4",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-router-dom": "^7.18.4",

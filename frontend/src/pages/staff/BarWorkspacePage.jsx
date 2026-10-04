@@ -594,9 +594,9 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
 
       {/* Main Workspace Mode Tabs */}
       {activePortalTab === 'pos' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
-          {/* Left Column: Table Grid & Active Orders (4 cols) */}
-          <div className="lg:col-span-4 space-y-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-12 gap-4">
+          {/* Left Column: Table Grid & Active Orders (1 col on lg, 4 cols on xl) */}
+          <div className="lg:col-span-1 xl:col-span-4 space-y-4">
             <TableGrid
               tables={tables}
               selectedTable={selectedTable}
@@ -631,8 +631,8 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
             />
           </div>
 
-          {/* Center Column: Menu & Category Panel (5 cols) */}
-          <div className="lg:col-span-5">
+          {/* Center Column: Menu & Category Panel (1 col on lg, 4 cols on xl) */}
+          <div className="lg:col-span-1 xl:col-span-4">
             <MenuCategoryPanel
               menu={menu}
               loading={loadingMenu}
@@ -643,8 +643,8 @@ export default function BarWorkspacePage({ activePortalTab = 'pos' }) {
             />
           </div>
 
-          {/* Right Column: Running Tab Summary & Settlement (3 cols) */}
-          <div className="lg:col-span-3">
+          {/* Right Column: Running Tab Summary & Settlement (2 cols on lg, 4 cols on xl) */}
+          <div className="lg:col-span-2 xl:col-span-4">
             <TabSummary
               selectedTable={selectedTable}
               activeOrder={activeOrderForTable}

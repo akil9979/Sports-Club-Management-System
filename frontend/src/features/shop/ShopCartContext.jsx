@@ -104,10 +104,30 @@ export function ShopCartProvider({ children }) {
   );
 }
 
+const defaultShopCartContext = {
+  cart: [],
+  totalCartCount: 0,
+  cartSubtotal: 0,
+  isCartOpen: false,
+  setIsCartOpen: () => {},
+  isCheckoutOpen: false,
+  setIsCheckoutOpen: () => {},
+  isOrderHistoryOpen: false,
+  setIsOrderHistoryOpen: () => {},
+  selectedProductForDetail: null,
+  setSelectedProductForDetail: () => {},
+  activeOrderConfirmation: null,
+  setActiveOrderConfirmation: () => {},
+  addToCart: () => ({ success: false, message: 'Cart unavailable' }),
+  updateQuantity: () => {},
+  removeFromCart: () => {},
+  clearCart: () => {}
+};
+
 export function useShopCart() {
   const context = useContext(ShopCartContext);
   if (!context) {
-    throw new Error('useShopCart must be used within a ShopCartProvider');
+    return defaultShopCartContext;
   }
   return context;
 }

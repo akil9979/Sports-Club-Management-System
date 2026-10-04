@@ -1,15 +1,25 @@
 /**
  * Champions Club - Court Bookings Controller
- * Role: MEMBER 3 (Canonical Database Owner)
+ * Role: MEMBER 3 (Booking Engine Backend)
  */
 
 const bookingService = require('./bookingService');
 const { validateCreateBooking } = require('./bookingValidators');
 
 class BookingController {
+  async getSports(req, res, next) {
+    try {
+      const sports = await bookingService.getSports();
+      res.status(200).json(sports);
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async getCourts(req, res, next) {
     try {
-      const courts = await bookingService.getCourts();
+      const { sportId, sport } = req.query;
+      const courts = await bookingService.getCourts(sportId || sport);
       res.status(200).json(courts);
     } catch (err) {
       next(err);
@@ -33,10 +43,11 @@ class BookingController {
     try {
       const validation = validateCreateBooking(req.body);
       if (!validation.isValid) {
-        return res.status(422).json({
+        return res.status(validation.isSlotError ? 400 : 422).json({
           success: false,
-          error: 'Validation Error',
-          message: 'Invalid booking parameters',
+          error: validation.isSlotError ? 'Invalid Booking Slot' : 'Validation Error',
+          code: validation.isSlotError ? 'INVALID_BOOKING_SLOT' : 'VALIDATION_FAILED',
+          message: validation.errors[0]?.message || 'Invalid booking parameters',
           errors: validation.errors
         });
       }
@@ -52,22 +63,26 @@ class BookingController {
         guestEmail,
         guestPhone,
         bookingType,
+        participants,
         notes
       } = req.body;
 
-      // Extract memberId from authenticated user if logged in
-      const effectiveMemberId = req.user?.memberId || memberId || null;
+      // Extract memberId from authenticated user if member session
+      const effectiveMemberId = req.user?.role === 'member'
+        ? (req.user.memberId || req.user.id)
+        : (memberId || req.user?.memberId || null);
 
       const booking = await bookingService.createBooking({
         courtId,
         memberId: effectiveMemberId,
-        guestName: guestName || (req.user ? `${req.user.firstName} ${req.user.lastName}` : 'Guest Player'),
+        guestName: guestName || (req.user ? `${req.user.firstName} ${req.user.lastName}` : null),
         guestEmail: guestEmail || req.user?.email || null,
         guestPhone: guestPhone || req.user?.phone || null,
         bookingDate: bookingDate || date,
         startTime,
         endTime,
         bookingType: bookingType || 'ordinary',
+        participants: participants || [],
         notes
       });
 
@@ -81,10 +96,23 @@ class BookingController {
     }
   }
 
+  async getById(req, res, next) {
+    try {
+      const { id } = req.params;
+      const booking = await bookingService.getBookingById(id);
+      res.status(200).json({
+        success: true,
+        data: booking
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   async list(req, res, next) {
     try {
       const { courtId, date, status, limit, offset } = req.query;
-      const memberId = req.user?.role === 'member' ? req.user.memberId : req.query.memberId;
+      const memberId = req.user?.role === 'member' ? (req.user.memberId || req.user.id) : req.query.memberId;
 
       const bookings = await bookingService.getBookings({
         memberId,
@@ -108,12 +136,42 @@ class BookingController {
   async cancel(req, res, next) {
     try {
       const { id } = req.params;
-      const { reason } = req.body;
-      const cancelled = await bookingService.cancelBooking(id, reason);
+      const { reason } = req.body || {};
+      const cancelled = await bookingService.cancelBooking(id, reason || 'Cancelled by user');
       res.status(200).json({
         success: true,
         data: cancelled,
         message: 'Booking cancelled successfully'
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async addParticipant(req, res, next) {
+    try {
+      const { id } = req.params;
+      const { memberId, name } = req.body;
+      const participant = await bookingService.addParticipant(id, { memberId, name });
+      res.status(201).json({
+        success: true,
+        data: participant,
+        message: 'Participant added to session successfully'
+      });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getMemberUsage(req, res, next) {
+    try {
+      const { id } = req.params;
+      const date = req.query.date || new Date().toISOString().split('T')[0];
+      const usage = await bookingService.getMemberBookingUsage(id, date);
+      res.status(200).json({
+        success: true,
+        ...usage,
+        data: usage
       });
     } catch (err) {
       next(err);
