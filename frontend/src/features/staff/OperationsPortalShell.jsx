@@ -11,7 +11,8 @@ import {
   ArrowLeft,
   LogOut,
   Building2,
-  QrCode
+  QrCode,
+  ShoppingBag
 } from 'lucide-react';
 import { useStaffAuth } from './StaffAuthContext.jsx';
 import { useAuth } from '../auth/AuthContext.jsx';
