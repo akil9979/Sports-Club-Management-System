@@ -268,7 +268,7 @@ ON CONFLICT DO NOTHING;
 -- Shop & Inventory Staff
 INSERT INTO staff_job_type_permissions (staff_job_type_id, permission_id)
 SELECT '88888888-8888-8888-8888-888888888802', id FROM permissions WHERE code IN (
-    'products.view', 'products.create', 'products.update', 'products.delete',
+    'products.view', 'products.update', 'products.delete',
     'inventory.view', 'inventory.create', 'inventory.update',
     'stock_movements.view', 'stock_movements.create',
     'shop_orders.view', 'shop_orders.update'

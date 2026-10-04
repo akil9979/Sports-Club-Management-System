@@ -37,6 +37,7 @@ import {
 
 export default function ShopInventoryWorkspace() {
   const { can, user } = useAuth();
+  const isAdmin = user?.role === 'admin';
 
   // Active sub-tab
   const [subTab, setSubTab] = useState('products'); // 'products' | 'inventory' | 'movements' | 'orders'
@@ -132,6 +133,10 @@ export default function ShopInventoryWorkspace() {
         isActive: prod.isActive !== false
       });
     } else {
+      if (!isAdmin) {
+        setFeedback({ type: 'error', message: 'Access Restricted: Adding new products to the catalogue is strictly restricted to Administrators.' });
+        return;
+      }
       setEditingProduct(null);
       setProductForm({
         name: '',
@@ -167,6 +172,10 @@ export default function ShopInventoryWorkspace() {
         await updateProduct(editingProduct.id, payload);
         setFeedback({ type: 'success', message: `Product '${payload.name}' updated successfully!` });
       } else {
+        if (!isAdmin) {
+          setFeedback({ type: 'error', message: 'Forbidden: Adding new products is restricted strictly to administrators.' });
+          return;
+        }
         await createProduct({
           ...payload,
           stockQuantity: parseInt(productForm.stockQuantity, 10) || 0,
@@ -300,11 +309,12 @@ export default function ShopInventoryWorkspace() {
               </button>
             )}
 
-            {can('products.create') && (
+            {isAdmin && (
               <button
                 type="button"
                 onClick={() => handleOpenProductModal()}
                 className="px-4 py-2 rounded-xl btn-champagne text-xs font-bold flex items-center gap-1.5 shadow-lg shadow-[#dfc99a]/15 hover:scale-105 transition-all"
+                title="Add New Product (Admin Only)"
               >
                 <Plus className="w-4 h-4 text-[#02140e]" />
                 <span>Add Product</span>

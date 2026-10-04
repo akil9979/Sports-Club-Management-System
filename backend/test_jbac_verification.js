@@ -107,13 +107,25 @@ async function run() {
   assert(
     regShopStaff.status === 201 &&
     shopStaffUser?.staffJob?.code === 'shop_inventory' &&
-    shopStaffUser?.permissions?.includes('products.create'),
+    shopStaffUser?.permissions?.includes('products.view'),
     'Shop & Inventory Staff registration and profile returns staffJob: "shop_inventory" with permissions'
   );
 
-  // Test 6: Shop & Inventory Staff -> Can create product
+  // Test 6: Role-Based Check -> Non-admin staff is rejected with 403, only Admin can add products
   const newSku = `SKU-TEST-${Date.now().toString().slice(-5)}`;
-  const createProdRes = await req('/products', 'POST', {
+  const staffCreateRes = await req('/products', 'POST', {
+    name: 'Staff Unauthorized Racket',
+    category: 'Rackets',
+    sku: `DENY-${newSku}`,
+    price: 14999.00,
+    memberPrice: 11999.00,
+    stockQuantity: 15,
+    lowStockThreshold: 4,
+    description: 'Attempted product creation by staff'
+  }, shopStaffToken);
+  assert(staffCreateRes.status === 403, 'Non-admin staff is rejected with 403 Forbidden when attempting to add product');
+
+  const adminCreateRes = await req('/products', 'POST', {
     name: 'Head Speed MP 2026 Test Racket',
     category: 'Rackets',
     sku: newSku,
@@ -121,11 +133,11 @@ async function run() {
     memberPrice: 11999.00,
     stockQuantity: 15,
     lowStockThreshold: 4,
-    description: 'Test racket created by Shop Staff'
-  }, shopStaffToken);
-  assert(createProdRes.status === 201 && createProdRes.data?.data?.sku === newSku, 'Shop & Inventory Staff can create product (products.create)');
+    description: 'Official racket added by Admin'
+  }, adminToken);
+  assert(adminCreateRes.status === 201 && adminCreateRes.data?.data?.sku === newSku, 'Admin role can create product (role-based admin only)');
 
-  const createdProductId = createProdRes.data?.data?.id;
+  const createdProductId = adminCreateRes.data?.data?.id;
 
   // Test 7: Shop & Inventory Staff -> Can edit product
   const editProdRes = await req(`/products/${createdProductId}`, 'PATCH', {

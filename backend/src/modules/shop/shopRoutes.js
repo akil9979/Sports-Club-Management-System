@@ -6,15 +6,15 @@
 const express = require('express');
 const router = express.Router();
 const shopController = require('./shopController');
-const { authenticate, optionalAuth, requirePermission } = require('../../middleware/auth');
+const { authenticate, optionalAuth, requirePermission, requireAdmin } = require('../../middleware/auth');
 
 // --- PRODUCTS ---
 // Public catalogue endpoints
 router.get('/products', shopController.getProducts);
 router.get('/products/:id', shopController.getProductById);
 
-// Protected catalogue management (Job-Based Access Control)
-router.post('/products', authenticate, requirePermission('products.create'), shopController.createProduct);
+// Protected catalogue management: Product creation is strictly role-based (Admin only)
+router.post('/products', authenticate, requireAdmin, shopController.createProduct);
 router.put('/products/:id', authenticate, requirePermission('products.update'), shopController.updateProduct);
 router.patch('/products/:id', authenticate, requirePermission('products.update'), shopController.updateProduct);
 router.delete('/products/:id', authenticate, requirePermission('products.delete'), shopController.deleteProduct);

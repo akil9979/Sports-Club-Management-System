@@ -137,7 +137,7 @@ async function runMigration() {
     CROSS JOIN permissions p
     WHERE sjt.code = 'shop_inventory'
       AND p.code IN (
-        'products.view', 'products.create', 'products.update', 'products.delete',
+        'products.view', 'products.update', 'products.delete',
         'inventory.view', 'inventory.create', 'inventory.update',
         'stock_movements.view', 'stock_movements.create',
         'shop_orders.view', 'shop_orders.update'
