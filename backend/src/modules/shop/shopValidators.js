@@ -8,10 +8,11 @@ const { validators } = require('../../middleware/validator');
 function validateCreateProduct(body = {}) {
   const errors = [];
   if (!validators.isNonEmptyString(body.name, 2, 200)) errors.push({ field: 'name', message: 'Product name required (2-200 chars)' });
-  if (!validators.isNonEmptyString(body.categoryId)) errors.push({ field: 'categoryId', message: 'Category ID is required' });
+  if (!body.categoryId && !body.category) errors.push({ field: 'categoryId', message: 'Category is required' });
   if (!validators.isNonNegativeNumber(body.price)) errors.push({ field: 'price', message: 'Price must be a non-negative number' });
   if (body.memberPrice !== undefined && !validators.isNonNegativeNumber(body.memberPrice)) errors.push({ field: 'memberPrice', message: 'Member price must be non-negative' });
-  if (body.initialStock !== undefined && (!Number.isInteger(Number(body.initialStock)) || Number(body.initialStock) < 0)) errors.push({ field: 'initialStock', message: 'Initial stock must be a non-negative integer' });
+  const stockVal = body.stockQuantity !== undefined ? body.stockQuantity : body.initialStock;
+  if (stockVal !== undefined && (!Number.isInteger(Number(stockVal)) || Number(stockVal) < 0)) errors.push({ field: 'initialStock', message: 'Stock must be a non-negative integer' });
   if (body.reorderThreshold !== undefined && (!Number.isInteger(Number(body.reorderThreshold)) || Number(body.reorderThreshold) < 0)) errors.push({ field: 'reorderThreshold', message: 'Reorder threshold must be a non-negative integer' });
 
   return { isValid: errors.length === 0, errors };

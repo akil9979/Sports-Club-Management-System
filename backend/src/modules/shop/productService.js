@@ -122,6 +122,7 @@ class ProductService {
   async createProduct({
     id,
     categoryId,
+    category = null,
     sportId = null,
     name,
     sku = null,
@@ -132,14 +133,23 @@ class ProductService {
     description = null,
     imageUrl = null,
     initialStock = 0,
+    stockQuantity = 0,
     reorderThreshold = 5,
+    lowStockThreshold = 5,
     reorderQuantity = 20,
     userId = null
   }) {
     return withTransaction(async (client) => {
-      const catCheck = await client.query('SELECT id FROM product_categories WHERE id = $1', [categoryId]);
+      let effectiveCatId = categoryId;
+      if (!effectiveCatId && category) {
+        const catLookup = await client.query('SELECT id FROM product_categories WHERE LOWER(name) = LOWER($1) OR id = $1', [category.trim()]);
+        if (catLookup.rowCount > 0) effectiveCatId = catLookup.rows[0].id;
+      }
+      if (!effectiveCatId) effectiveCatId = 'cat-rackets';
+
+      const catCheck = await client.query('SELECT id FROM product_categories WHERE id = $1', [effectiveCatId]);
       if (catCheck.rowCount === 0) {
-        const error = new Error(`Product category '${categoryId}' not found`);
+        const error = new Error(`Product category '${effectiveCatId}' not found`);
         error.statusCode = 400;
         throw error;
       }
@@ -155,10 +165,11 @@ class ProductService {
          )
          VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, true)
          RETURNING *`,
-        [productId, categoryId, sportId, name.trim(), generatedSku, price, effectiveMemberPrice, rating, badge, description, imageUrl]
+        [productId, effectiveCatId, sportId, name.trim(), generatedSku, price, effectiveMemberPrice, rating, badge, description, imageUrl]
       );
 
-      const stockQty = Math.max(0, parseInt(initialStock || 0, 10));
+      const effectiveThreshold = reorderThreshold !== undefined ? reorderThreshold : (lowStockThreshold || 5);
+      const stockQty = Math.max(0, parseInt(stockQuantity || initialStock || 0, 10));
       await client.query(
         `INSERT INTO inventory (product_id, quantity_on_hand, quantity_reserved, reorder_threshold, reorder_quantity)
          VALUES ($1, $2, 0, $3, $4)
@@ -238,6 +249,51 @@ class ProductService {
       }
 
       return this.getProductById(productId);
+    });
+  }
+
+  /**
+   * Delete or archive product based on historical reference check
+   */
+  async deleteProduct(productId) {
+    return withTransaction(async (client) => {
+      const prodRes = await client.query('SELECT * FROM products WHERE id = $1', [productId]);
+      if (prodRes.rowCount === 0) {
+        const error = new Error(`Product '${productId}' not found`);
+        error.statusCode = 404;
+        throw error;
+      }
+
+      // Check if product has historical orders or invoice items
+      const orderCheck = await client.query('SELECT 1 FROM shop_order_items WHERE product_id = $1 LIMIT 1', [productId]);
+      const invoiceCheck = await client.query("SELECT 1 FROM invoice_items WHERE reference_type = 'product' AND reference_id = $1 LIMIT 1", [productId]);
+
+      const hasHistory = orderCheck.rowCount > 0 || invoiceCheck.rowCount > 0;
+
+      if (hasHistory) {
+        // Soft delete / archive to protect transactional and financial records
+        await client.query(
+          'UPDATE products SET is_active = false, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
+          [productId]
+        );
+        return {
+          id: productId,
+          archived: true,
+          deleted: false,
+          message: 'Product archived and deactivated successfully (preserved historical transaction records)'
+        };
+      } else {
+        // Safe to remove cleanly
+        await client.query('DELETE FROM inventory WHERE product_id = $1', [productId]);
+        await client.query('DELETE FROM stock_movements WHERE product_id = $1', [productId]);
+        await client.query('DELETE FROM products WHERE id = $1', [productId]);
+        return {
+          id: productId,
+          archived: false,
+          deleted: true,
+          message: 'Product permanently removed successfully'
+        };
+      }
     });
   }
 }

@@ -19,11 +19,15 @@ import { useAuth } from '../auth/AuthContext.jsx';
 export default function OperationsPortalShell({ children, activeTab, onTabChange }) {
   const navigate = useNavigate();
   const { currentStaff, staffList, isLocked, shiftStart, switchStaff, lockTerminal, unlockTerminal } = useStaffAuth();
-  const { logout } = useAuth();
+  const { logout, user, can, staffJob, isAdmin } = useAuth();
   const [currentTime, setCurrentTime] = useState(() => new Date());
   const [pinInput, setPinInput] = useState('');
   const [pinError, setPinError] = useState(false);
   const [staffDropdownOpen, setStaffDropdownOpen] = useState(false);
+
+  const activeStaffName = user ? `${user.firstName} ${user.lastName || ''}`.trim() : currentStaff.name;
+  const activeStaffJob = staffJob?.name || (user?.role === 'admin' ? 'Superadmin (Full Access)' : currentStaff.role);
+  const activeAvatar = user?.firstName ? user.firstName.charAt(0).toUpperCase() : currentStaff.avatar;
 
   const handlePortalLogout = async () => {
     await logout();
@@ -78,7 +82,7 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
             <div>
               <h3 className="text-xl font-serif font-bold text-[#fcfaf5]">Terminal Locked</h3>
               <p className="text-xs text-emerald-300/70 mt-1">
-                Enter staff PIN for <span className="text-[#dfc99a] font-semibold">{currentStaff.name}</span>
+                Enter staff PIN for <span className="text-[#dfc99a] font-semibold">{activeStaffName}</span>
               </p>
             </div>
 
@@ -167,7 +171,7 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
                   </span>
                 </div>
                 <p className="text-[11px] text-emerald-400/70">
-                  Operations & Bar POS Terminal
+                  {activeStaffJob}
                 </p>
               </div>
             </div>
@@ -196,14 +200,14 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
                 className="flex items-center gap-2.5 p-1.5 pr-2.5 bg-[#07261c] hover:bg-[#0b3829] border border-emerald-800/60 rounded-xl transition"
               >
                 <div className="w-7 h-7 rounded-lg bg-[#dfc99a]/20 text-[#dfc99a] font-bold text-xs flex items-center justify-center border border-[#dfc99a]/30">
-                  {currentStaff.avatar}
+                  {activeAvatar}
                 </div>
                 <div className="text-left hidden sm:block">
                   <div className="text-xs font-bold text-[#fcfaf5] leading-tight">
-                    {currentStaff.name}
+                    {activeStaffName}
                   </div>
                   <div className="text-[10px] text-emerald-400/70 leading-tight">
-                    {currentStaff.role}
+                    {activeStaffJob}
                   </div>
                 </div>
                 <ChevronDown className="w-3.5 h-3.5 text-emerald-400/70" />
@@ -252,14 +256,16 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
             </div>
 
             {/* Management Dashboard Button */}
-            <Link
-              to="/management"
-              className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#07261c] hover:bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/25 text-xs font-semibold transition"
-              title="Open Management & Executive Dashboard"
-            >
-              <Building2 className="w-3.5 h-3.5" />
-              <span>Management</span>
-            </Link>
+            {(isAdmin || can('expenses.view')) && (
+              <Link
+                to="/management"
+                className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#07261c] hover:bg-[#dfc99a]/15 text-[#dfc99a] border border-[#dfc99a]/25 text-xs font-semibold transition"
+                title="Open Management & Executive Dashboard"
+              >
+                <Building2 className="w-3.5 h-3.5" />
+                <span>Management</span>
+              </Link>
+            )}
 
             {/* Lock Terminal Button */}
             <button
@@ -283,67 +289,97 @@ export default function OperationsPortalShell({ children, activeTab, onTabChange
           </div>
         </div>
 
-        {/* Sub-Navigation for Operations Workspaces */}
+        {/* Sub-Navigation for Operations Workspaces - Job-Based Access Control */}
         <div className="flex items-center gap-2 mt-2.5 pt-2 border-t border-emerald-900/40 overflow-x-auto text-xs pb-1 scrollbar-none">
-          <button
-            onClick={() => onTabChange && onTabChange('frontdesk')}
-            className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
-              activeTab === 'frontdesk' || activeTab === 'verification'
-                ? 'btn-champagne font-bold shadow-md shadow-[#dfc99a]/15 text-[#02140e]'
-                : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
-            }`}
-          >
-            <QrCode className="w-3.5 h-3.5" />
-            Frontdesk Verification
-          </button>
+          {/* 1. Frontdesk Verification (Requires members.view or bookings.view) */}
+          {(can('members.view') || can('bookings.view')) && (
+            <button
+              onClick={() => onTabChange && onTabChange('frontdesk')}
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+                activeTab === 'frontdesk' || activeTab === 'verification'
+                  ? 'btn-champagne font-bold shadow-md shadow-[#dfc99a]/15 text-[#02140e]'
+                  : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
+              }`}
+            >
+              <QrCode className="w-3.5 h-3.5" />
+              Frontdesk Verification
+            </button>
+          )}
 
-          <button
-            onClick={() => onTabChange && onTabChange('pos')}
-            className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
-              activeTab === 'pos'
-                ? 'btn-champagne font-bold shadow-md shadow-[#dfc99a]/10'
-                : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
-            }`}
-          >
-            <Wine className="w-3.5 h-3.5" />
-            Bar POS & Tables
-          </button>
+          {/* 2. Bar POS & Tables (Requires bar_orders.view) */}
+          {can('bar_orders.view') && (
+            <button
+              onClick={() => onTabChange && onTabChange('pos')}
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+                activeTab === 'pos'
+                  ? 'btn-champagne font-bold shadow-md shadow-[#dfc99a]/10'
+                  : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
+              }`}
+            >
+              <Wine className="w-3.5 h-3.5" />
+              Bar POS & Tables
+            </button>
+          )}
 
-          <button
-            onClick={() => onTabChange && onTabChange('kds')}
-            className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
-              activeTab === 'kds'
-                ? 'bg-sky-500 text-slate-950 font-bold shadow-md shadow-sky-500/10'
-                : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
-            }`}
-          >
-            <Flame className="w-3.5 h-3.5" />
-            Kitchen Display (KDS)
-          </button>
+          {/* 3. Kitchen Display (KDS) (Requires bar_orders.update) */}
+          {can('bar_orders.update') && (
+            <button
+              onClick={() => onTabChange && onTabChange('kds')}
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+                activeTab === 'kds'
+                  ? 'bg-sky-500 text-slate-950 font-bold shadow-md shadow-sky-500/10'
+                  : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
+              }`}
+            >
+              <Flame className="w-3.5 h-3.5" />
+              Kitchen Display (KDS)
+            </button>
+          )}
 
-          <button
-            onClick={() => onTabChange && onTabChange('audit')}
-            className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
-              activeTab === 'audit'
-                ? 'bg-[#dfc99a] text-[#02140e] font-bold shadow-md shadow-[#dfc99a]/10'
-                : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
-            }`}
-          >
-            <Receipt className="w-3.5 h-3.5" />
-            Settled Tabs Audit
-          </button>
+          {/* 4. Settled Tabs Audit (Requires bar_orders.view) */}
+          {can('bar_orders.view') && (
+            <button
+              onClick={() => onTabChange && onTabChange('audit')}
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+                activeTab === 'audit'
+                  ? 'bg-[#dfc99a] text-[#02140e] font-bold shadow-md shadow-[#dfc99a]/10'
+                  : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
+              }`}
+            >
+              <Receipt className="w-3.5 h-3.5" />
+              Settled Tabs Audit
+            </button>
+          )}
 
-          <button
-            onClick={() => onTabChange && onTabChange('crm')}
-            className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
-              activeTab === 'crm'
-                ? 'btn-champagne font-bold shadow-md shadow-[#dfc99a]/10'
-                : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            Enquiries & CRM Leads
-          </button>
+          {/* 5. Shop & Inventory (Requires products.view or inventory.view) */}
+          {(can('products.view') || can('inventory.view')) && (
+            <button
+              onClick={() => onTabChange && onTabChange('shop')}
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+                activeTab === 'shop'
+                  ? 'btn-champagne font-bold shadow-md shadow-[#dfc99a]/10 text-[#02140e]'
+                  : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
+              }`}
+            >
+              <ShoppingBag className="w-3.5 h-3.5" />
+              Shop & Inventory
+            </button>
+          )}
+
+          {/* 6. Enquiries & CRM Leads (Requires leads.view) */}
+          {can('leads.view') && (
+            <button
+              onClick={() => onTabChange && onTabChange('crm')}
+              className={`shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg font-semibold flex items-center gap-1.5 transition ${
+                activeTab === 'crm'
+                  ? 'btn-champagne font-bold shadow-md shadow-[#dfc99a]/10'
+                  : 'text-emerald-300/70 hover:text-white hover:bg-[#07261c]/50'
+              }`}
+            >
+              <Users className="w-3.5 h-3.5" />
+              Enquiries & CRM Leads
+            </button>
+          )}
         </div>
       </header>
 

@@ -121,11 +121,16 @@ class InventoryService {
 
       await dbClient.query('UPDATE inventory SET quantity_on_hand = $1, updated_at = CURRENT_TIMESTAMP WHERE product_id = $2', [nextQty, productId]);
 
+      let normalizedType = movementType;
+      if (normalizedType === 'restock' || normalizedType === 'intake') normalizedType = 'purchase_receipt';
+      if (normalizedType === 'damage' || normalizedType === 'write_off') normalizedType = 'damaged';
+      if (normalizedType === 'audit_adjustment') normalizedType = 'adjustment';
+
       const movementRes = await dbClient.query(
         `INSERT INTO stock_movements (product_id, movement_type, quantity, reference_id, notes, created_by)
          VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING *`,
-        [productId, movementType, quantity, referenceId, notes, userId]
+        [productId, normalizedType, quantity, referenceId, notes, userId]
       );
 
       return {

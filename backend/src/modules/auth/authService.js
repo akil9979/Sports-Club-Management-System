@@ -1,18 +1,19 @@
 /**
  * Champions Club - Authentication Service
- * Role: MEMBER 3 (Canonical Database Owner)
+ * Role: MEMBER 3 (Canonical Database Owner) & Staff Job-Based Access Control
  */
 
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { query, withTransaction } = require('../../config/database');
 const config = require('../../config/env');
+const { loadStaffJobAndPermissions } = require('../../middleware/auth');
 
 class AuthService {
   /**
-   * Register a new user and create an associated member record
+   * Register a new user and create an associated member or staff employee record
    */
-  async register({ email, password, firstName, lastName, phone, role = 'member' }) {
+  async register({ email, password, firstName, lastName, phone, role = 'member', staffJobTypeId = null }) {
     return withTransaction(async (client) => {
       // 1. Check if user email already exists
       const existingUser = await client.query(
@@ -23,6 +24,32 @@ class AuthService {
         const error = new Error('Email address is already registered');
         error.statusCode = 409;
         throw error;
+      }
+
+      // If role is staff, validate staffJobTypeId
+      let selectedJob = null;
+      if (role === 'staff') {
+        if (!staffJobTypeId) {
+          const error = new Error('Staff Job selection is required for staff registration');
+          error.statusCode = 422;
+          throw error;
+        }
+
+        const jobRes = await client.query(
+          'SELECT id, code, name, is_active FROM staff_job_types WHERE id = $1',
+          [staffJobTypeId]
+        );
+        if (jobRes.rowCount === 0) {
+          const error = new Error('Selected Staff Job does not exist');
+          error.statusCode = 404;
+          throw error;
+        }
+        if (!jobRes.rows[0].is_active) {
+          const error = new Error('Selected Staff Job is currently inactive and cannot be assigned');
+          error.statusCode = 400;
+          throw error;
+        }
+        selectedJob = jobRes.rows[0];
       }
 
       // 2. Hash password
@@ -54,7 +81,51 @@ class AuthService {
         member = memberRes.rows[0];
       }
 
-      // 5. Generate token
+      // 5. Create Employee record if role is staff
+      let staffJob = null;
+      let permissions = [];
+      let employee = null;
+
+      if (role === 'staff' && selectedJob) {
+        const countRes = await client.query('SELECT COUNT(*) AS count FROM employees');
+        const nextSeq = parseInt(countRes.rows[0].count, 10) + 1;
+        const empId = `STF-${String(nextSeq).padStart(3, '0')}`;
+        const empNumber = `EMP-2026-${String(nextSeq).padStart(3, '0')}`;
+
+        const empRes = await client.query(
+          `INSERT INTO employees (
+              id, user_id, employee_number, first_name, last_name,
+              email, phone, staff_job_type_id, department, designation,
+              status, joined_date
+           )
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'active', CURRENT_DATE)
+           RETURNING id, employee_number, staff_job_type_id, department, designation, status`,
+          [
+            empId, newUser.id, empNumber, newUser.first_name, newUser.last_name,
+            newUser.email, newUser.phone || '', selectedJob.id, selectedJob.code, selectedJob.name
+          ]
+        );
+        employee = empRes.rows[0];
+
+        // Fetch permissions for this job
+        const permRes = await client.query(
+          `SELECT p.code
+           FROM permissions p
+           JOIN staff_job_type_permissions sjp ON sjp.permission_id = p.id
+           WHERE sjp.staff_job_type_id = $1`,
+          [selectedJob.id]
+        );
+        permissions = permRes.rows.map(r => r.code);
+
+        staffJob = {
+          id: selectedJob.id,
+          code: selectedJob.code,
+          name: selectedJob.name,
+          isActive: selectedJob.is_active
+        };
+      }
+
+      // 6. Generate token
       const token = jwt.sign(
         { userId: newUser.id, role: newUser.role, email: newUser.email },
         config.jwtSecret,
@@ -62,8 +133,13 @@ class AuthService {
       );
 
       return {
-        user: newUser,
+        user: {
+          ...newUser,
+          staffJob,
+          permissions
+        },
         member,
+        employee,
         token
       };
     });
@@ -120,6 +196,20 @@ class AuthService {
       }
     }
 
+    // Load Staff Job and Permissions if staff or manager
+    let staffJob = null;
+    let permissions = [];
+    let employeeId = null;
+
+    if (['staff', 'manager'].includes(user.role)) {
+      const staffInfo = await loadStaffJobAndPermissions(user.id);
+      staffJob = staffInfo.staffJob;
+      permissions = staffInfo.permissions;
+      employeeId = staffInfo.employeeId;
+    } else if (user.role === 'admin') {
+      permissions = ['*'];
+    }
+
     const token = jwt.sign(
       { userId: user.id, role: user.role, email: user.email },
       config.jwtSecret,
@@ -138,7 +228,10 @@ class AuthService {
         phone: user.phone,
         memberId: user.member_id,
         memberNumber: user.member_number,
-        membership: activeMembership
+        membership: activeMembership,
+        employeeId,
+        staffJob,
+        permissions
       },
       token
     };
@@ -148,8 +241,11 @@ class AuthService {
    * Quick POS/Terminal PIN login for staff
    */
   async pinLogin({ pin, employeeId }) {
-    let empQuery = `SELECT e.id, e.employee_number, e.first_name, e.last_name, e.email, e.department, e.designation, e.pin, e.user_id
+    let empQuery = `SELECT e.id, e.employee_number, e.first_name, e.last_name, e.email, e.department,
+                           e.designation, e.pin, e.user_id, e.staff_job_type_id,
+                           sjt.code AS job_code, sjt.name AS job_name, sjt.is_active AS job_is_active
                     FROM employees e
+                    LEFT JOIN staff_job_types sjt ON sjt.id = e.staff_job_type_id
                     WHERE e.status = 'active'`;
     const params = [];
 
@@ -175,6 +271,18 @@ class AuthService {
       throw error;
     }
 
+    let permissions = [];
+    if (emp.staff_job_type_id) {
+      const permRes = await query(
+        `SELECT p.code
+         FROM permissions p
+         JOIN staff_job_type_permissions sjp ON sjp.permission_id = p.id
+         WHERE sjp.staff_job_type_id = $1`,
+        [emp.staff_job_type_id]
+      );
+      permissions = permRes.rows.map(r => r.code);
+    }
+
     const token = jwt.sign(
       { userId: emp.user_id, employeeId: emp.id, role: 'staff', department: emp.department },
       config.jwtSecret,
@@ -187,6 +295,13 @@ class AuthService {
         name: `${emp.first_name} ${emp.last_name}`,
         department: emp.department,
         designation: emp.designation,
+        staffJob: emp.staff_job_type_id ? {
+          id: emp.staff_job_type_id,
+          code: emp.job_code,
+          name: emp.job_name,
+          isActive: emp.job_is_active
+        } : null,
+        permissions,
         badge: emp.department === 'bar' ? 'Bar Lead' : 'Staff Access'
       },
       token
@@ -194,7 +309,7 @@ class AuthService {
   }
 
   /**
-   * Get authenticated user profile with active membership
+   * Get authenticated user profile with active membership and staff job permissions
    */
   async getProfile(userId) {
     const userRes = await query(
@@ -233,6 +348,19 @@ class AuthService {
       }
     }
 
+    let staffJob = null;
+    let permissions = [];
+    let employeeId = null;
+
+    if (['staff', 'manager'].includes(user.role)) {
+      const staffInfo = await loadStaffJobAndPermissions(user.id);
+      staffJob = staffInfo.staffJob;
+      permissions = staffInfo.permissions;
+      employeeId = staffInfo.employeeId;
+    } else if (user.role === 'admin') {
+      permissions = ['*'];
+    }
+
     return {
       id: user.id,
       email: user.email,
@@ -241,6 +369,9 @@ class AuthService {
       lastName: user.last_name,
       phone: user.phone,
       createdAt: user.created_at,
+      employeeId,
+      staffJob,
+      permissions,
       member: user.member_id ? {
         id: user.member_id,
         memberNumber: user.member_number,
@@ -258,16 +389,18 @@ class AuthService {
   }
 
   /**
-   * Admin: List all system users with role, membership, and employee info
+   * Admin: List all system users with role, membership, employee info, and staff job
    */
   async getAllUsers() {
     const res = await query(
       `SELECT u.id, u.email, u.role, u.first_name, u.last_name, u.phone, u.is_active, u.created_at,
               m.id AS member_id, m.member_number, m.status AS member_status,
-              e.id AS employee_id, e.department, e.designation
+              e.id AS employee_id, e.employee_number, e.department, e.designation, e.status AS employee_status,
+              e.staff_job_type_id, sjt.code AS staff_job_code, sjt.name AS staff_job_name
        FROM users u
        LEFT JOIN members m ON m.user_id = u.id
        LEFT JOIN employees e ON e.user_id = u.id
+       LEFT JOIN staff_job_types sjt ON sjt.id = e.staff_job_type_id
        ORDER BY u.created_at DESC`
     );
 
@@ -284,8 +417,13 @@ class AuthService {
       memberNumber: row.member_number,
       memberStatus: row.member_status,
       employeeId: row.employee_id,
+      employeeNumber: row.employee_number,
       department: row.department,
-      designation: row.designation
+      designation: row.designation,
+      employeeStatus: row.employee_status,
+      staffJobTypeId: row.staff_job_type_id,
+      staffJobCode: row.staff_job_code,
+      staffJobName: row.staff_job_name
     }));
   }
 

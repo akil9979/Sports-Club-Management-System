@@ -508,7 +508,46 @@ CREATE INDEX idx_trial_bookings_lead_id ON trial_bookings(lead_id);
 CREATE INDEX idx_trial_bookings_court_id ON trial_bookings(court_id);
 
 -- ----------------------------------------------------------------------------
--- 24. EMPLOYEES
+-- 24. STAFF JOB TYPES (Scalable Database-Driven Staff Job Access Control)
+-- ----------------------------------------------------------------------------
+CREATE TABLE staff_job_types (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code VARCHAR(50) UNIQUE NOT NULL,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    is_active BOOLEAN NOT NULL DEFAULT true,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_staff_job_types_code ON staff_job_types(code);
+CREATE INDEX idx_staff_job_types_is_active ON staff_job_types(is_active);
+
+-- ----------------------------------------------------------------------------
+-- 25. PERMISSIONS (Fine-Grained System Permissions)
+-- ----------------------------------------------------------------------------
+CREATE TABLE permissions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    code VARCHAR(100) UNIQUE NOT NULL,
+    module VARCHAR(50) NOT NULL,
+    description TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_permissions_code ON permissions(code);
+CREATE INDEX idx_permissions_module ON permissions(module);
+
+-- ----------------------------------------------------------------------------
+-- 26. STAFF JOB TYPE PERMISSIONS (Many-to-Many Permission Mapping)
+-- ----------------------------------------------------------------------------
+CREATE TABLE staff_job_type_permissions (
+    staff_job_type_id UUID NOT NULL REFERENCES staff_job_types(id) ON DELETE CASCADE,
+    permission_id UUID NOT NULL REFERENCES permissions(id) ON DELETE CASCADE,
+    PRIMARY KEY (staff_job_type_id, permission_id)
+);
+
+-- ----------------------------------------------------------------------------
+-- 27. EMPLOYEES
 -- ----------------------------------------------------------------------------
 CREATE TABLE employees (
     id VARCHAR(64) PRIMARY KEY, -- e.g. 'STF-001'
@@ -518,7 +557,8 @@ CREATE TABLE employees (
     last_name VARCHAR(100) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     phone VARCHAR(30) NOT NULL,
-    department VARCHAR(50) NOT NULL CHECK (department IN ('management', 'bar', 'reception', 'sports_academy', 'maintenance', 'accounts')),
+    staff_job_type_id UUID REFERENCES staff_job_types(id) ON DELETE RESTRICT,
+    department VARCHAR(50),
     designation VARCHAR(100) NOT NULL,
     pin VARCHAR(10),
     hourly_rate NUMERIC(10, 2) DEFAULT 0.00 CHECK (hourly_rate >= 0),
@@ -531,6 +571,7 @@ CREATE TABLE employees (
 );
 
 CREATE INDEX idx_employees_user_id ON employees(user_id);
+CREATE INDEX idx_employees_staff_job_type_id ON employees(staff_job_type_id);
 CREATE INDEX idx_employees_department ON employees(department);
 CREATE INDEX idx_employees_status ON employees(status);
 
@@ -692,6 +733,7 @@ CREATE TRIGGER trg_bar_orders_updated_at BEFORE UPDATE ON bar_orders FOR EACH RO
 CREATE TRIGGER trg_leads_updated_at BEFORE UPDATE ON leads FOR EACH ROW EXECUTE FUNCTION set_updated_at_column();
 CREATE TRIGGER trg_quotations_updated_at BEFORE UPDATE ON quotations FOR EACH ROW EXECUTE FUNCTION set_updated_at_column();
 CREATE TRIGGER trg_trial_bookings_updated_at BEFORE UPDATE ON trial_bookings FOR EACH ROW EXECUTE FUNCTION set_updated_at_column();
+CREATE TRIGGER trg_staff_job_types_updated_at BEFORE UPDATE ON staff_job_types FOR EACH ROW EXECUTE FUNCTION set_updated_at_column();
 CREATE TRIGGER trg_employees_updated_at BEFORE UPDATE ON employees FOR EACH ROW EXECUTE FUNCTION set_updated_at_column();
 CREATE TRIGGER trg_staff_shifts_updated_at BEFORE UPDATE ON staff_shifts FOR EACH ROW EXECUTE FUNCTION set_updated_at_column();
 CREATE TRIGGER trg_leave_requests_updated_at BEFORE UPDATE ON leave_requests FOR EACH ROW EXECUTE FUNCTION set_updated_at_column();

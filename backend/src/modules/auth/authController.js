@@ -9,7 +9,7 @@ const { validators } = require('../../middleware/validator');
 class AuthController {
   async register(req, res, next) {
     try {
-      const { email, password, firstName, lastName, phone, role } = req.body;
+      const { email, password, firstName, lastName, phone, role, staffJobTypeId } = req.body;
 
       if (!validators.isEmail(email)) {
         return res.status(422).json({ success: false, error: 'Validation Error', message: 'Valid email is required' });
@@ -24,7 +24,7 @@ class AuthController {
         return res.status(422).json({ success: false, error: 'Validation Error', message: 'Last name is required' });
       }
 
-      const result = await authService.register({ email, password, firstName, lastName, phone, role });
+      const result = await authService.register({ email, password, firstName, lastName, phone, role, staffJobTypeId });
       res.status(201).json({
         success: true,
         data: result,

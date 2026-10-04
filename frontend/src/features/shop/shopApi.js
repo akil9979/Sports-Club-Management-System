@@ -468,3 +468,145 @@ export function saveStoredCart(cartItems) {
 export function clearStoredCart() {
   getStorage().removeItem(CART_STORAGE_KEY);
 }
+
+// --- STAFF & JBAC OPERATIONAL INVENTORY / CATALOGUE MANAGEMENT ---
+
+/**
+ * Staff/Admin: Create new catalogue product
+ */
+export async function createProduct(productData) {
+  const token = getAuthToken();
+  const res = await fetch(`${API_BASE_URL}/api/products`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(productData)
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw createError(body.message || 'Failed to create product', res.status || 500);
+  return body.data;
+}
+
+/**
+ * Staff/Admin: Update product details & price
+ */
+export async function updateProduct(id, updates) {
+  const token = getAuthToken();
+  const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(updates)
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw createError(body.message || 'Failed to update product', res.status || 500);
+  return body.data;
+}
+
+/**
+ * Staff/Admin: Delete or archive product (preserves historical references)
+ */
+export async function deleteProduct(id) {
+  const token = getAuthToken();
+  const res = await fetch(`${API_BASE_URL}/api/products/${id}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw createError(body.message || 'Failed to delete product', res.status || 500);
+  return body.data;
+}
+
+/**
+ * Staff/Admin: Get full inventory records
+ */
+export async function getInventory(params = {}) {
+  const token = getAuthToken();
+  const queryParams = new URLSearchParams();
+  if (params.category) queryParams.append('category', params.category);
+  if (params.lowStockOnly) queryParams.append('lowStockOnly', params.lowStockOnly);
+
+  const res = await fetch(`${API_BASE_URL}/api/inventory${queryParams.toString() ? '?' + queryParams.toString() : ''}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  if (!res.ok) throw new Error('Failed to fetch inventory');
+  const body = await res.json();
+  return body.data || [];
+}
+
+/**
+ * Staff/Admin: Get low-stock items
+ */
+export async function getLowStockItems() {
+  const token = getAuthToken();
+  const res = await fetch(`${API_BASE_URL}/api/inventory/low-stock`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  if (!res.ok) throw new Error('Failed to fetch low stock items');
+  const body = await res.json();
+  return body.data || [];
+}
+
+/**
+ * Staff/Admin: Get stock movements audit history
+ */
+export async function getStockMovements(params = {}) {
+  const token = getAuthToken();
+  const queryParams = new URLSearchParams();
+  if (params.productId) queryParams.append('productId', params.productId);
+
+  const res = await fetch(`${API_BASE_URL}/api/inventory/movements${queryParams.toString() ? '?' + queryParams.toString() : ''}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  if (!res.ok) throw new Error('Failed to fetch stock movements');
+  const body = await res.json();
+  return body.data || [];
+}
+
+/**
+ * Staff/Admin: Record manual stock adjustment / intake movement
+ */
+export async function recordStockMovement(data) {
+  const token = getAuthToken();
+  const res = await fetch(`${API_BASE_URL}/api/stock-movements`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(data)
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw createError(body.message || 'Failed to record stock movement', res.status || 500);
+  return body.data;
+}
+
+/**
+ * Staff/Admin: Update shop order status
+ */
+export async function updateShopOrderStatus(orderId, status, notes = '') {
+  const token = getAuthToken();
+  const res = await fetch(`${API_BASE_URL}/api/shop/orders/${orderId}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ status, notes })
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw createError(body.message || 'Failed to update order status', res.status || 500);
+  return body.data;
+}

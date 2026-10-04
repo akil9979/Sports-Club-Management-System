@@ -19,6 +19,8 @@ import MemberProfilePage from '../pages/member/MemberProfilePage.jsx';
 import MemberBookingsPage from '../pages/member/MemberBookingsPage.jsx';
 import MemberShopPage from '../pages/member/MemberShopPage.jsx';
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage.jsx';
+import AdminStaffManagementPage from '../pages/admin/AdminStaffManagementPage.jsx';
+import AdminStaffJobsPage from '../pages/admin/AdminStaffJobsPage.jsx';
 import ManagementDashboardPage from '../pages/management/ManagementDashboardPage.jsx';
 
 export default function AppRoutes() {
@@ -28,12 +30,13 @@ export default function AppRoutes() {
         <Routes>
           {/* Protected Staff & Operations Portal Routes */}
           <Route element={<ProtectedRoute allowedRoles={['staff', 'manager', 'admin']} />}>
-            <Route path="/staff" element={<Navigate to="/staff/verification" replace />} />
+            <Route path="/staff" element={<Navigate to="/staff/operations" replace />} />
             <Route path="/staff/verification" element={<StaffOperationsPage />} />
             <Route path="/staff/frontdesk" element={<StaffOperationsPage />} />
             <Route path="/staff/bar" element={<StaffOperationsPage />} />
+            <Route path="/staff/shop" element={<StaffOperationsPage />} />
             <Route path="/staff/operations" element={<StaffOperationsPage />} />
-            <Route path="/operations" element={<Navigate to="/staff/verification" replace />} />
+            <Route path="/operations" element={<Navigate to="/staff/operations" replace />} />
             <Route path="/operations/verification" element={<StaffOperationsPage />} />
             <Route path="/bar" element={<Navigate to="/staff/bar" replace />} />
           </Route>
@@ -78,6 +81,8 @@ export default function AppRoutes() {
               <Route path="/admin" element={<AdminDashboardPage />} />
               <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
               <Route path="/admin/finance" element={<ManagementDashboardPage />} />
+              <Route path="/admin/staff" element={<AdminStaffManagementPage />} />
+              <Route path="/admin/staff-jobs" element={<AdminStaffJobsPage />} />
             </Route>
 
 

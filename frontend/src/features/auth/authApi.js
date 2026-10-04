@@ -130,7 +130,7 @@ export async function login({ email, password }) {
 /**
  * Register user
  */
-export async function register({ email, password, firstName, lastName, phone = '', role = 'member' }) {
+export async function register({ email, password, firstName, lastName, phone = '', role = 'member', staffJobTypeId = null }) {
   if (!email || !isValidEmail(email)) throw createError('Valid email is required', 422);
   if (!password || password.length < 6) throw createError('Password must be at least 6 characters', 422);
   if (!firstName || !firstName.trim()) throw createError('First name is required', 422);
@@ -142,7 +142,8 @@ export async function register({ email, password, firstName, lastName, phone = '
     firstName: firstName.trim(),
     lastName: lastName.trim(),
     phone: phone ? phone.trim() : null,
-    role: role || 'member'
+    role: role || 'member',
+    staffJobTypeId: role === 'staff' ? staffJobTypeId : null
   };
 
   try {
@@ -361,4 +362,137 @@ export async function updateUserRole(userId, role) {
     }
     throw createError('User not found', 404);
   }
+}
+
+/**
+ * Public/Authenticated: Get all active staff job types for staff registration & selectors
+ */
+export async function getStaffJobTypes() {
+  try {
+    const res = await fetch(`${API_BASE_URL}/api/staff-job-types`);
+    if (!res.ok) throw new Error('Failed to fetch staff job types');
+    const body = await res.json();
+    return body.data || [];
+  } catch (err) {
+    // Fallback default jobs
+    return [
+      { id: 'job-bar', code: 'bar', name: 'Bar Staff', description: 'Bar POS & orders' },
+      { id: 'job-shop', code: 'shop_inventory', name: 'Shop & Inventory Staff', description: 'Pro Shop & Inventory management' },
+      { id: 'job-reception', code: 'reception', name: 'Front Desk Staff', description: 'Member check-in & bookings' },
+      { id: 'job-coaching', code: 'sports_coaching', name: 'Sports & Coaching Staff', description: 'Court coaching & sessions' },
+      { id: 'job-maintenance', code: 'maintenance', name: 'Maintenance Staff', description: 'Facility maintenance' },
+      { id: 'job-accounts', code: 'accounts', name: 'Accounts & Finance Staff', description: 'Club invoices & finances' }
+    ];
+  }
+}
+
+/**
+ * Admin: List all staff job types with permission mappings
+ */
+export async function getAdminStaffJobs() {
+  const token = getToken();
+  const res = await fetch(`${API_BASE_URL}/api/admin/staff-job-types`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Failed to load staff jobs');
+  const body = await res.json();
+  return body.data || [];
+}
+
+/**
+ * Admin: Create a new dynamic Staff Job Type
+ */
+export async function createAdminStaffJob(data) {
+  const token = getToken();
+  const res = await fetch(`${API_BASE_URL}/api/admin/staff-job-types`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(data)
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw createError(body.message || 'Failed to create staff job', res.status || 500);
+  return body.data;
+}
+
+/**
+ * Admin: Update an existing Staff Job Type
+ */
+export async function updateAdminStaffJob(id, data) {
+  const token = getToken();
+  const res = await fetch(`${API_BASE_URL}/api/admin/staff-job-types/${id}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify(data)
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw createError(body.message || 'Failed to update staff job', res.status || 500);
+  return body.data;
+}
+
+/**
+ * Admin: Get all available system permissions
+ */
+export async function getAdminPermissions() {
+  const token = getToken();
+  const res = await fetch(`${API_BASE_URL}/api/admin/permissions`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Failed to load permissions');
+  const body = await res.json();
+  return body.data || { all: [], grouped: {} };
+}
+
+/**
+ * Admin: Get all staff members with assigned jobs
+ */
+export async function getAdminStaffMembers() {
+  const token = getToken();
+  const res = await fetch(`${API_BASE_URL}/api/admin/staff`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  if (!res.ok) throw new Error('Failed to load staff members');
+  const body = await res.json();
+  return body.data || [];
+}
+
+/**
+ * Admin: Change a staff member's assigned Staff Job Type
+ */
+export async function updateAdminStaffMemberJob(employeeId, staffJobTypeId) {
+  const token = getToken();
+  const res = await fetch(`${API_BASE_URL}/api/admin/staff/${employeeId}/job`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ staffJobTypeId })
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw createError(body.message || 'Failed to update staff job', res.status || 500);
+  return body.data;
+}
+
+/**
+ * Admin: Toggle staff active/inactive status
+ */
+export async function updateAdminStaffMemberStatus(employeeId, status) {
+  const token = getToken();
+  const res = await fetch(`${API_BASE_URL}/api/admin/staff/${employeeId}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`
+    },
+    body: JSON.stringify({ status })
+  });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw createError(body.message || 'Failed to update staff status', res.status || 500);
+  return body.data;
 }

@@ -19,6 +19,7 @@ const shopRoutes = require('./modules/shop/shopRoutes');
 const barRoutes = require('./modules/bar/barRoutes');
 const crmRoutes = require('./modules/crm/crmRoutes');
 const staffRoutes = require('./modules/staff/staffRoutes');
+const staffJobRoutes = require('./modules/staffJobs/staffJobRoutes');
 const { invoiceRouter, paymentRouter, expenseRouter, financeRouter } = require('./modules/finance/financeRoutes');
 const { dashboardRouter, reportRouter } = require('./modules/reports/reportRoutes');
 
@@ -76,6 +77,7 @@ app.use('/api/finance', financeRouter);
 app.use('/api/dashboard', dashboardRouter);
 app.use('/api/reports', reportRouter);
 app.use('/api', staffRoutes);
+app.use('/api', staffJobRoutes);
 app.use('/api', shopRoutes);
 
 

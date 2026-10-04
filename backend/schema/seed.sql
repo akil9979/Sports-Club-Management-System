@@ -207,14 +207,112 @@ VALUES
 ON CONFLICT DO NOTHING;
 
 -- ----------------------------------------------------------------------------
--- 12. EMPLOYEES
+-- 12. STAFF JOB TYPES & PERMISSIONS (Scalable JBAC)
 -- ----------------------------------------------------------------------------
-INSERT INTO employees (id, user_id, employee_number, first_name, last_name, email, phone, department, designation, pin, hourly_rate, salary, joined_date)
+INSERT INTO staff_job_types (id, code, name, description, is_active)
 VALUES
-    ('STF-001', '22222222-2222-2222-2222-222222222221', 'EMP-2026-001', 'Kenil', 'Patel', 'kenil.patel@championsclub.com', '+919876543201', 'bar', 'Bar & Lounge Manager', '1234', 250.00, 45000.00, '2025-01-15'),
-    ('STF-002', '22222222-2222-2222-2222-222222222222', 'EMP-2026-002', 'Priya', 'Nair', 'priya.nair@championsclub.com', '+919876543202', 'bar', 'Head Bartender & Mixologist', '2233', 200.00, 36000.00, '2025-03-01'),
-    ('STF-003', '22222222-2222-2222-2222-222222222223', 'EMP-2026-003', 'Arjun', 'Singh', 'arjun.singh@championsclub.com', '+919876543203', 'bar', 'Floor Waiter & Runner', '4455', 140.00, 24000.00, '2025-05-10'),
-    ('STF-004', '22222222-2222-2222-2222-222222222224', 'EMP-2026-004', 'Ananya', 'Roy', 'ananya.roy@championsclub.com', '+919876543204', 'reception', 'POS Cashier & Hostess', '9900', 160.00, 28000.00, '2025-02-20')
+    ('88888888-8888-8888-8888-888888888801', 'bar', 'Bar Staff', 'Bar POS operations, drink preparation, kitchen status, and tab settlements.', true),
+    ('88888888-8888-8888-8888-888888888802', 'shop_inventory', 'Shop & Inventory Staff', 'Pro shop catalogue management, inventory tracking, stock movements, and retail orders.', true),
+    ('88888888-8888-8888-8888-888888888803', 'reception', 'Front Desk Staff', 'Member verification, check-in, bookings, trial sessions, and CRM leads.', true),
+    ('88888888-8888-8888-8888-888888888804', 'sports_coaching', 'Sports & Coaching Staff', 'Court inspection, coaching sessions, and trial bookings.', true),
+    ('88888888-8888-8888-8888-888888888805', 'maintenance', 'Maintenance Staff', 'Facility repairs, court maintenance, and equipment upkeep.', true),
+    ('88888888-8888-8888-8888-888888888806', 'accounts', 'Accounts & Finance Staff', 'Club invoices, payment reconciliation, and expense tracking.', true)
+ON CONFLICT (code) DO UPDATE SET
+    name = EXCLUDED.name,
+    description = EXCLUDED.description;
+
+INSERT INTO permissions (id, code, module, description)
+VALUES
+    ('99999999-9999-9999-9999-999999999001', 'products.view', 'products', 'View products catalogue'),
+    ('99999999-9999-9999-9999-999999999002', 'products.create', 'products', 'Create new products'),
+    ('99999999-9999-9999-9999-999999999003', 'products.update', 'products', 'Update products details and pricing'),
+    ('99999999-9999-9999-9999-999999999004', 'products.delete', 'products', 'Delete or archive products'),
+    ('99999999-9999-9999-9999-999999999005', 'inventory.view', 'inventory', 'View inventory levels and low stock'),
+    ('99999999-9999-9999-9999-999999999006', 'inventory.create', 'inventory', 'Initialize inventory records'),
+    ('99999999-9999-9999-9999-999999999007', 'inventory.update', 'inventory', 'Adjust inventory stock counts'),
+    ('99999999-9999-9999-9999-999999999008', 'inventory.delete', 'inventory', 'Remove inventory records'),
+    ('99999999-9999-9999-9999-999999999009', 'stock_movements.view', 'stock_movements', 'View stock movement history'),
+    ('99999999-9999-9999-9999-999999999010', 'stock_movements.create', 'stock_movements', 'Record intake, adjustment, or write-off movements'),
+    ('99999999-9999-9999-9999-999999999011', 'shop_orders.view', 'shop_orders', 'View customer shop orders'),
+    ('99999999-9999-9999-9999-999999999012', 'shop_orders.update', 'shop_orders', 'Update order fulfillment status'),
+    ('99999999-9999-9999-9999-999999999013', 'bar_tables.view', 'bar', 'View bar tables and occupancy'),
+    ('99999999-9999-9999-9999-999999999014', 'bar_orders.view', 'bar', 'View bar orders and open tabs'),
+    ('99999999-9999-9999-9999-999999999015', 'bar_orders.create', 'bar', 'Create and open bar orders'),
+    ('99999999-9999-9999-9999-999999999016', 'bar_orders.update', 'bar', 'Add items, update kitchen status, settle tabs'),
+    ('99999999-9999-9999-9999-999999999017', 'members.view', 'members', 'View member directory and profiles'),
+    ('99999999-9999-9999-9999-999999999018', 'members.create', 'members', 'Register new club members'),
+    ('99999999-9999-9999-9999-999999999019', 'members.update', 'members', 'Update member profile details'),
+    ('99999999-9999-9999-9999-999999999020', 'courts.view', 'courts', 'View court schedule and availability'),
+    ('99999999-9999-9999-9999-999999999021', 'bookings.view', 'bookings', 'View court bookings'),
+    ('99999999-9999-9999-9999-999999999022', 'bookings.create', 'bookings', 'Book courts on behalf of members or guests'),
+    ('99999999-9999-9999-9999-999999999023', 'bookings.cancel', 'bookings', 'Cancel existing court bookings'),
+    ('99999999-9999-9999-9999-999999999024', 'leads.view', 'leads', 'View CRM enquiries and leads'),
+    ('99999999-9999-9999-9999-999999999025', 'leads.create', 'leads', 'Create enquiry leads'),
+    ('99999999-9999-9999-9999-999999999026', 'leads.update', 'leads', 'Update lead status and followups'),
+    ('99999999-9999-9999-9999-999999999027', 'trial_bookings.view', 'trial_bookings', 'View trial coaching sessions'),
+    ('99999999-9999-9999-9999-999999999028', 'trial_bookings.create', 'trial_bookings', 'Schedule trial coaching sessions'),
+    ('99999999-9999-9999-9999-999999999029', 'invoices.view', 'finance', 'View club invoices'),
+    ('99999999-9999-9999-9999-999999999030', 'payments.view', 'finance', 'View payment records'),
+    ('99999999-9999-9999-9999-999999999031', 'expenses.view', 'expenses', 'View club expense audit log'),
+    ('99999999-9999-9999-9999-999999999032', 'expenses.create', 'expenses', 'Record club expenditures'),
+    ('99999999-9999-9999-9999-999999999033', 'expenses.update', 'expenses', 'Edit expense details'),
+    ('99999999-9999-9999-9999-999999999034', 'expenses.delete', 'expenses', 'Void or remove expense entries')
+ON CONFLICT (code) DO NOTHING;
+
+-- Map Default Permissions to Staff Job Types
+-- Bar Staff
+INSERT INTO staff_job_type_permissions (staff_job_type_id, permission_id)
+SELECT '88888888-8888-8888-8888-888888888801', id FROM permissions WHERE code IN ('bar_tables.view', 'bar_orders.view', 'bar_orders.create', 'bar_orders.update')
+ON CONFLICT DO NOTHING;
+
+-- Shop & Inventory Staff
+INSERT INTO staff_job_type_permissions (staff_job_type_id, permission_id)
+SELECT '88888888-8888-8888-8888-888888888802', id FROM permissions WHERE code IN (
+    'products.view', 'products.create', 'products.update', 'products.delete',
+    'inventory.view', 'inventory.create', 'inventory.update',
+    'stock_movements.view', 'stock_movements.create',
+    'shop_orders.view', 'shop_orders.update'
+)
+ON CONFLICT DO NOTHING;
+
+-- Front Desk Staff
+INSERT INTO staff_job_type_permissions (staff_job_type_id, permission_id)
+SELECT '88888888-8888-8888-8888-888888888803', id FROM permissions WHERE code IN (
+    'members.view', 'members.create', 'members.update',
+    'bookings.view', 'bookings.create',
+    'trial_bookings.view', 'trial_bookings.create',
+    'leads.view', 'leads.create', 'leads.update'
+)
+ON CONFLICT DO NOTHING;
+
+-- Sports & Coaching Staff
+INSERT INTO staff_job_type_permissions (staff_job_type_id, permission_id)
+SELECT '88888888-8888-8888-8888-888888888804', id FROM permissions WHERE code IN (
+    'courts.view', 'bookings.view', 'trial_bookings.view', 'trial_bookings.create'
+)
+ON CONFLICT DO NOTHING;
+
+-- Maintenance Staff
+INSERT INTO staff_job_type_permissions (staff_job_type_id, permission_id)
+SELECT '88888888-8888-8888-8888-888888888805', id FROM permissions WHERE code IN ('courts.view')
+ON CONFLICT DO NOTHING;
+
+-- Accounts & Finance Staff
+INSERT INTO staff_job_type_permissions (staff_job_type_id, permission_id)
+SELECT '88888888-8888-8888-8888-888888888806', id FROM permissions WHERE code IN (
+    'invoices.view', 'payments.view', 'expenses.view', 'expenses.create'
+)
+ON CONFLICT DO NOTHING;
+
+-- ----------------------------------------------------------------------------
+-- 13. EMPLOYEES
+-- ----------------------------------------------------------------------------
+INSERT INTO employees (id, user_id, employee_number, first_name, last_name, email, phone, staff_job_type_id, department, designation, pin, hourly_rate, salary, joined_date)
+VALUES
+    ('STF-001', '22222222-2222-2222-2222-222222222221', 'EMP-2026-001', 'Kenil', 'Patel', 'kenil.patel@championsclub.com', '+919876543201', '88888888-8888-8888-8888-888888888801', 'bar', 'Bar & Lounge Manager', '1234', 250.00, 45000.00, '2025-01-15'),
+    ('STF-002', '22222222-2222-2222-2222-222222222222', 'EMP-2026-002', 'Priya', 'Nair', 'priya.nair@championsclub.com', '+919876543202', '88888888-8888-8888-8888-888888888801', 'bar', 'Head Bartender & Mixologist', '2233', 200.00, 36000.00, '2025-03-01'),
+    ('STF-003', '22222222-2222-2222-2222-222222222223', 'EMP-2026-003', 'Arjun', 'Singh', 'arjun.singh@championsclub.com', '+919876543203', '88888888-8888-8888-8888-888888888801', 'bar', 'Floor Waiter & Runner', '4455', 140.00, 24000.00, '2025-05-10'),
+    ('STF-004', '22222222-2222-2222-2222-222222222224', 'EMP-2026-004', 'Ananya', 'Roy', 'ananya.roy@championsclub.com', '+919876543204', '88888888-8888-8888-8888-888888888803', 'reception', 'POS Cashier & Hostess', '9900', 160.00, 28000.00, '2025-02-20')
 ON CONFLICT (id) DO NOTHING;
 
 -- ----------------------------------------------------------------------------

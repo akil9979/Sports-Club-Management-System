@@ -101,11 +101,40 @@ export function AuthProvider({ children }) {
   const isAdmin = role === 'admin';
   const isStaff = ['staff', 'manager', 'admin'].includes(role);
   const isMember = Boolean(user);
+  const staffJob = user?.staffJob || null;
+  const permissions = user?.permissions || [];
 
   const hasRole = useCallback((...roles) => {
     if (!user?.role) return false;
     if (user.role === 'admin') return true;
     return roles.flat().includes(user.role);
+  }, [user]);
+
+  /**
+   * Centralized Job-Based Access Control (JBAC) Permission Check
+   * @param {string} permissionCode - e.g. 'products.create', 'inventory.view'
+   * @returns {boolean}
+   */
+  const can = useCallback((permissionCode) => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    const userPerms = user.permissions || [];
+    if (userPerms.includes('*')) return true;
+    return userPerms.includes(permissionCode);
+  }, [user]);
+
+  /**
+   * Check if user has ANY of the specified permissions
+   * @param {...string} permissionCodes
+   * @returns {boolean}
+   */
+  const hasAnyPermission = useCallback((...permissionCodes) => {
+    if (!user) return false;
+    if (user.role === 'admin') return true;
+    const userPerms = user.permissions || [];
+    if (userPerms.includes('*')) return true;
+    const list = permissionCodes.flat();
+    return list.some(p => userPerms.includes(p));
   }, [user]);
 
   return (
@@ -117,6 +146,8 @@ export function AuthProvider({ children }) {
         isAdmin,
         isStaff,
         isMember,
+        staffJob,
+        permissions,
         isAuthenticated: Boolean(user && token),
         isLoading,
         authError,
@@ -126,7 +157,9 @@ export function AuthProvider({ children }) {
         register,
         logout,
         refreshUser,
-        hasRole
+        hasRole,
+        can,
+        hasAnyPermission
       }}
     >
       {children}

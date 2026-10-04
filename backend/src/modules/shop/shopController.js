@@ -59,6 +59,15 @@ class ShopController {
     }
   }
 
+  async deleteProduct(req, res, next) {
+    try {
+      const result = await productService.deleteProduct(req.params.id);
+      res.status(200).json({ success: true, data: result, message: result.message });
+    } catch (err) {
+      next(err);
+    }
+  }
+
   // --- INVENTORY ---
   async getInventory(req, res, next) {
     try {
@@ -82,6 +91,36 @@ class ShopController {
     try {
       const movements = await inventoryService.getStockMovements(req.query);
       res.status(200).json({ success: true, data: movements, count: movements.length });
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async recordStockMovement(req, res, next) {
+    try {
+      const { productId, quantity, movementType, referenceId, notes } = req.body;
+      if (!productId || !quantity || !movementType) {
+        return res.status(422).json({
+          success: false,
+          error: 'Validation Error',
+          message: 'productId, quantity, and movementType are required'
+        });
+      }
+
+      const movement = await inventoryService.recordStockMovement({
+        productId,
+        quantity: parseInt(quantity, 10),
+        movementType,
+        referenceId,
+        notes,
+        userId: req.user?.id || null
+      });
+
+      res.status(201).json({
+        success: true,
+        data: movement,
+        message: 'Stock movement recorded successfully'
+      });
     } catch (err) {
       next(err);
     }

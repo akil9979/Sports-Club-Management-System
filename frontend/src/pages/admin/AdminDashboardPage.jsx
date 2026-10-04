@@ -19,7 +19,8 @@ import {
   Sparkles,
   ArrowUpRight,
   Lock,
-  DollarSign
+  DollarSign,
+  Briefcase
 } from 'lucide-react';
 
 
@@ -206,7 +207,39 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Quick Portal Navigation Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <Link
+            to="/admin/staff"
+            className="group bg-[#041c14]/90 border border-emerald-900/40 hover:border-[#dfc99a]/50 rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5 shadow-lg flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#07261c] text-[#dfc99a] border border-[#dfc99a]/30 flex items-center justify-center">
+                <Users className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Staff Management</span>
+                <span className="text-[11px] text-emerald-400/60 block">Roster & job assignment</span>
+              </div>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-emerald-600 group-hover:text-[#dfc99a] transition-colors" />
+          </Link>
+
+          <Link
+            to="/admin/staff-jobs"
+            className="group bg-[#041c14]/90 border border-emerald-900/40 hover:border-[#dfc99a]/50 rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5 shadow-lg flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#07261c] text-[#dfc99a] border border-[#dfc99a]/30 flex items-center justify-center">
+                <Briefcase className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Staff Job Types</span>
+                <span className="text-[11px] text-emerald-400/60 block">Configure positions & permissions</span>
+              </div>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-emerald-600 group-hover:text-[#dfc99a] transition-colors" />
+          </Link>
+
           <Link
             to="/management"
             className="group bg-[#041c14]/90 border border-[#dfc99a]/30 hover:border-[#dfc99a] rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5 shadow-lg flex items-center justify-between"
@@ -218,6 +251,22 @@ export default function AdminDashboardPage() {
               <div>
                 <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Month-End Hub</span>
                 <span className="text-[11px] text-[#dfc99a]/70 block">P&L, Taxes & Payroll</span>
+              </div>
+            </div>
+            <ArrowUpRight className="w-4 h-4 text-emerald-600 group-hover:text-[#dfc99a] transition-colors" />
+          </Link>
+
+          <Link
+            to="/staff/shop"
+            className="group bg-[#041c14]/90 border border-emerald-900/40 hover:border-[#dfc99a]/50 rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5 shadow-lg flex items-center justify-between"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#07261c] text-[#dfc99a] border border-[#dfc99a]/30 flex items-center justify-center">
+                <ShoppingBag className="w-5 h-5" />
+              </div>
+              <div>
+                <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Pro Shop & Inventory</span>
+                <span className="text-[11px] text-emerald-400/60 block">Stock & order fulfillment</span>
               </div>
             </div>
             <ArrowUpRight className="w-4 h-4 text-emerald-600 group-hover:text-[#dfc99a] transition-colors" />
@@ -266,22 +315,6 @@ export default function AdminDashboardPage() {
               <div>
                 <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Courts</span>
                 <span className="text-[11px] text-emerald-400/60 block">Slot schedule</span>
-              </div>
-            </div>
-            <ArrowUpRight className="w-4 h-4 text-emerald-600 group-hover:text-[#dfc99a] transition-colors" />
-          </Link>
-
-          <Link
-            to="/shop"
-            className="group bg-[#041c14]/90 border border-emerald-900/40 hover:border-[#dfc99a]/50 rounded-2xl p-4 transition-all duration-200 hover:-translate-y-0.5 shadow-lg flex items-center justify-between"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-[#07261c] text-[#dfc99a] border border-[#dfc99a]/30 flex items-center justify-center">
-                <ShoppingBag className="w-5 h-5" />
-              </div>
-              <div>
-                <span className="text-sm font-bold text-white group-hover:text-[#dfc99a] transition-colors">Pro Shop</span>
-                <span className="text-[11px] text-emerald-400/60 block">Stock & orders</span>
               </div>
             </div>
             <ArrowUpRight className="w-4 h-4 text-emerald-600 group-hover:text-[#dfc99a] transition-colors" />

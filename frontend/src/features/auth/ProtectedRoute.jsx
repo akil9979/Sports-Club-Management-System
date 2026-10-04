@@ -3,8 +3,8 @@ import { Navigate, useLocation, Outlet, Link } from 'react-router-dom';
 import { useAuth } from './AuthContext.jsx';
 import { ShieldAlert, Loader2 } from 'lucide-react';
 
-export default function ProtectedRoute({ allowedRoles = null, children = null }) {
-  const { isAuthenticated, isLoading, user } = useAuth();
+export default function ProtectedRoute({ allowedRoles = null, requiredPermissions = null, children = null }) {
+  const { isAuthenticated, isLoading, user, can, hasAnyPermission } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -22,6 +22,7 @@ export default function ProtectedRoute({ allowedRoles = null, children = null })
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
+  // 1. Role validation
   if (allowedRoles) {
     const roles = Array.isArray(allowedRoles) ? allowedRoles : [allowedRoles];
     const allowed = user?.role === 'admin' || roles.includes(user?.role);
@@ -44,7 +45,7 @@ export default function ProtectedRoute({ allowedRoles = null, children = null })
                 </Link>
               )}
               {['staff', 'manager'].includes(user?.role) && (
-                <Link to="/staff/bar" className="px-4 py-2 text-xs font-bold btn-champagne rounded-xl transition">
+                <Link to="/staff/operations" className="px-4 py-2 text-xs font-bold btn-champagne rounded-xl transition">
                   Staff Portal
                 </Link>
               )}
@@ -53,6 +54,33 @@ export default function ProtectedRoute({ allowedRoles = null, children = null })
                   Member Portal
                 </Link>
               )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }
+
+  // 2. Fine-grained Job-Based Access Control permission validation
+  if (requiredPermissions && user?.role !== 'admin') {
+    const perms = Array.isArray(requiredPermissions) ? requiredPermissions : [requiredPermissions];
+    const hasPerm = perms.some((p) => can(p));
+    if (!hasPerm) {
+      return (
+        <div className="min-h-screen bg-[#02140e] flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-[#041c14] border border-rose-900/60 rounded-3xl p-8 text-center space-y-4 shadow-2xl">
+            <ShieldAlert className="w-12 h-12 text-rose-400 mx-auto" />
+            <h2 className="text-xl font-serif font-bold text-[#fcfaf5]">Job Permission Required</h2>
+            <p className="text-xs text-emerald-300/80 leading-relaxed">
+              Your staff assignment (<span className="text-[#dfc99a] font-semibold">{user?.staffJob?.name || 'Staff'}</span>) does not have permission to access this module.
+            </p>
+            <p className="text-[11px] font-mono text-emerald-500/80">
+              Required: {perms.join(' or ')}
+            </p>
+            <div className="flex flex-wrap justify-center gap-2 pt-2">
+              <Link to="/staff/operations" className="px-4 py-2 text-xs font-bold btn-champagne rounded-xl transition">
+                Return to Operations
+              </Link>
             </div>
           </div>
         </div>

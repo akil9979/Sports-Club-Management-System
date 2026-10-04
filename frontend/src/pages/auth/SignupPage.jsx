@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth/AuthContext.jsx';
-import { isValidEmail } from '../../features/auth/authApi.js';
-import { Trophy, User, Mail, Phone, Lock, Eye, EyeOff, Loader2, AlertCircle, ArrowRight, Crown } from 'lucide-react';
+import { isValidEmail, getStaffJobTypes } from '../../features/auth/authApi.js';
+import { Trophy, User, Mail, Phone, Lock, Eye, EyeOff, Loader2, AlertCircle, ArrowRight, Briefcase } from 'lucide-react';
 
 export default function SignupPage() {
   const navigate = useNavigate();
-  const { register, isAuthenticated } = useAuth();
+  const { register, isAuthenticated, role: userRole } = useAuth();
 
   const [form, setForm] = useState({
     firstName: '',
@@ -15,21 +15,58 @@ export default function SignupPage() {
     phone: '',
     password: '',
     confirmPassword: '',
-    role: 'member'
+    role: 'member',
+    staffJobTypeId: ''
   });
 
+  const [staffJobs, setStaffJobs] = useState([]);
+  const [loadingJobs, setLoadingJobs] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  // Redirect if already authenticated
   useEffect(() => {
     if (isAuthenticated) {
-      navigate('/members', { replace: true });
+      if (['staff', 'manager', 'admin'].includes(userRole)) {
+        navigate('/staff', { replace: true });
+      } else {
+        navigate('/members', { replace: true });
+      }
     }
-  }, [isAuthenticated, navigate]);
+  }, [isAuthenticated, userRole, navigate]);
+
+  // Fetch active staff jobs dynamically from API/database
+  useEffect(() => {
+    async function loadJobs() {
+      setLoadingJobs(true);
+      try {
+        const jobs = await getStaffJobTypes();
+        setStaffJobs(jobs);
+        if (jobs.length > 0 && !form.staffJobTypeId) {
+          setForm(prev => ({ ...prev, staffJobTypeId: jobs[0].id }));
+        }
+      } catch (err) {
+        console.error('Failed to load staff jobs:', err);
+      } finally {
+        setLoadingJobs(false);
+      }
+    }
+    loadJobs();
+  }, []);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleRoleChange = (newRole) => {
+    setForm(prev => ({
+      ...prev,
+      role: newRole,
+      staffJobTypeId: newRole === 'staff' && !prev.staffJobTypeId && staffJobs.length > 0
+        ? staffJobs[0].id
+        : prev.staffJobTypeId
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -42,17 +79,27 @@ export default function SignupPage() {
     if (!form.password || form.password.length < 6) return setError('Password must be at least 6 characters');
     if (form.password !== form.confirmPassword) return setError('Passwords do not match');
 
+    if (form.role === 'staff' && !form.staffJobTypeId) {
+      return setError('Please select a Staff Job for staff account registration');
+    }
+
     setLoading(true);
     try {
-      await register({
+      const res = await register({
         firstName: form.firstName,
         lastName: form.lastName,
         email: form.email,
         phone: form.phone,
         password: form.password,
-        role: form.role
+        role: form.role,
+        staffJobTypeId: form.role === 'staff' ? form.staffJobTypeId : null
       });
-      navigate('/members', { replace: true });
+
+      if (form.role === 'staff') {
+        navigate('/staff', { replace: true });
+      } else {
+        navigate('/members', { replace: true });
+      }
     } catch (err) {
       setError(err.message || 'Registration failed');
     } finally {
@@ -62,7 +109,7 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-[#02140e] text-[#f4efe4]">
-      <div className="w-full max-w-lg">
+      <div className="w-full max-w-xl">
         {/* Header */}
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-3 mb-4">
@@ -88,6 +135,115 @@ export default function SignupPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Account Role Selector */}
+            <div>
+              <label className="block text-xs font-bold text-[#ede0c4] uppercase tracking-wider mb-2">
+                Account Role *
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <label
+                  className={`cursor-pointer p-3.5 rounded-xl border flex items-center gap-3 transition ${
+                    form.role === 'member'
+                      ? 'bg-[#dfc99a]/15 border-[#dfc99a] text-[#dfc99a] shadow-md shadow-[#dfc99a]/10'
+                      : 'bg-[#02140e] border-[#dfc99a]/25 text-[#ede0c4]/70 hover:border-[#dfc99a]/50'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="role"
+                    value="member"
+                    checked={form.role === 'member'}
+                    onChange={() => handleRoleChange('member')}
+                    className="accent-[#dfc99a] w-4 h-4 cursor-pointer"
+                  />
+                  <div>
+                    <span className="text-sm font-bold block text-white">Club Member</span>
+                    <span className="text-[11px] text-[#ede0c4]/60 block">Play, book & dine</span>
+                  </div>
+                </label>
+
+                <label
+                  className={`cursor-pointer p-3.5 rounded-xl border flex items-center gap-3 transition ${
+                    form.role === 'staff'
+                      ? 'bg-[#dfc99a]/15 border-[#dfc99a] text-[#dfc99a] shadow-md shadow-[#dfc99a]/10'
+                      : 'bg-[#02140e] border-[#dfc99a]/25 text-[#ede0c4]/70 hover:border-[#dfc99a]/50'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="role"
+                    value="staff"
+                    checked={form.role === 'staff'}
+                    onChange={() => handleRoleChange('staff')}
+                    className="accent-[#dfc99a] w-4 h-4 cursor-pointer"
+                  />
+                  <div>
+                    <span className="text-sm font-bold block text-white">Staff Member</span>
+                    <span className="text-[11px] text-[#ede0c4]/60 block">Club operations lead</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {/* Conditionally Rendered Staff Job Radio Options (Dynamic from DB) */}
+            {form.role === 'staff' && (
+              <div className="p-4 rounded-2xl bg-[#041c14] border border-[#dfc99a]/35 space-y-3 animate-in fade-in duration-200">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-[#dfc99a] uppercase tracking-wider flex items-center gap-1.5">
+                    <Briefcase className="w-3.5 h-3.5 text-[#dfc99a]" />
+                    <span>Assigned Staff Job *</span>
+                  </label>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-300 border border-emerald-500/30">
+                    Database Driven
+                  </span>
+                </div>
+                <p className="text-[11px] text-[#ede0c4]/70">
+                  Select your operational department job. Permissions and accessible club modules update automatically based on this selection.
+                </p>
+
+                {loadingJobs ? (
+                  <div className="flex items-center gap-2 py-3 text-xs text-emerald-400">
+                    <Loader2 className="w-4 h-4 animate-spin text-[#dfc99a]" />
+                    <span>Loading available staff jobs from server...</span>
+                  </div>
+                ) : staffJobs.length === 0 ? (
+                  <div className="text-xs text-rose-300 py-2">
+                    No active staff jobs found. Please contact an administrator.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+                    {staffJobs.map((job) => (
+                      <label
+                        key={job.id}
+                        className={`cursor-pointer p-3 rounded-xl border flex items-start gap-2.5 transition text-left ${
+                          form.staffJobTypeId === job.id
+                            ? 'bg-[#dfc99a]/20 border-[#dfc99a] text-white shadow-sm'
+                            : 'bg-[#02140e] border-emerald-900/60 text-emerald-200/80 hover:border-[#dfc99a]/40'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="staffJobTypeId"
+                          value={job.id}
+                          checked={form.staffJobTypeId === job.id}
+                          onChange={() => setForm({ ...form, staffJobTypeId: job.id })}
+                          className="accent-[#dfc99a] w-4 h-4 mt-0.5 shrink-0 cursor-pointer"
+                        />
+                        <div className="min-w-0">
+                          <div className="text-xs font-bold text-white leading-tight">{job.name}</div>
+                          {job.description && (
+                            <div className="text-[10px] text-emerald-400/60 leading-tight mt-1 line-clamp-2">
+                              {job.description}
+                            </div>
+                          )}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Names */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
